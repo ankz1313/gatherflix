@@ -1,10 +1,26 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
+import { Inter, Plus_Jakarta_Sans } from 'next/font/google'
+import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['600', '700', '800'],
+  variable: '--font-jakarta',
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'GatherFlix — Real-time Movie & Shows Trivia with Friends',
+  description:
+    'No corporate quiz boards here. Just high-energy masala, legendary dialogs, and midnight movie debates. Free forever, right on your phones.',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -26,10 +42,10 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
+  colorScheme: 'dark light',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
+    { media: '(prefers-color-scheme: light)', color: '#faf3f7' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0509' },
   ],
 }
 
@@ -39,10 +55,16 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className={`${inter.variable} ${jakarta.variable} bg-background`}
+      suppressHydrationWarning
+    >
       <body className="antialiased">
-        {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+        <ThemeProvider>
+          {children}
+          {process.env.NODE_ENV === 'production' && <Analytics />}
+        </ThemeProvider>
       </body>
     </html>
   )
