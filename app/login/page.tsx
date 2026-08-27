@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { LoginForm } from '@/components/login-form'
 
@@ -31,6 +32,13 @@ export default function LoginPage() {
         </div>
 
         <LoginForm />
+
+        <Link
+          href="/"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          &larr; Back to home
+        </Link>
       </div>
     </main>
   )
