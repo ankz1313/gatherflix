@@ -25,7 +25,7 @@ export function Hero() {
 
           <div className="mt-9 flex w-full flex-col gap-4 sm:w-auto sm:flex-row sm:items-center">
             <a
-              href="#join"
+              href="/join"
               className="inline-flex items-center justify-center gap-2.5 rounded-full bg-gold px-8 py-4 font-display text-base font-bold text-gold-foreground shadow-[0_10px_45px_-10px] shadow-gold/70 transition-transform hover:scale-[1.02]"
             >
               <Play className="size-[1.15rem] fill-current" strokeWidth={0} aria-hidden="true" />
