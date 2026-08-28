@@ -34,7 +34,7 @@ export function SiteHeader() {
           <ThemeToggle />
 
           <a
-            href="#login"
+            href="/login"
             className="hidden rounded-full border border-border bg-secondary px-6 py-2.5 font-display text-[0.95rem] font-bold text-foreground transition-colors hover:bg-accent md:inline-flex"
           >
             Login
@@ -70,7 +70,7 @@ export function SiteHeader() {
             </a>
           ))}
           <a
-            href="#login"
+            href="/login"
             onClick={() => setOpen(false)}
             className="mt-2 rounded-full border border-border bg-secondary px-6 py-3 text-center font-display font-bold text-foreground"
           >
