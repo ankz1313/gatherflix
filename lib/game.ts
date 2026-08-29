@@ -33,6 +33,10 @@ export const GAME_META = {
   questionNumber: 3,
   totalQuestions: 50,
   timerSeconds: 20,
+  lastPoints: 850,
+  playerCount: 18,
+  rankAfterCorrect: 2,
+  rankAfterWrong: 5,
 }
 
 // Answer distribution for the reveal screen (counts per option).
@@ -45,3 +49,28 @@ export const LEADERBOARD = [
   { name: 'Dev', styleId: 'gold', score: 3100 },
   { name: 'Sana', styleId: 'chili', score: 2900 },
 ]
+
+// Final standings shown on the podium screen at game end.
+export type FinalPlayer = {
+  name: string
+  styleId: string
+  score: number
+  correct: number
+}
+
+export const FINAL_RESULTS: FinalPlayer[] = [
+  { name: 'Priya', styleId: 'masala', score: 18450, correct: 44 },
+  { name: 'Arjun', styleId: 'neon', score: 16820, correct: 41 },
+  { name: 'Meera', styleId: 'royal', score: 15300, correct: 38 },
+  { name: 'Dev', styleId: 'gold', score: 13900, correct: 35 },
+  { name: 'Sana', styleId: 'chili', score: 12650, correct: 33 },
+  { name: 'Rohan', styleId: 'neon', score: 11200, correct: 30 },
+  { name: 'Ananya', styleId: 'royal', score: 10450, correct: 28 },
+  { name: 'Karan', styleId: 'mint', score: 9800, correct: 26 },
+]
+
+export const GAME_SUMMARY = {
+  deckTitle: 'Sholay Masala Night',
+  totalQuestions: 50,
+  playerCount: 18,
+}
