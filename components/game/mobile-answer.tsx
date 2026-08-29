@@ -2,13 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AnswerShape } from '@/components/game/answer-shape'
-import { ANSWER_STYLES, SAMPLE_QUESTION, GAME_META } from '@/lib/game'
+import { SAMPLE_QUESTION, GAME_META } from '@/lib/game'
+
+const OPTIONS = [
+  { letter: 'A', color: 'var(--gold)' },
+  { letter: 'B', color: 'var(--brand)' },
+  { letter: 'C', color: 'var(--success)' },
+  { letter: 'D', color: '#f2622e' },
+]
+
+// The color code that matches the correct answer shown on the TV screen.
+const CORRECT_LETTER = OPTIONS[SAMPLE_QUESTION.correctIndex].letter
 
 export function MobileAnswer() {
   const router = useRouter()
   const [remaining, setRemaining] = useState(GAME_META.timerSeconds)
-  const [picked, setPicked] = useState<number | null>(null)
+  const [locked, setLocked] = useState<string | null>(null)
 
   useEffect(() => {
     if (remaining <= 0) return
@@ -16,66 +25,77 @@ export function MobileAnswer() {
     return () => clearTimeout(t)
   }, [remaining])
 
-  function choose(index: number) {
-    if (picked !== null) return
-    setPicked(index)
-    // Store the pick so the result screen can grade it.
-    const correct = index === SAMPLE_QUESTION.correctIndex
+  function pick(letter: string) {
+    if (locked) return
+    setLocked(letter)
     setTimeout(() => {
-      router.push(`/play/mobile/result?correct=${correct ? '1' : '0'}`)
-    }, 1200)
+      router.push(`/play/mobile/result?correct=${letter === CORRECT_LETTER ? '1' : '0'}`)
+    }, 900)
   }
 
+  const pct = Math.max(0, (remaining / GAME_META.timerSeconds) * 100)
+
   return (
-    <main className="flex min-h-[100dvh] flex-col px-4 pb-4 pt-6">
+    <div className="flex min-h-[100dvh] flex-col px-6 pb-10 pt-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <span className="rounded-full bg-secondary px-4 py-1.5 font-display text-xs font-bold text-muted-foreground">
-          Q{GAME_META.questionNumber}/{GAME_META.totalQuestions}
+      <div className="flex items-baseline justify-between">
+        <span className="font-display text-lg font-black tracking-tight text-brand">
+          ROUND {GAME_META.round} OF {GAME_META.totalQuestions}
         </span>
-        <span className="grid h-10 w-10 place-items-center rounded-full bg-gold font-display text-lg font-black text-gold-foreground">
-          {remaining}
+        <span className="font-display text-lg font-black tracking-tight text-gold">
+          {SAMPLE_QUESTION.points} PTS MAX
         </span>
       </div>
 
-      {/* Question */}
-      <p className="mt-6 text-center font-display text-xl font-extrabold text-balance">
-        {SAMPLE_QUESTION.prompt}
-      </p>
+      {/* Progress */}
+      <div className="mt-4 flex items-center justify-between text-xs font-semibold uppercase tracking-wider">
+        <span className="text-muted-foreground">Time Remaining</span>
+        <span className="text-brand">{remaining}s</span>
+      </div>
+      <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
+        <div
+          className="h-full rounded-full bg-brand transition-[width] duration-1000 ease-linear"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
 
-      {picked !== null && (
-        <p className="mt-3 text-center text-sm font-semibold text-muted-foreground">
-          Answer locked in — hang tight!
-        </p>
-      )}
+      {/* Prompt card */}
+      <div className="mt-6 rounded-3xl border border-border bg-card/60 px-6 py-5 text-center">
+        <h1 className="font-display text-2xl font-black tracking-tight text-balance">
+          Read the TV Screen
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">Tap the correct color code to lock in!</p>
+      </div>
 
       {/* Answer tiles */}
-      <div className="mt-6 grid flex-1 grid-cols-2 gap-3">
-        {SAMPLE_QUESTION.options.map((option, i) => {
-          const style = ANSWER_STYLES[i]
-          const isPicked = picked === i
-          const dimmed = picked !== null && !isPicked
+      <div className="mt-6 flex flex-col gap-4">
+        {OPTIONS.map((o) => {
+          const isLocked = locked === o.letter
           return (
             <button
-              key={option}
+              key={o.letter}
               type="button"
-              onClick={() => choose(i)}
-              disabled={picked !== null}
-              aria-label={`Answer ${option}`}
-              className="flex flex-col items-center justify-center gap-3 rounded-3xl p-4 font-display text-lg font-bold text-white transition-all active:scale-95"
-              style={{
-                backgroundColor: style.color,
-                opacity: dimmed ? 0.35 : 1,
-                outline: isPicked ? '4px solid white' : 'none',
-                outlineOffset: isPicked ? '-4px' : '0',
-              }}
+              onClick={() => pick(o.letter)}
+              disabled={!!locked}
+              aria-label={`Option ${o.letter}`}
+              className="flex h-[4.5rem] items-center rounded-3xl border-2 px-6 text-left font-display text-2xl font-black transition-all active:scale-[0.99] disabled:cursor-default"
+              style={
+                isLocked
+                  ? { backgroundColor: o.color, borderColor: o.color, color: '#fff' }
+                  : {
+                      borderColor: o.color,
+                      color: o.color,
+                      background: `linear-gradient(90deg, color-mix(in oklab, ${o.color} 16%, transparent), transparent)`,
+                    }
+              }
             >
-              <AnswerShape shape={style.shape} className="size-9 fill-white text-white" />
-              <span className="text-balance text-center">{option}</span>
+              {isLocked ? `${o.letter} [ LOCKED IN ]` : o.letter}
             </button>
           )
         })}
       </div>
-    </main>
+
+      <div className="mx-auto mt-8 h-1.5 w-32 rounded-full bg-muted-foreground/30" />
+    </div>
   )
 }

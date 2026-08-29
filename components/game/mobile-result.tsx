@@ -1,85 +1,103 @@
 'use client'
 
 import Link from 'next/link'
-import { AnswerShape } from '@/components/game/answer-shape'
-import { ANSWER_STYLES, SAMPLE_QUESTION, GAME_META } from '@/lib/game'
+import { MOBILE_RESULT } from '@/lib/game'
 
 export function MobileResult({ correct }: { correct: boolean }) {
-  const style = ANSWER_STYLES[SAMPLE_QUESTION.correctIndex]
+  const r = correct ? MOBILE_RESULT.correct : MOBILE_RESULT.wrong
+  const accent = correct ? 'var(--success)' : 'var(--brand)'
 
   return (
-    <main className="flex min-h-[100dvh] flex-col items-center justify-center px-6 text-center">
-      <span className="rounded-full bg-secondary px-4 py-1.5 font-display text-xs font-bold text-muted-foreground">
-        Q{GAME_META.questionNumber}/{GAME_META.totalQuestions}
-      </span>
-
-      <div
-        className="mt-8 grid size-24 place-items-center rounded-full"
-        style={{
-          backgroundColor: correct ? 'var(--success-soft)' : 'var(--brand-soft)',
-        }}
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke={correct ? 'var(--success)' : 'var(--brand)'}
-          strokeWidth={3}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="size-11"
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center px-6">
+      <div className="w-full rounded-[2rem] border border-border bg-card/70 px-7 py-9 text-center">
+        {/* Icon pill */}
+        <div
+          className="mx-auto grid h-14 w-28 place-items-center rounded-full border-2"
+          style={{ borderColor: accent, backgroundColor: `color-mix(in oklab, ${accent} 14%, transparent)` }}
           aria-hidden="true"
         >
-          {correct ? <polyline points="20 6 9 17 4 12" /> : <path d="M18 6 6 18M6 6l12 12" />}
-        </svg>
-      </div>
+          <svg viewBox="0 0 24 24" fill="none" className="size-7" style={{ color: accent }}>
+            {correct ? (
+              <path
+                d="m5 12 4.5 4.5L19 7"
+                stroke="currentColor"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ) : (
+              <path
+                d="M6 6l12 12M18 6 6 18"
+                stroke="currentColor"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
+          </svg>
+        </div>
 
-      <h1 className="mt-6 font-display text-3xl font-black text-balance">
-        {correct ? 'Correct!' : 'Not quite!'}
-      </h1>
-
-      {correct ? (
-        <p className="mt-2 font-display text-lg font-bold text-gold">+{GAME_META.lastPoints} points</p>
-      ) : (
-        <p className="mt-2 text-sm font-semibold text-muted-foreground">
-          Better luck on the next one.
-        </p>
-      )}
-
-      {/* Correct answer reminder */}
-      <div className="mt-8 flex w-full max-w-xs items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left">
-        <span
-          className="grid size-10 shrink-0 place-items-center rounded-xl"
-          style={{ backgroundColor: style.color }}
+        {/* Headline */}
+        <h1
+          className="mt-6 font-display text-5xl font-black tracking-tight"
+          style={{ color: accent }}
         >
-          <AnswerShape shape={style.shape} className="size-5 fill-white text-white" />
-        </span>
-        <div>
-          <p className="text-xs font-semibold text-muted-foreground">Correct answer</p>
-          <p className="font-display font-bold">{SAMPLE_QUESTION.options[SAMPLE_QUESTION.correctIndex]}</p>
+          {correct ? 'CORRECT!' : 'MISSED IT!'}
+        </h1>
+        <p className="mt-4 text-lg text-muted-foreground">
+          You chose: {MOBILE_RESULT.chosenLetter}. {MOBILE_RESULT.chosenText}
+        </p>
+
+        <hr className="my-7 border-border" />
+
+        {/* Points */}
+        <p className="font-display text-6xl font-black tracking-tight text-gold">
+          {r.points >= 0 ? '+' : ''}
+          {r.points} PTS
+        </p>
+
+        <div className="mt-5 flex items-center justify-center gap-3">
+          <span className="rounded-full bg-success-soft px-4 py-1.5 font-display text-xs font-bold uppercase tracking-wide text-success">
+            Base: {r.base}
+          </span>
+          <span className="rounded-full bg-gold-soft px-4 py-1.5 font-display text-xs font-bold uppercase tracking-wide text-gold">
+            Speed Multiplier: {r.multiplier}
+          </span>
+        </div>
+
+        <hr className="my-7 border-border" />
+
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Current Rank
+            </p>
+            <p className="mt-1 font-display text-2xl font-black">#{r.rank}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Total Score
+            </p>
+            <p className="mt-1 font-display text-2xl font-black">
+              {r.totalScore.toLocaleString()}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Behind Next
+            </p>
+            <p className="mt-1 font-display text-2xl font-black text-brand">{r.behindNext}</p>
+          </div>
         </div>
       </div>
 
-      {/* Rank */}
-      <div className="mt-4 flex w-full max-w-xs items-center justify-between rounded-2xl bg-secondary px-5 py-4">
-        <span className="text-sm font-semibold text-muted-foreground">Your rank</span>
-        <span className="font-display text-xl font-black">
-          #{correct ? GAME_META.rankAfterCorrect : GAME_META.rankAfterWrong}
-          <span className="ml-1 text-sm font-bold text-muted-foreground">
-            / {GAME_META.playerCount}
-          </span>
-        </span>
-      </div>
-
-      <p className="mt-8 animate-pulse text-sm font-semibold text-muted-foreground">
-        Waiting for the next question…
-      </p>
-
       <Link
-        href="/results"
+        href="/results/mobile"
         className="mt-6 text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
       >
         Skip to final results
       </Link>
-    </main>
+    </div>
   )
 }

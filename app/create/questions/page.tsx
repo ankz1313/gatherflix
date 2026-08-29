@@ -1,25 +1,17 @@
 import type { Metadata } from 'next'
-import { AppTopbar } from '@/components/app-topbar'
-import { CreatorStepper } from '@/components/creator/creator-stepper'
+import { CreatorNav } from '@/components/creator/creator-nav'
 import { QuestionEditor } from '@/components/creator/question-editor'
 
 export const metadata: Metadata = {
   title: 'Add Questions · GatherFlix',
-  description: 'Write the questions and answers for your trivia deck.',
+  description: 'Write the questions and answers for your trivia quiz.',
 }
 
 export default function QuestionsStepPage() {
   return (
     <div className="min-h-[100dvh]">
-      <AppTopbar />
-      <main className="mx-auto max-w-4xl px-6 py-10">
-        <CreatorStepper current={2} />
-        <div className="mt-10 mb-8">
-          <h1 className="font-display text-3xl font-black text-balance">Add Your Questions</h1>
-          <p className="mt-2 text-muted-foreground">
-            Write the prompts, fill four options, and mark the right answer.
-          </p>
-        </div>
+      <CreatorNav active="My Quizzes" />
+      <main className="mx-auto max-w-7xl px-6 py-10">
         <QuestionEditor />
       </main>
     </div>

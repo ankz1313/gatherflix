@@ -75,27 +75,53 @@ export const LEADERBOARD = [
   { name: 'Sana', styleId: 'chili', score: 2900 },
 ]
 
+// Personal per-question result shown on the player's phone after a round.
+export const MOBILE_RESULT = {
+  chosenLetter: 'B',
+  chosenText: 'Gangubai Kathiawadi',
+  correct: {
+    points: 420,
+    base: 300,
+    multiplier: '1.4x',
+    rank: 3,
+    totalScore: 5220,
+    behindNext: -670,
+  },
+  wrong: {
+    points: 0,
+    base: 0,
+    multiplier: '0x',
+    rank: 8,
+    totalScore: 4110,
+    behindNext: -840,
+  },
+}
+
 // Final standings shown on the podium screen at game end.
 export type FinalPlayer = {
   name: string
-  styleId: string
+  emoji: string
+  title: string
   score: number
   correct: number
 }
 
 export const FINAL_RESULTS: FinalPlayer[] = [
-  { name: 'Priya', styleId: 'masala', score: 18450, correct: 44 },
-  { name: 'Arjun', styleId: 'neon', score: 16820, correct: 41 },
-  { name: 'Meera', styleId: 'royal', score: 15300, correct: 38 },
-  { name: 'Dev', styleId: 'gold', score: 13900, correct: 35 },
-  { name: 'Sana', styleId: 'chili', score: 12650, correct: 33 },
-  { name: 'Rohan', styleId: 'neon', score: 11200, correct: 30 },
-  { name: 'Ananya', styleId: 'royal', score: 10450, correct: 28 },
-  { name: 'Karan', styleId: 'mint', score: 9800, correct: 26 },
+  { name: 'Rahul', emoji: '\u{1F60E}', title: 'Party Host', score: 6450, correct: 14 },
+  { name: 'Priya', emoji: '\u{1F483}', title: 'Dance Diva', score: 5890, correct: 13 },
+  { name: 'Simran', emoji: '\u2728', title: 'Quick-Fire Queen', score: 5220, correct: 13 },
+  { name: 'Jai', emoji: '\u{1F934}', title: 'Classic Fan', score: 4110, correct: 11 },
+  { name: 'Veeru', emoji: '\u{1F9D4}', title: 'Basanti Lover', score: 3850, correct: 10 },
+  { name: 'Karan', emoji: '\u{1F37F}', title: 'Drama King', score: 3400, correct: 9 },
+  { name: 'Don', emoji: '\u{1F576}\uFE0F', title: 'Catch Me If You Can', score: 2910, correct: 8 },
 ]
 
 export const GAME_SUMMARY = {
-  deckTitle: 'Sholay Masala Night',
-  totalQuestions: 50,
-  playerCount: 18,
+  quizTitle: 'Shah Rukh Fanatic Quiz',
+  deckTitle: 'Classic 90s Romances',
+  sessionId: '4829',
+  questionsCompleted: 15,
+  totalQuestions: 15,
+  playerCount: 7,
+  partyRoom: 'DDLJ',
 }
