@@ -19,8 +19,8 @@ export function Hero() {
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            No corporate quiz boards here. Just high-energy masala, legendary dialogs, and midnight movie debates. Free
-            forever, right on your phones.
+            No boring quiz boards. Just fast rounds, legendary dialogs, and friends fighting for the top spot. Free,
+            right on your phones.
           </p>
 
           <div className="mt-9 flex w-full flex-col gap-4 sm:w-auto sm:flex-row sm:items-center">
