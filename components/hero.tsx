@@ -33,7 +33,7 @@ export function Hero() {
             </a>
 
             <a
-              href="#host"
+              href="/host"
               className="inline-flex items-center justify-center gap-2.5 rounded-full border border-border bg-secondary/70 px-8 py-4 font-display text-base font-bold text-foreground transition-colors hover:bg-accent"
             >
               <Plus className="size-[1.15rem]" strokeWidth={2.5} aria-hidden="true" />

@@ -49,7 +49,7 @@ export function FeaturedDecks() {
         </div>
 
         <a
-          href="#all-decks"
+          href="/library"
           className="inline-flex shrink-0 items-center justify-center self-start rounded-full border border-border bg-secondary px-7 py-3.5 font-display text-[0.95rem] font-bold text-foreground transition-colors hover:bg-accent sm:self-auto"
         >
           View All Decks
@@ -60,7 +60,7 @@ export function FeaturedDecks() {
         {DECKS.map((deck) => (
           <li key={deck.title}>
             <a
-              href="#all-decks"
+              href="/library"
               className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-[0_20px_50px_-32px_rgb(0_0_0/0.4)] transition-transform hover:-translate-y-1"
             >
               <div className="relative aspect-[3/2] overflow-hidden">
