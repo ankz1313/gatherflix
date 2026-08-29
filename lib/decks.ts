@@ -1,5 +1,10 @@
 export type DeckTag = 'Trending' | 'Classics' | 'Music' | 'Romance' | 'Action' | 'Comedy'
 
+export type PreviewOption = {
+  label: string
+  text: string
+}
+
 export type Deck = {
   slug: string
   title: string
@@ -7,46 +12,87 @@ export type Deck = {
   image: string
   alt: string
   questionCount: number
+  minutes: number
   difficulty: 'Easy' | 'Medium' | 'Hard'
   categories: string[]
+  creator: string
   host: string
   plays: string
+  preview: {
+    question: string
+    options: PreviewOption[]
+    correctIndex: number
+    points: number
+    tip?: string
+  }
   sampleQuestions: string[]
   tags: DeckTag[]
   trending?: boolean
+  featured?: boolean
 }
 
 export const DECKS: Deck[] = [
   {
-    slug: 'sholay-masala-night',
-    title: 'Sholay Masala Night',
-    blurb: 'Legendary dialogs, iconic villains and the ultimate curry western showdown.',
-    image: '/decks/hero-sholay-masala-night.png',
-    alt: 'Bollywood dancers on an ornate theatre stage under spotlights',
-    questionCount: 50,
+    slug: 'classic-90s-romances',
+    title: 'Classic 90s Romances',
+    blurb:
+      "Bade bade deshon mein aisi chhoti chhoti baatein toh hoti hi rehti hain! Test your gang's memory on the golden decade of love, yellow mustard fields, and timeless tunes from DDLJ, Kuch Kuch Hota Hai, and Hum Aapke Hain Koun.",
+    image: '/decks/deck-classic-90s-romance.png',
+    alt: 'Couple in traditional attire in a golden mustard field at sunset',
+    questionCount: 15,
+    minutes: 10,
     difficulty: 'Medium',
-    categories: ['Dialogs', 'Characters', 'Music', 'Trivia'],
-    host: 'Rahul Khanna',
-    plays: '12.4k plays',
+    categories: ['DDLJ', 'SRK', '90s'],
+    creator: 'ShranFan99',
+    host: 'ShranFan99',
+    plays: '2.4K',
+    preview: {
+      question:
+        "In DDLJ, what does Raj's father gift him upon failing his university exams in London?",
+      options: [
+        { label: 'A', text: 'A classic red Harley Davidson motorcycle' },
+        { label: 'B', text: 'A month-long trip across Europe (EuroRail pass)' },
+        { label: 'C', text: 'A luxury apartment in Mayfair, London' },
+        { label: 'D', text: 'An premium film camera to pursue his passion' },
+      ],
+      correctIndex: 1,
+      points: 100,
+      tip: 'This deck has 3 rapid-fire audio clip questions. Make sure your room audio is connected so everyone can groove!',
+    },
     sampleQuestions: [
-      'Kitne aadmi the? Who asks this legendary question?',
-      'Which year did this cult classic first release?',
-      'Name the coin that decides every big call in the film.',
+      "In DDLJ, what does Raj's father gift him after his exams in London?",
+      'Which 90s romance is set in the mustard fields of Punjab?',
+      'Name the iconic on-screen couple of Kuch Kuch Hota Hai.',
     ],
-    tags: ['Trending', 'Classics', 'Action'],
+    tags: ['Trending', 'Romance', 'Classics'],
     trending: true,
   },
   {
-    slug: 'sangeet-superhits',
-    title: 'Sangeet Superhits',
-    blurb: 'Wedding season bangers and dance floor classics.',
+    slug: 'grand-shaadi-anthems',
+    title: 'Grand Shaadi Anthems',
+    blurb:
+      'Wedding season is a whole vibe! From sangeet floor-fillers to baraat bangers, guess the biggest big-fat-Indian-wedding anthems ever put on screen.',
     image: '/decks/deck-sangeet-superhits.png',
     alt: 'Crowd of dancers in bright lehengas celebrating under colorful stage lights',
-    questionCount: 40,
+    questionCount: 12,
+    minutes: 8,
     difficulty: 'Easy',
-    categories: ['Music', 'Dance', 'Weddings'],
-    host: 'Priya Menon',
-    plays: '9.1k plays',
+    categories: ['Music', 'Karan Johar', 'Dance'],
+    creator: 'DholBaaja',
+    host: 'DholBaaja',
+    plays: '3.1K',
+    preview: {
+      question: 'Which chartbuster is the undisputed sangeet anthem of every 2000s wedding?',
+      options: [
+        { label: 'A', text: 'Bole Chudiyan' },
+        { label: 'B', text: 'Mehndi Laga Ke Rakhna' },
+        { label: 'C', text: 'Aaj Mere Yaar Ki Shaadi Hai' },
+        { label: 'D', text: 'Gallan Goodiyaan' },
+      ],
+      correctIndex: 0,
+      points: 100,
+      tip: 'Crank up the room speakers — this deck is packed with dance-along audio rounds!',
+    },
     sampleQuestions: [
       'Which song is the undisputed sangeet anthem of the 2000s?',
       'Name the composer duo behind this chartbuster album.',
@@ -56,34 +102,62 @@ export const DECKS: Deck[] = [
     trending: true,
   },
   {
-    slug: 'retro-rewind',
-    title: 'Retro Rewind',
-    blurb: 'Seventies and eighties cult classics, dialogs included.',
+    slug: 'angry-young-man-retro',
+    title: 'Angry Young Man Retro',
+    blurb:
+      'The seventies belonged to the rebel with a cause. Dialogs, dhamaka and the rise of the original superstar — how well do you know the angry young man era?',
     image: '/decks/deck-retro-rewind.png',
     alt: 'Man sitting in the open doorway of a moving train at golden hour',
-    questionCount: 35,
-    difficulty: 'Medium',
-    categories: ['Dialogs', 'Classics', 'Trivia'],
-    host: 'Vikram Rao',
-    plays: '7.8k plays',
+    questionCount: 20,
+    minutes: 15,
+    difficulty: 'Hard',
+    categories: ['Amitabh', '70s', 'Action'],
+    creator: 'RetroRaja',
+    host: 'RetroRaja',
+    plays: '1.8K',
+    preview: {
+      question: 'Which 1975 blockbuster cemented the "angry young man" persona forever?',
+      options: [
+        { label: 'A', text: 'Zanjeer' },
+        { label: 'B', text: 'Deewaar' },
+        { label: 'C', text: 'Sholay' },
+        { label: 'D', text: 'Trishul' },
+      ],
+      correctIndex: 1,
+      points: 100,
+    },
     sampleQuestions: [
       'Which superstar defined the angry young man era?',
       'Name the film that ran for five years in a single theatre.',
       'Which playback singer dominated this golden decade?',
     ],
-    tags: ['Classics', 'Music'],
+    tags: ['Classics', 'Action'],
   },
   {
-    slug: 'monsoon-romance',
-    title: 'Monsoon Romance',
-    blurb: 'Rain songs, love triangles and iconic on-screen pairs.',
+    slug: 'rain-songs-monsoon-melodies',
+    title: 'Rain Songs & Monsoon Melodies',
+    blurb:
+      'Barsaat ka mausam! Nothing says Bollywood romance like a rain-soaked duet. Guess the classic monsoon melodies and the couples who made them iconic.',
     image: '/decks/deck-monsoon-romance.png',
     alt: 'Couple under a black umbrella on a neon-lit rainy city street at night',
-    questionCount: 30,
-    difficulty: 'Easy',
-    categories: ['Romance', 'Music', 'Pairs'],
-    host: 'Ananya Desai',
-    plays: '6.2k plays',
+    questionCount: 10,
+    minutes: 7,
+    difficulty: 'Medium',
+    categories: ['Monsoon', 'Romantic', 'Classic'],
+    creator: 'BarsaatBabu',
+    host: 'BarsaatBabu',
+    plays: '1.2K',
+    preview: {
+      question: 'Which rain song features the legendary chiffon-saree-in-the-storm moment?',
+      options: [
+        { label: 'A', text: 'Rimjhim Gire Sawan' },
+        { label: 'B', text: 'Tip Tip Barsa Paani' },
+        { label: 'C', text: 'Koi Ladki Hai' },
+        { label: 'D', text: 'Bheegi Bheegi Raaton Mein' },
+      ],
+      correctIndex: 1,
+      points: 100,
+    },
     sampleQuestions: [
       'Which rain song is the ultimate monsoon romance classic?',
       'Name the most iconic on-screen couple of the nineties.',
@@ -92,96 +166,104 @@ export const DECKS: Deck[] = [
     tags: ['Romance', 'Music'],
   },
   {
-    slug: 'modern-blockbusters',
-    title: 'Modern Blockbusters',
-    blurb: 'Post-2010 hits, chartbusters and box office records.',
+    slug: 'nepo-babies-inside-jokes',
+    title: 'Nepo Babies & Inside Jokes',
+    blurb:
+      'The tea is piping hot! From Koffee couch confessions to industry inside jokes, prove you follow Bollywood gossip better than a paparazzi.',
     image: '/decks/deck-modern-blockbusters.png',
     alt: 'Stylish couple posing in front of vertical magenta and violet light bars',
-    questionCount: 45,
-    difficulty: 'Hard',
-    categories: ['Box Office', 'Music', 'Trivia', 'Stars'],
-    host: 'Karan Malhotra',
-    plays: '14.9k plays',
+    questionCount: 15,
+    minutes: 10,
+    difficulty: 'Medium',
+    categories: ['Koffee', 'Gossip', 'Current'],
+    creator: 'KoffeeKween',
+    host: 'KoffeeKween',
+    plays: '4.6K',
+    preview: {
+      question: 'Which chat show made the "koffee hamper" a pop-culture obsession?',
+      options: [
+        { label: 'A', text: 'Koffee with Karan' },
+        { label: 'B', text: 'The Kapil Sharma Show' },
+        { label: 'C', text: 'Feet Up with the Stars' },
+        { label: 'D', text: 'Famously Filmfare' },
+      ],
+      correctIndex: 0,
+      points: 100,
+    },
     sampleQuestions: [
-      'Which film was the first to cross the 1000 crore mark worldwide?',
-      'Name the highest streamed Bollywood track of the decade.',
-      'Which sequel broke its own franchise opening record?',
+      'Which star kid made a blockbuster debut this decade?',
+      'Name the show famous for the koffee hamper.',
+      'Which viral meme came from a red-carpet moment?',
     ],
-    tags: ['Trending', 'Action'],
+    tags: ['Trending'],
     trending: true,
   },
   {
-    slug: 'comedy-capers',
-    title: 'Comedy Capers',
-    blurb: 'Slapstick gold, one-liners and the funniest sidekicks ever.',
-    image: '/decks/deck-comedy-capers.png',
-    alt: 'Group of friends laughing on a sunny Mumbai rooftop',
-    questionCount: 38,
-    difficulty: 'Easy',
-    categories: ['Comedy', 'Dialogs', 'Characters'],
-    host: 'Nikhil Shah',
-    plays: '8.5k plays',
-    sampleQuestions: [
-      'Which comic duo defined the buddy comedy genre?',
-      'Name the film with the most quoted one-liners.',
-      'Which sidekick became bigger than the hero?',
-    ],
-    tags: ['Comedy'],
-  },
-  {
-    slug: 'action-masala',
-    title: 'Action Masala',
-    blurb: 'Explosions, slow-mo entries and the loudest hero whistles.',
-    image: '/decks/deck-action-masala.png',
-    alt: 'Action hero amid explosions on a nighttime dockyard',
-    questionCount: 42,
+    slug: 'high-octane-action-blockbusters',
+    title: 'High-Octane Action Blockbusters',
+    blurb:
+      'Slow-mo entries, whistle-worthy stunts and universe-building spectacles. Buckle up for the biggest big-screen action of the modern era.',
+    image: '/decks/deck-high-octane-action.png',
+    alt: 'Three costumed superheroes leaping through a glowing energy ring above a neon city',
+    questionCount: 18,
+    minutes: 12,
     difficulty: 'Hard',
-    categories: ['Action', 'Stunts', 'Trivia'],
-    host: 'Sameer Joshi',
-    plays: '11.2k plays',
+    categories: ['Sci-Fi', 'Mass Action', 'VFX'],
+    creator: 'VFXVeer',
+    host: 'VFXVeer',
+    plays: '5.3K',
+    preview: {
+      question: 'Which franchise kicked off Bollywood\u2019s big-budget superhero universe?',
+      options: [
+        { label: 'A', text: 'Krrish' },
+        { label: 'B', text: 'Ra.One' },
+        { label: 'C', text: 'Robot / Enthiran' },
+        { label: 'D', text: 'Brahmastra' },
+      ],
+      correctIndex: 0,
+      points: 100,
+    },
     sampleQuestions: [
       'Which film set the template for the mass hero entry?',
-      'Name the most iconic action director of the decade.',
+      'Name the most ambitious VFX spectacle of the decade.',
       'Which stunt was famously done without a body double?',
     ],
     tags: ['Trending', 'Action'],
     trending: true,
   },
   {
-    slug: 'iconic-villains',
-    title: 'Iconic Villains',
-    blurb: 'Menacing masterminds, evil laughs and unforgettable monologues.',
-    image: '/decks/deck-iconic-villains.png',
-    alt: 'Menacing antagonist seated on a throne in a smoky lair',
-    questionCount: 33,
-    difficulty: 'Medium',
-    categories: ['Characters', 'Dialogs', 'Classics'],
-    host: 'Farah Ali',
-    plays: '5.9k plays',
+    slug: 'wacky-comedies-memes',
+    title: 'Wacky Comedies & Memes',
+    blurb:
+      'Utha le re baba! From Hera Pheri chaos to meme-worthy one-liners, this is the ultimate test of your Bollywood comedy timing.',
+    image: '/decks/deck-wacky-comedies.png',
+    alt: 'Three men scrambling over a sack of cash in a chaotic Bollywood comedy banner',
+    questionCount: 18,
+    minutes: 12,
+    difficulty: 'Easy',
+    categories: ['Hera Pheri', 'Comedy', 'Priyan'],
+    creator: 'MemeRaja',
+    host: 'MemeRaja',
+    plays: '6.9K',
+    preview: {
+      question: 'In Hera Pheri, what is the name of the garage owner\u2019s iconic landline saga about?',
+      options: [
+        { label: 'A', text: 'A wrong-number ransom call' },
+        { label: 'B', text: 'A lottery ticket win' },
+        { label: 'C', text: 'A rent dispute' },
+        { label: 'D', text: 'A cricket bet' },
+      ],
+      correctIndex: 0,
+      points: 100,
+    },
     sampleQuestions: [
-      'Which villain\u2019s laugh became a cultural catchphrase?',
-      'Name the antagonist with the longest screen monologue.',
-      'Which baddie later played a beloved hero?',
+      'Which comedy gave us the "25 din mein paisa double" scheme?',
+      'Name the trio at the heart of Hera Pheri.',
+      'Which one-liner became an all-time meme template?',
     ],
-    tags: ['Classics'],
-  },
-  {
-    slug: 'desh-bhakti',
-    title: 'Desh Bhakti Special',
-    blurb: 'Patriotic anthems, war epics and goosebump-worthy speeches.',
-    image: '/decks/deck-desh-bhakti.png',
-    alt: 'Young people waving a tricolor flag against a golden sunrise',
-    questionCount: 36,
-    difficulty: 'Medium',
-    categories: ['Trivia', 'Music', 'Classics'],
-    host: 'Aditya Verma',
-    plays: '7.1k plays',
-    sampleQuestions: [
-      'Which patriotic anthem tops every Independence Day playlist?',
-      'Name the war epic based on a real 1971 operation.',
-      'Which speech scene is quoted every August 15?',
-    ],
-    tags: ['Music', 'Classics'],
+    tags: ['Trending', 'Comedy'],
+    trending: true,
+    featured: true,
   },
 ]
 

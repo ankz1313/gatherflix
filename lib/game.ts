@@ -20,27 +20,52 @@ export type Question = {
   options: string[]
   correctIndex: number
   category: string
+  points: number
+  image: string
+  imageAlt: string
 }
 
 export const SAMPLE_QUESTION: Question = {
-  category: 'Dialogs',
-  prompt: 'Complete the legendary line: "Kitne aadmi ___?"',
-  options: ['The', 'The?', 'Hai', 'Kahan'],
+  category: 'Bollywood Blockbusters',
+  prompt: 'Which film won the Filmfare Best Film award in 2023?',
+  options: ['Brahm\u0101stra', 'Gangubai Kathiawadi', 'Bhool Bhulaiyaa 2', 'The Kashmir Files'],
   correctIndex: 1,
+  points: 500,
+  image: '/game/question-still.png',
+  imageAlt: 'Dancers performing in a golden-lit palace courtyard',
 }
 
 export const GAME_META = {
-  questionNumber: 3,
-  totalQuestions: 50,
-  timerSeconds: 20,
+  questionNumber: 7,
+  totalQuestions: 20,
+  timerSeconds: 15,
+  playersLockedIn: 12,
+  playerCount: 16,
+  round: 7,
   lastPoints: 850,
-  playerCount: 18,
   rankAfterCorrect: 2,
   rankAfterWrong: 5,
 }
 
 // Answer distribution for the reveal screen (counts per option).
-export const ANSWER_DISTRIBUTION = [3, 12, 2, 1]
+export const ANSWER_DISTRIBUTION = [1, 12, 3, 0]
+
+// Live "Top 5 Stars" leaderboard with emoji avatars and per-round deltas.
+export type StarPlayer = {
+  name: string
+  emoji: string
+  score: number
+  delta: number
+  host?: boolean
+}
+
+export const STAR_LEADERBOARD: StarPlayer[] = [
+  { name: 'Rahul (Host)', emoji: '\u{1F60E}', score: 6450, delta: 480, host: true },
+  { name: 'Pooja', emoji: '\u{1F483}', score: 5890, delta: 420 },
+  { name: 'Simran', emoji: '\u2728', score: 5220, delta: 410 },
+  { name: 'Veeru', emoji: '\u{1F9D4}', score: 4950, delta: 390 },
+  { name: 'Jai', emoji: '\u{1F934}', score: 4110, delta: 0 },
+]
 
 export const LEADERBOARD = [
   { name: 'Priya', styleId: 'masala', score: 4200 },

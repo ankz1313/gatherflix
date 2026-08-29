@@ -1,102 +1,139 @@
 'use client'
 
 import Link from 'next/link'
-import { Check } from 'lucide-react'
-import { AnswerShape } from '@/components/game/answer-shape'
-import { AvatarBadge } from '@/components/join/avatar-badge'
-import {
-  ANSWER_STYLES,
-  SAMPLE_QUESTION,
-  ANSWER_DISTRIBUTION,
-  LEADERBOARD,
-  GAME_META,
-} from '@/lib/game'
+import { SAMPLE_QUESTION, ANSWER_DISTRIBUTION, STAR_LEADERBOARD, GAME_META } from '@/lib/game'
+import { GatherflixLogo } from '@/components/gatherflix-logo'
+
+const LETTERS = ['A', 'B', 'C', 'D']
 
 export function TvReveal() {
-  const maxVotes = Math.max(...ANSWER_DISTRIBUTION, 1)
+  const total = ANSWER_DISTRIBUTION.reduce((a, b) => a + b, 0) || 1
+  const correct = SAMPLE_QUESTION.options[SAMPLE_QUESTION.correctIndex]
 
   return (
     <main className="flex min-h-[100dvh] flex-col">
       <div className="container-page flex items-center justify-between py-6">
-        <span className="rounded-full bg-secondary px-5 py-2 font-display text-sm font-bold text-muted-foreground">
-          Question {GAME_META.questionNumber} / {GAME_META.totalQuestions}
+        <GatherflixLogo />
+        <span className="inline-flex items-center gap-2 rounded-full border border-brand/50 bg-brand-soft px-4 py-1.5 font-display text-xs font-bold uppercase tracking-wide text-brand">
+          <span aria-hidden="true">{'\u{1F3AC}'}</span> Live Party Screen
         </span>
-        <h2 className="font-display text-lg font-bold text-[oklch(0.72_0.15_155)]">Correct answer revealed</h2>
-        <Link
-          href="/postgame"
-          className="rounded-full bg-gold px-6 py-2.5 font-display text-sm font-bold text-gold-foreground transition-transform hover:scale-[1.02]"
-        >
-          Next
-        </Link>
       </div>
 
-      <div className="container-page grid flex-1 items-center gap-10 pb-10 lg:grid-cols-[1.3fr_1fr]">
-        {/* Distribution */}
+      <div className="container-page grid flex-1 gap-8 pb-10 lg:grid-cols-2 lg:items-start">
+        {/* Left: correct answer + distribution */}
         <div>
-          <h1 className="max-w-3xl font-display text-3xl font-extrabold tracking-[-0.02em] text-balance lg:text-4xl">
-            {SAMPLE_QUESTION.prompt}
-          </h1>
+          <p className="font-display text-sm font-bold uppercase tracking-wide text-gold">
+            Correct Answer
+          </p>
+          <div className="mt-3 rounded-2xl border-2 border-success bg-success-soft px-6 py-4">
+            <span className="font-display text-3xl font-extrabold text-success">
+              {LETTERS[SAMPLE_QUESTION.correctIndex]}. {correct}
+            </span>
+          </div>
 
-          <div className="mt-8 flex flex-col gap-4">
-            {SAMPLE_QUESTION.options.map((option, i) => {
-              const style = ANSWER_STYLES[i]
-              const votes = ANSWER_DISTRIBUTION[i]
-              const isCorrect = i === SAMPLE_QUESTION.correctIndex
-              return (
-                <div key={option} className="flex items-center gap-4">
-                  <span
-                    className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
-                    style={{ backgroundColor: style.color }}
-                  >
-                    <AnswerShape shape={style.shape} className="size-5 fill-white text-white" />
-                  </span>
-                  <div className="flex-1">
+          <div className="mt-6 rounded-3xl border border-border bg-card/40 p-6">
+            <h2 className="font-display text-xl font-bold">Answer Distribution</h2>
+            <ul className="mt-5 flex flex-col gap-5">
+              {SAMPLE_QUESTION.options.map((option, i) => {
+                const votes = ANSWER_DISTRIBUTION[i]
+                const share = Math.round((votes / total) * 100)
+                const isCorrect = i === SAMPLE_QUESTION.correctIndex
+                return (
+                  <li key={option}>
                     <div className="flex items-center justify-between">
-                      <span className="font-display text-lg font-bold">
-                        {option}
+                      <span
+                        className={`font-display text-base font-bold ${
+                          isCorrect ? 'text-success' : ''
+                        }`}
+                      >
+                        {LETTERS[i]}. {option}
                         {isCorrect && (
-                          <Check className="ml-2 inline size-5 text-[oklch(0.72_0.15_155)]" aria-label="Correct" />
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            className="ml-1.5 inline size-4 align-[-2px] text-success"
+                            aria-label="Correct"
+                          >
+                            <path
+                              d="m5 12 4.5 4.5L19 7"
+                              stroke="currentColor"
+                              strokeWidth="2.4"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
                         )}
                       </span>
-                      <span className="text-sm text-muted-foreground">{votes} votes</span>
+                      <span
+                        className={`font-display text-sm font-bold ${
+                          isCorrect ? 'text-success' : 'text-muted-foreground'
+                        }`}
+                      >
+                        {votes} {votes === 1 ? 'Player' : 'Players'} ({share}%)
+                      </span>
                     </div>
-                    <div className="mt-2 h-3 overflow-hidden rounded-full bg-secondary">
+                    <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-secondary">
                       <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${(votes / maxVotes) * 100}%`,
-                          backgroundColor: style.color,
-                          opacity: isCorrect ? 1 : 0.5,
-                        }}
+                        className={`h-full rounded-full ${isCorrect ? 'bg-success' : 'bg-muted-foreground/50'}`}
+                        style={{ width: `${share}%` }}
                       />
                     </div>
-                  </div>
-                </div>
-              )
-            })}
+                  </li>
+                )
+              })}
+            </ul>
           </div>
         </div>
 
-        {/* Leaderboard */}
-        <div className="rounded-4xl border border-border bg-card/70 p-7 backdrop-blur-sm">
-          <h2 className="font-display text-2xl font-extrabold">Leaderboard</h2>
+        {/* Right: Top 5 Stars */}
+        <div className="rounded-3xl border border-border bg-card/40 p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-2xl font-extrabold">
+              Top 5 Stars <span aria-hidden="true">{'\u2B50'}</span>
+            </h2>
+            <span className="text-sm text-muted-foreground">Round {GAME_META.round} deltas</span>
+          </div>
+
           <ol className="mt-5 flex flex-col gap-3">
-            {LEADERBOARD.map((player, i) => (
+            {STAR_LEADERBOARD.map((player, i) => (
               <li
                 key={player.name}
-                className="flex items-center gap-4 rounded-2xl border border-border bg-background/60 p-3"
+                className={`flex items-center gap-3 rounded-2xl border p-4 ${
+                  player.host
+                    ? 'border-gold bg-gold-soft/40'
+                    : 'border-border bg-background/50'
+                }`}
               >
                 <span className="w-6 text-center font-display text-lg font-black text-muted-foreground">
-                  {i + 1}
+                  {player.host ? '\u{1F451}' : i + 1}
                 </span>
-                <AvatarBadge styleId={player.styleId} name={player.name} size={44} />
+                <span className="text-2xl" aria-hidden="true">
+                  {player.emoji}
+                </span>
                 <span className="flex-1 font-display text-lg font-bold">{player.name}</span>
-                <span className="font-display text-lg font-black text-gold">
+                <span className="font-display text-lg font-black">
                   {player.score.toLocaleString()}
+                </span>
+                <span
+                  className={`w-14 text-right font-display text-sm font-bold ${
+                    player.delta > 0 ? 'text-success' : 'text-brand'
+                  }`}
+                >
+                  +{player.delta}
                 </span>
               </li>
             ))}
           </ol>
+
+          <Link
+            href="/results"
+            className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-gold px-8 py-4 font-display text-base font-bold uppercase tracking-wide text-gold-foreground transition-transform hover:scale-[1.01]"
+          >
+            Next Question
+            <svg viewBox="0 0 24 24" fill="none" className="size-5" aria-hidden="true">
+              <path d="m9 6 6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
         </div>
       </div>
     </main>
