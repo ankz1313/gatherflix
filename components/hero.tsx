@@ -10,7 +10,7 @@ export function Hero() {
           <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-4 py-2">
             <Clapperboard className="size-4 text-brand" strokeWidth={2.5} aria-hidden="true" />
             <span className="font-display text-[0.7rem] font-bold tracking-[0.08em] text-brand uppercase sm:text-xs">
-              Bollywood movie nights, reimagined
+              Trivia nights, reimagined
             </span>
           </span>
 
