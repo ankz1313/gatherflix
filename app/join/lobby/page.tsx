@@ -5,17 +5,12 @@ import { Suspense, useEffect, useState } from 'react'
 import { MobileShell } from '@/components/mobile-shell'
 import { AvatarBadge } from '@/components/join/avatar-badge'
 import { AVATAR_STYLES } from '@/components/join/avatars'
+import { JOIN_LOBBY_PLAYERS, type JoinPlayer } from '@/lib/session'
 
-type Player = { id: string; name: string; avatar: string; you?: boolean }
+type Player = JoinPlayer & { you?: boolean }
 
 // Simulated gang that trickles in so the lobby feels live.
-const INCOMING: Player[] = [
-  { id: 'p1', name: 'Priya', avatar: 'royal' },
-  { id: 'p2', name: 'Arjun', avatar: 'neon' },
-  { id: 'p3', name: 'Meera', avatar: 'mint' },
-  { id: 'p4', name: 'Vikram', avatar: 'chili' },
-  { id: 'p5', name: 'Anjali', avatar: 'gold' },
-]
+const INCOMING: Player[] = JOIN_LOBBY_PLAYERS
 
 function LobbyContent() {
   const params = useSearchParams()

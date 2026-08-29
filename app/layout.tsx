@@ -20,7 +20,7 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: 'GatherFlix — Real-time Movie & Shows Trivia with Friends',
   description:
-    'No corporate quiz boards here. Just high-energy masala, legendary dialogs, and midnight movie debates. Free forever, right on your phones.',
+    'No boring quiz boards. Just fast rounds, legendary dialogs, and friends fighting for the top spot. Free, right on your phones.',
   generator: 'v0.app',
   icons: {
     icon: [

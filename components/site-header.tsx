@@ -6,8 +6,8 @@ import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 const NAV_LINKS = [
-  { label: 'How it Works', href: '#how-it-works' },
-  { label: 'Trending Packs', href: '#featured-decks' },
+  { label: 'How it Works', href: '/#how-it-works' },
+  { label: 'Trending Packs', href: '/library' },
 ]
 
 export function SiteHeader() {

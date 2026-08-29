@@ -10,7 +10,7 @@ export function Hero() {
           <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-4 py-2">
             <Clapperboard className="size-4 text-brand" strokeWidth={2.5} aria-hidden="true" />
             <span className="font-display text-[0.7rem] font-bold tracking-[0.08em] text-brand uppercase sm:text-xs">
-              Bollywood movie nights, reimagined
+              Trivia nights, reimagined
             </span>
           </span>
 
@@ -19,8 +19,8 @@ export function Hero() {
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            No corporate quiz boards here. Just high-energy masala, legendary dialogs, and midnight movie debates. Free
-            forever, right on your phones.
+            No boring quiz boards. Just fast rounds, legendary dialogs, and friends fighting for the top spot. Free,
+            right on your phones.
           </p>
 
           <div className="mt-9 flex w-full flex-col gap-4 sm:w-auto sm:flex-row sm:items-center">
@@ -33,7 +33,7 @@ export function Hero() {
             </a>
 
             <a
-              href="#host"
+              href="/host"
               className="inline-flex items-center justify-center gap-2.5 rounded-full border border-border bg-secondary/70 px-8 py-4 font-display text-base font-bold text-foreground transition-colors hover:bg-accent"
             >
               <Plus className="size-[1.15rem]" strokeWidth={2.5} aria-hidden="true" />

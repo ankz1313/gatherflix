@@ -10,9 +10,12 @@
 
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
+  --color-gold-soft: var(--gold-soft);
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
   --color-brand-soft: var(--brand-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
 
   --color-ring: var(--ring);
   --color-input: var(--input);
@@ -72,9 +75,12 @@
 
   --gold: #f2a32e;
   --gold-foreground: #23150a;
+  --gold-soft: rgb(242 163 46 / 16%);
   --brand: #ec1b78;
   --brand-foreground: #ffffff;
   --brand-soft: rgb(236 27 120 / 16%);
+  --success: #46d18a;
+  --success-soft: rgb(70 209 138 / 16%);
 
   --radius: 0.625rem;
 
@@ -114,9 +120,12 @@
 
   --gold: #d0921f;
   --gold-foreground: #ffffff;
+  --gold-soft: rgb(208 146 31 / 14%);
   --brand: #c81e64;
   --brand-foreground: #ffffff;
   --brand-soft: rgb(236 27 120 / 12%);
+  --success: #1c9d63;
+  --success-soft: rgb(28 157 99 / 14%);
 
   --page-backdrop:
     radial-gradient(75% 50% at 18% 4%, rgb(240 190 210 / 55%) 0%, rgb(240 190 210 / 0%) 70%),

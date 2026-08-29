@@ -13,7 +13,7 @@ export function SiteFooter() {
         <div>
           <GatherflixLogo />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-            Free forever, right on your phones. No downloads, no sign-up walls.
+            Free, right on your phones. No downloads, no sign-up walls.
           </p>
         </div>
 

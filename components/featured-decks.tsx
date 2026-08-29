@@ -1,41 +1,9 @@
 import Image from 'next/image'
-
-const DECKS = [
-  {
-    title: 'Sangeet Superhits',
-    blurb: 'Wedding season bangers and dance floor classics.',
-    image: '/decks/deck-sangeet-superhits.png',
-    alt: 'Crowd of dancers in bright lehengas celebrating under colorful stage lights',
-    questions: '40 questions',
-    difficulty: 'Easy',
-  },
-  {
-    title: 'Retro Rewind',
-    blurb: 'Seventies and eighties cult classics, dialogs included.',
-    image: '/decks/deck-retro-rewind.png',
-    alt: 'Man sitting in the open doorway of a moving train at golden hour',
-    questions: '35 questions',
-    difficulty: 'Medium',
-  },
-  {
-    title: 'Monsoon Romance',
-    blurb: 'Rain songs, love triangles and iconic on-screen pairs.',
-    image: '/decks/deck-monsoon-romance.png',
-    alt: 'Couple under a black umbrella on a neon-lit rainy city street at night',
-    questions: '30 questions',
-    difficulty: 'Easy',
-  },
-  {
-    title: 'Modern Blockbusters',
-    blurb: 'Post-2010 hits, chartbusters and box office records.',
-    image: '/decks/deck-modern-blockbusters.png',
-    alt: 'Stylish couple posing in front of vertical magenta and violet light bars',
-    questions: '45 questions',
-    difficulty: 'Hard',
-  },
-]
+import { getFeaturedDecks } from '@/lib/decks'
 
 export function FeaturedDecks() {
+  const decks = getFeaturedDecks(4)
+
   return (
     <section id="featured-decks" className="container-page scroll-mt-24 py-16 lg:py-24">
       <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
@@ -49,7 +17,7 @@ export function FeaturedDecks() {
         </div>
 
         <a
-          href="#all-decks"
+          href="/library"
           className="inline-flex shrink-0 items-center justify-center self-start rounded-full border border-border bg-secondary px-7 py-3.5 font-display text-[0.95rem] font-bold text-foreground transition-colors hover:bg-accent sm:self-auto"
         >
           View All Decks
@@ -57,10 +25,10 @@ export function FeaturedDecks() {
       </div>
 
       <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4">
-        {DECKS.map((deck) => (
-          <li key={deck.title}>
+        {decks.map((deck) => (
+          <li key={deck.slug}>
             <a
-              href="#all-decks"
+              href={`/host/preview?deck=${deck.slug}`}
               className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-[0_20px_50px_-32px_rgb(0_0_0/0.4)] transition-transform hover:-translate-y-1"
             >
               <div className="relative aspect-[3/2] overflow-hidden">
@@ -81,7 +49,7 @@ export function FeaturedDecks() {
                   <span className="rounded-full bg-brand-soft px-3 py-1 font-display text-xs font-bold text-brand">
                     {deck.difficulty}
                   </span>
-                  <span className="text-xs text-muted-foreground">{deck.questions}</span>
+                  <span className="text-xs text-muted-foreground">{deck.questionCount} questions</span>
                 </div>
               </div>
             </a>
