@@ -6,31 +6,16 @@ import { Clapperboard, Play } from 'lucide-react'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import type { Deck } from '@/lib/decks'
-
-type Player = { name: string; emoji: string; points: number }
-
-const ROOM_PLAYERS: Player[] = [
-  { name: 'Gabbar', emoji: '😎', points: 890 },
-  { name: 'Basanti', emoji: '🍿', points: 720 },
-  { name: 'Simran', emoji: '✨', points: 950 },
-  { name: 'Raj', emoji: '🕺', points: 1100 },
-  { name: 'Rahul', emoji: '👑', points: 1400 },
-  { name: 'Pooja', emoji: '💃', points: 1200 },
-  { name: 'Jai', emoji: '🤩', points: 850 },
-  { name: 'Veeru', emoji: '🦁', points: 1050 },
-]
-
-function useRoomCode() {
-  return useMemo(() => {
-    let out = ''
-    for (let i = 0; i < 6; i++) out += Math.floor(Math.random() * 10)
-    return out
-  }, [])
-}
+import {
+  CURRENT_SESSION,
+  HOST_ROOM_PLAYERS,
+  generateRoomCode,
+  type RoomPlayer,
+} from '@/lib/session'
 
 export function RoomCreated({ deck }: { deck: Deck }) {
-  const code = useRoomCode()
-  const [joined, setJoined] = useState<Player[]>([])
+  const code = useMemo(() => generateRoomCode(), [])
+  const [joined, setJoined] = useState<RoomPlayer[]>([])
   const [origin, setOrigin] = useState('')
 
   useEffect(() => {
@@ -38,15 +23,15 @@ export function RoomCreated({ deck }: { deck: Deck }) {
   }, [])
 
   useEffect(() => {
-    if (joined.length >= ROOM_PLAYERS.length) return
+    if (joined.length >= HOST_ROOM_PLAYERS.length) return
     const t = setTimeout(() => {
-      setJoined((prev) => ROOM_PLAYERS.slice(0, prev.length + 1))
+      setJoined((prev) => HOST_ROOM_PLAYERS.slice(0, prev.length + 1))
     }, 550)
     return () => clearTimeout(t)
   }, [joined])
 
   const joinUrl = origin ? `${origin}/join?code=${code}` : `/join?code=${code}`
-  const canStart = joined.length >= 4
+  const canStart = joined.length >= CURRENT_SESSION.minPlayers
 
   return (
     <main className="flex min-h-[100dvh] flex-col">
@@ -109,7 +94,7 @@ export function RoomCreated({ deck }: { deck: Deck }) {
           <div className="flex items-center justify-between gap-4">
             <h2 className="flex items-center gap-2.5 font-display text-2xl font-extrabold">
               <span className="size-2.5 rounded-full bg-[var(--success)]" aria-hidden="true" />
-              Bollywood Waiting Room
+              {CURRENT_SESSION.roomName}
             </h2>
             <span className="shrink-0 font-display text-sm font-bold text-gold">
               {joined.length} Players Joined
@@ -119,7 +104,7 @@ export function RoomCreated({ deck }: { deck: Deck }) {
           <div className="my-6 h-px bg-border" />
 
           <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {ROOM_PLAYERS.map((p) => {
+            {HOST_ROOM_PLAYERS.map((p) => {
               const isIn = joined.some((j) => j.name === p.name)
               return (
                 <li
@@ -156,7 +141,7 @@ export function RoomCreated({ deck }: { deck: Deck }) {
             <Play className="size-5 fill-current" aria-hidden="true" />
           </button>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Minimum 4 players required. Host holds controller.
+            Minimum {CURRENT_SESSION.minPlayers} players required. Host holds controller.
           </p>
         </section>
       </div>

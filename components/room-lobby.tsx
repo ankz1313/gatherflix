@@ -2,6 +2,7 @@
 
 import { Check, LogOut, Users } from 'lucide-react'
 import { AVATARS, avatarById, type AvatarId } from '@/components/avatar-picker'
+import { CURRENT_SESSION, ROOM_LOBBY_PLAYERS } from '@/lib/session'
 
 type RoomLobbyProps = {
   code: string
@@ -10,18 +11,10 @@ type RoomLobbyProps = {
   onLeave: () => void
 }
 
-// Placeholder co-players until the realtime room backend exists.
-const OTHER_PLAYERS = [
-  { name: 'Rahul Khanna', avatar: 'crown' as AvatarId, host: true },
-  { name: 'Meera J.', avatar: 'star' as AvatarId, host: false },
-  { name: 'Dev Patel', avatar: 'music' as AvatarId, host: false },
-  { name: 'Anjali', avatar: 'ticket' as AvatarId, host: false },
-]
-
 export function RoomLobby({ code, name, avatar, onLeave }: RoomLobbyProps) {
   const you = avatarById(avatar)
   const YourIcon = you.Icon
-  const total = OTHER_PLAYERS.length + 1
+  const total = ROOM_LOBBY_PLAYERS.length + 1
 
   return (
     <div className="rounded-3xl border border-border bg-card p-6 shadow-[0_24px_70px_-30px_rgb(0_0_0/0.45)] sm:p-9">
@@ -32,11 +25,13 @@ export function RoomLobby({ code, name, avatar, onLeave }: RoomLobbyProps) {
         <p className="font-display text-sm font-bold tracking-[0.06em] text-gold uppercase">You&apos;re in</p>
       </div>
 
-      <h2 className="mt-5 font-display text-2xl font-extrabold tracking-[-0.02em] sm:text-3xl">Sholay Masala Trivia Night</h2>
+      <h2 className="mt-5 font-display text-2xl font-extrabold tracking-[-0.02em] sm:text-3xl">
+        {CURRENT_SESSION.quizTitle}
+      </h2>
       <p className="mt-2 text-[0.95rem] text-muted-foreground">
         Room{' '}
-        <span className="font-display font-bold tracking-[0.12em] text-foreground">{code}</span> · Hosted by Rahul
-        Khanna
+        <span className="font-display font-bold tracking-[0.12em] text-foreground">{code}</span> · Hosted by{' '}
+        {CURRENT_SESSION.hostName}
       </p>
 
       <div className="mt-8 flex items-center gap-2 border-t border-border pt-7">
@@ -53,8 +48,8 @@ export function RoomLobby({ code, name, avatar, onLeave }: RoomLobbyProps) {
           <span className="shrink-0 font-display text-xs font-bold tracking-[0.06em] text-gold uppercase">You</span>
         </li>
 
-        {OTHER_PLAYERS.map((player) => {
-          const { Icon } = avatarById(player.avatar)
+        {ROOM_LOBBY_PLAYERS.map((player) => {
+          const { Icon } = avatarById(player.avatar as AvatarId)
           return (
             <li
               key={player.name}
