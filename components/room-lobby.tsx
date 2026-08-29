@@ -32,7 +32,7 @@ export function RoomLobby({ code, name, avatar, onLeave }: RoomLobbyProps) {
         <p className="font-display text-sm font-bold tracking-[0.06em] text-gold uppercase">You&apos;re in</p>
       </div>
 
-      <h2 className="mt-5 font-display text-2xl font-extrabold tracking-[-0.02em] sm:text-3xl">Sholay Masala Night</h2>
+      <h2 className="mt-5 font-display text-2xl font-extrabold tracking-[-0.02em] sm:text-3xl">Sholay Masala Trivia Night</h2>
       <p className="mt-2 text-[0.95rem] text-muted-foreground">
         Room{' '}
         <span className="font-display font-bold tracking-[0.12em] text-foreground">{code}</span> · Hosted by Rahul

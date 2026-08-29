@@ -27,7 +27,7 @@ export default function LoginPage() {
             <GatherflixLogo />
           </div>
           <p className="text-[0.95rem] text-muted-foreground">
-            The ultimate Bollywood game night awaits
+            The ultimate Bollywood Trivia Night awaits
           </p>
         </div>
 

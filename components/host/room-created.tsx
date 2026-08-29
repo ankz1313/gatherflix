@@ -152,7 +152,7 @@ export function RoomCreated({ deck }: { deck: Deck }) {
             disabled={!canStart}
             className="mt-6 inline-flex w-full items-center justify-center gap-2.5 rounded-2xl bg-gold px-8 py-4 font-display text-lg font-black uppercase tracking-wide text-gold-foreground shadow-[0_10px_45px_-10px] shadow-gold/70 transition-transform enabled:hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Start the Movie Night
+            Start the Trivia Night
             <Play className="size-5 fill-current" aria-hidden="true" />
           </button>
           <p className="mt-3 text-center text-xs text-muted-foreground">

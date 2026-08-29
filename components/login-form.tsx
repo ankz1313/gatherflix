@@ -82,7 +82,7 @@ export function LoginForm() {
       </p>
 
       <p className="mt-3 text-center text-sm text-muted-foreground/55">
-        By signing in, you agree to movie-night honor code.
+        By signing in, you agree to trivia-night honor code.
       </p>
     </div>
   )

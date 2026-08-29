@@ -4,7 +4,7 @@ import { HostQuizGrid } from '@/components/host/host-quiz-grid'
 
 export const metadata: Metadata = {
   title: 'Host a Room · Choose Your Battleground — GatherFlix',
-  description: 'Pick a curated Bollywood trivia deck to host your game night.',
+  description: 'Pick a curated Bollywood trivia deck to host your Trivia Night.',
 }
 
 export default function HostChooseQuizPage() {
