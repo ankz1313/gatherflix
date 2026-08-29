@@ -1,9 +1,9 @@
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 
 const FOOTER_LINKS = [
-  { label: 'How it Works', href: '#how-it-works' },
-  { label: 'Trending Packs', href: '#featured-decks' },
-  { label: 'Host a Room', href: '#host' },
+  { label: 'How it Works', href: '/#how-it-works' },
+  { label: 'Trending Packs', href: '/library' },
+  { label: 'Host a Room', href: '/host' },
 ]
 
 export function SiteFooter() {
