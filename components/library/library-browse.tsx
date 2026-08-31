@@ -45,7 +45,8 @@ function ClockIcon() {
 }
 
 function quizTags(quiz: QuizSummary): string[] {
-  return [quiz.category, ...quiz.subtags].filter(Boolean).slice(0, 3) as string[]
+  const all = [quiz.category, ...quiz.subtags].filter(Boolean) as string[]
+  return Array.from(new Set(all)).slice(0, 3)
 }
 
 function TagRow({ quiz }: { quiz: QuizSummary }) {
