@@ -15,7 +15,7 @@ export function Hero() {
           </span>
 
           <h1 className="mt-7 font-display text-4xl font-extrabold leading-[1.08] tracking-[-0.02em] text-balance sm:text-5xl lg:text-[3.25rem] xl:text-[3.75rem]">
-            Face off with friends in real-time <span className="text-gold">Movie and Shows Trivia!</span>
+            Face off with friends in real-time <span className="text-gold">Movie, Sports and Shows Trivia!</span>
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
