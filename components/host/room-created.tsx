@@ -1,37 +1,69 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { Clapperboard, Play } from 'lucide-react'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { ThemeToggle } from '@/components/theme-toggle'
-import type { Deck } from '@/lib/decks'
-import {
-  CURRENT_SESSION,
-  HOST_ROOM_PLAYERS,
-  generateRoomCode,
-  type RoomPlayer,
-} from '@/lib/session'
+import { CURRENT_SESSION, HOST_ROOM_PLAYERS } from '@/lib/session'
 
-export function RoomCreated({ deck }: { deck: Deck }) {
-  const code = useMemo(() => generateRoomCode(), [])
-  const [joined, setJoined] = useState<RoomPlayer[]>([])
+type RoomCreatedProps = {
+  quizId: string
+  quizTitle: string
+}
+
+export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
+  const [code, setCode] = useState<string | null>(null)
+  const [error, setError] = useState(false)
+  const [joined, setJoined] = useState<typeof HOST_ROOM_PLAYERS>([])
   const [origin, setOrigin] = useState('')
 
   useEffect(() => {
     setOrigin(window.location.origin)
   }, [])
 
+  // Create a real room in the database for this quiz.
   useEffect(() => {
+    let cancelled = false
+    async function createRoom() {
+      setError(false)
+      try {
+        const res = await fetch('/api/rooms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quizId }),
+        })
+        if (!res.ok) throw new Error('Failed to create room')
+        const data = await res.json()
+        if (!cancelled) setCode(data.room.code as string)
+      } catch (err) {
+        console.error('[v0] room creation failed:', err)
+        if (!cancelled) setError(true)
+      }
+    }
+    createRoom()
+    return () => {
+      cancelled = true
+    }
+  }, [quizId])
+
+  // Simulated players trickling into the lobby (cosmetic until realtime lands).
+  useEffect(() => {
+    if (!code) return
     if (joined.length >= HOST_ROOM_PLAYERS.length) return
     const t = setTimeout(() => {
       setJoined((prev) => HOST_ROOM_PLAYERS.slice(0, prev.length + 1))
     }, 550)
     return () => clearTimeout(t)
-  }, [joined])
+  }, [joined, code])
 
-  const joinUrl = origin ? `${origin}/join?code=${code}` : `/join?code=${code}`
-  const canStart = joined.length >= CURRENT_SESSION.minPlayers
+  const joinUrl = code
+    ? origin
+      ? `${origin}/join?code=${code}`
+      : `/join?code=${code}`
+    : ''
+  const canStart = !!code && joined.length >= CURRENT_SESSION.minPlayers
+  const codeDigits = code ? code.split('') : Array(6).fill('')
 
   return (
     <main className="flex min-h-[100dvh] flex-col">
@@ -53,7 +85,7 @@ export function RoomCreated({ deck }: { deck: Deck }) {
         <section className="flex flex-col gap-8">
           <div>
             <p className="font-display text-sm font-bold uppercase tracking-[0.2em] text-brand">
-              How to join the party
+              {quizTitle}
             </p>
             <h1 className="mt-3 font-display text-5xl font-black tracking-tight text-balance lg:text-6xl">
               Scan QR or Enter Code
@@ -62,22 +94,36 @@ export function RoomCreated({ deck }: { deck: Deck }) {
 
           {/* Segmented code */}
           <div className="rounded-3xl border-2 border-brand bg-background/40 p-4 shadow-[0_0_35px_-8px] shadow-brand/60">
-            <div className="flex justify-between gap-2 sm:gap-3">
-              {code.split('').map((digit, i) => (
-                <div
-                  key={i}
-                  className="flex h-16 flex-1 items-center justify-center rounded-2xl bg-card font-display text-3xl font-black text-gold sm:h-20 sm:text-4xl"
-                >
-                  {digit}
-                </div>
-              ))}
-            </div>
+            {error ? (
+              <p className="py-6 text-center font-display text-lg font-bold text-brand">
+                Could not create room. Please refresh to try again.
+              </p>
+            ) : (
+              <div className="flex justify-between gap-2 sm:gap-3">
+                {codeDigits.map((digit, i) => (
+                  <div
+                    key={i}
+                    className="flex h-16 flex-1 items-center justify-center rounded-2xl bg-card font-display text-3xl font-black text-gold sm:h-20 sm:text-4xl"
+                  >
+                    {digit || (
+                      <span className="animate-pulse text-muted-foreground" aria-hidden="true">
+                        ·
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Scan with your camera */}
           <div className="flex items-center gap-5 rounded-3xl border border-border bg-card/70 p-5">
             <div className="grid size-24 shrink-0 place-items-center rounded-2xl bg-white p-2">
-              <QRCodeSVG value={joinUrl} size={80} bgColor="#ffffff" fgColor="#0a0509" level="M" />
+              {joinUrl ? (
+                <QRCodeSVG value={joinUrl} size={80} bgColor="#ffffff" fgColor="#0a0509" level="M" />
+              ) : (
+                <div className="size-20 animate-pulse rounded-lg bg-neutral-200" aria-hidden="true" />
+              )}
             </div>
             <div>
               <p className="font-display text-lg font-bold">Scan with your camera</p>

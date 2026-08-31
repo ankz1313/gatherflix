@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import { MobileShell } from '@/components/mobile-shell'
@@ -19,8 +20,47 @@ function LobbyContent() {
   const avatar = params.get('avatar') ?? AVATAR_STYLES[0].id
 
   const [players, setPlayers] = useState<Player[]>([{ id: 'you', name, avatar, you: true }])
+  const [joinError, setJoinError] = useState<string | null>(null)
+  const [joined, setJoined] = useState(false)
+
+  // Register this player in the room via the API.
+  useEffect(() => {
+    let cancelled = false
+
+    // Stable per-browser identity so a rejoin/refresh (and React StrictMode's
+    // double-invoke in dev) is idempotent rather than a "nickname taken" error.
+    const tokenKey = `gf_player_token_${code}`
+    let token = sessionStorage.getItem(tokenKey)
+    if (!token) {
+      token = crypto.randomUUID()
+      sessionStorage.setItem(tokenKey, token)
+    }
+
+    async function join() {
+      try {
+        const res = await fetch(`/api/rooms/${encodeURIComponent(code)}/join`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nickname: name, avatar, token }),
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          if (!cancelled) setJoinError(data.error ?? 'Could not join this room.')
+          return
+        }
+        if (!cancelled) setJoined(true)
+      } catch {
+        if (!cancelled) setJoinError('Could not reach the server. Please try again.')
+      }
+    }
+    join()
+    return () => {
+      cancelled = true
+    }
+  }, [code, name, avatar])
 
   useEffect(() => {
+    if (!joined) return
     let i = 0
     const timer = setInterval(() => {
       if (i >= INCOMING.length) {
@@ -31,7 +71,26 @@ function LobbyContent() {
       i++
     }, 1400)
     return () => clearInterval(timer)
-  }, [])
+  }, [joined])
+
+  if (joinError) {
+    return (
+      <MobileShell>
+        <div className="flex flex-1 flex-col items-center justify-center gap-5 py-10 text-center">
+          <h1 className="font-display text-3xl font-extrabold text-foreground text-balance">
+            Couldn&apos;t join
+          </h1>
+          <p className="max-w-xs text-muted-foreground text-pretty">{joinError}</p>
+          <Link
+            href={`/join/nickname?code=${encodeURIComponent(code)}`}
+            className="rounded-full bg-gold px-6 py-3 font-display font-bold text-gold-foreground"
+          >
+            Try a different nickname
+          </Link>
+        </div>
+      </MobileShell>
+    )
+  }
 
   return (
     <MobileShell>
