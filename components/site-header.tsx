@@ -1,9 +1,10 @@
 'use client'
 
 import { Menu, X } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { createClient } from '@/lib/supabase/client'
 
 const NAV_LINKS = [
   { label: 'How it Works', href: '/#how-it-works' },
@@ -12,6 +13,22 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
+  const [signedIn, setSignedIn] = useState(false)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => setSignedIn(!!data.user))
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSignedIn(!!session?.user)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const accountLink = signedIn
+    ? { href: '/create', label: 'My Quizzes' }
+    : { href: '/login', label: 'Login' }
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl">
@@ -34,10 +51,10 @@ export function SiteHeader() {
           <ThemeToggle />
 
           <a
-            href="/login"
+            href={accountLink.href}
             className="hidden rounded-full border border-border bg-secondary px-6 py-2.5 font-display text-[0.95rem] font-bold text-foreground transition-colors hover:bg-accent md:inline-flex"
           >
-            Login
+            {accountLink.label}
           </a>
 
           <button
@@ -70,11 +87,11 @@ export function SiteHeader() {
             </a>
           ))}
           <a
-            href="/login"
+            href={accountLink.href}
             onClick={() => setOpen(false)}
             className="mt-2 rounded-full border border-border bg-secondary px-6 py-3 text-center font-display font-bold text-foreground"
           >
-            Login
+            {accountLink.label}
           </a>
         </nav>
       )}
