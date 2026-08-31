@@ -26,12 +26,22 @@ function LobbyContent() {
   // Register this player in the room via the API.
   useEffect(() => {
     let cancelled = false
+
+    // Stable per-browser identity so a rejoin/refresh (and React StrictMode's
+    // double-invoke in dev) is idempotent rather than a "nickname taken" error.
+    const tokenKey = `gf_player_token_${code}`
+    let token = sessionStorage.getItem(tokenKey)
+    if (!token) {
+      token = crypto.randomUUID()
+      sessionStorage.setItem(tokenKey, token)
+    }
+
     async function join() {
       try {
         const res = await fetch(`/api/rooms/${encodeURIComponent(code)}/join`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nickname: name, avatar }),
+          body: JSON.stringify({ nickname: name, avatar, token }),
         })
         const data = await res.json()
         if (!res.ok) {
