@@ -8,11 +8,31 @@ import { RoomCodeInput } from '@/components/join/room-code-input'
 export default function JoinEnterCodePage() {
   const router = useRouter()
   const [code, setCode] = useState('')
+  const [checking, setChecking] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  function goToNickname(value?: string) {
+  async function validateAndContinue(value?: string) {
     const final = value ?? code
     if (final.length < 6) return
-    router.push(`/join/nickname?code=${encodeURIComponent(final)}`)
+    setChecking(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/rooms/${encodeURIComponent(final)}`)
+      const data = await res.json()
+      if (!res.ok || !data.valid) {
+        setError('No room found with that code. Double-check and try again.')
+        return
+      }
+      if (data.room.status !== 'lobby') {
+        setError('This game has already started.')
+        return
+      }
+      router.push(`/join/nickname?code=${encodeURIComponent(final)}`)
+    } catch {
+      setError('Could not reach the server. Please try again.')
+    } finally {
+      setChecking(false)
+    }
   }
 
   return (
@@ -30,9 +50,20 @@ export default function JoinEnterCodePage() {
         <RoomCodeInput
           onComplete={(value) => {
             setCode(value)
-            goToNickname(value)
+            validateAndContinue(value)
           }}
         />
+
+        {checking && (
+          <p className="text-center text-sm text-muted-foreground" role="status">
+            Checking room code…
+          </p>
+        )}
+        {error && (
+          <p className="text-center text-sm font-semibold text-brand" role="alert">
+            {error}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-5">

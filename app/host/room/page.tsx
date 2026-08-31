@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { RoomCreated } from '@/components/host/room-created'
+import { HostTopbar } from '@/components/host/host-topbar'
 import { getDeck } from '@/lib/decks'
+import { getQuizWithQuestions, getPublishedQuizIdByTitle } from '@/lib/quiz-data'
 
 export const metadata: Metadata = {
   title: 'Host a Room · Go Live — GatherFlix',
@@ -10,10 +13,35 @@ export const metadata: Metadata = {
 export default async function HostRoomPage({
   searchParams,
 }: {
-  searchParams: Promise<{ deck?: string }>
+  searchParams: Promise<{ quiz?: string; deck?: string }>
 }) {
-  const { deck: slug } = await searchParams
-  const deck = getDeck(slug)
+  const { quiz: quizId, deck: slug } = await searchParams
 
-  return <RoomCreated deck={deck} />
+  let id = quizId
+  if (!id && slug) {
+    id = (await getPublishedQuizIdByTitle(getDeck(slug).title)) ?? undefined
+  }
+  const quiz = id ? await getQuizWithQuestions(id) : null
+
+  if (!quiz) {
+    return (
+      <>
+        <HostTopbar active="library" />
+        <main className="container-page flex flex-col items-center gap-4 py-24 text-center">
+          <h1 className="font-display text-3xl font-extrabold">Quiz not found</h1>
+          <p className="max-w-sm text-muted-foreground">
+            Pick a quiz pack from the library to host a live room.
+          </p>
+          <Link
+            href="/library"
+            className="rounded-full bg-gold px-6 py-3 font-display font-bold text-gold-foreground"
+          >
+            Back to Library
+          </Link>
+        </main>
+      </>
+    )
+  }
+
+  return <RoomCreated quizId={quiz.id} quizTitle={quiz.title} />
 }

@@ -3,12 +3,22 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { DECKS, difficultyClass, type Deck } from '@/lib/decks'
+import useSWR from 'swr'
+import { difficultyClass } from '@/lib/decks'
+import type { QuizSummary } from '@/lib/quiz-data'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'] as const
 const DECADES = ['90s', '2000s', '2010s', '2020s'] as const
 const TYPES = ['Songs', 'Dialogues', 'Actors', 'Directors'] as const
+
+const FALLBACK_IMAGE = '/decks/deck-classic-90s-romance.png'
+
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error('Failed to load quizzes')
+    return r.json() as Promise<{ quizzes: QuizSummary[] }>
+  })
 
 function QuestionIcon() {
   return (
@@ -34,22 +44,26 @@ function ClockIcon() {
   )
 }
 
-function TagRow({ deck }: { deck: Deck }) {
+function quizTags(quiz: QuizSummary): string[] {
+  return [quiz.category, ...quiz.subtags].filter(Boolean).slice(0, 3) as string[]
+}
+
+function TagRow({ quiz }: { quiz: QuizSummary }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <span
         className={`rounded-md px-2.5 py-1 font-display text-[0.7rem] font-bold uppercase tracking-wide ${difficultyClass(
-          deck.difficulty,
+          quiz.difficulty,
         )}`}
       >
-        {deck.difficulty}
+        {quiz.difficulty}
       </span>
-      {deck.categories.map((cat) => (
+      {quizTags(quiz).map((tag) => (
         <span
-          key={cat}
+          key={tag}
           className="rounded-md bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground"
         >
-          {cat}
+          {tag}
         </span>
       ))}
     </div>
@@ -82,28 +96,30 @@ function Pill({
 }
 
 export function LibraryBrowse() {
+  const { data, error, isLoading } = useSWR('/api/quizzes', fetcher)
+  const quizzes = data?.quizzes ?? []
+
   const [query, setQuery] = useState('')
-  const [difficulty, setDifficulty] = useState<(typeof DIFFICULTIES)[number] | null>('Medium')
-  const [decade, setDecade] = useState<(typeof DECADES)[number] | null>('90s')
-  const [type, setType] = useState<(typeof TYPES)[number] | null>('Dialogues')
+  const [difficulty, setDifficulty] = useState<(typeof DIFFICULTIES)[number] | null>(null)
+  const [decade, setDecade] = useState<(typeof DECADES)[number] | null>(null)
+  const [type, setType] = useState<(typeof TYPES)[number] | null>(null)
   const [visible, setVisible] = useState(6)
 
-  const featured = DECKS.find((d) => d.featured) ?? DECKS[0]
+  const featured = quizzes[0] ?? null
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return DECKS.filter((deck) => {
-      if (deck.slug === featured.slug) return false
-      const matchesDifficulty = !difficulty || deck.difficulty === difficulty
+    return quizzes.filter((quiz) => {
+      if (featured && quiz.id === featured.id) return false
+      const matchesDifficulty = !difficulty || quiz.difficulty === difficulty
       const matchesQuery =
         !q ||
-        deck.title.toLowerCase().includes(q) ||
-        deck.blurb.toLowerCase().includes(q) ||
-        deck.categories.some((c) => c.toLowerCase().includes(q))
-      // Decade/type are presentational refinements; keep results if either matches loosely
+        quiz.title.toLowerCase().includes(q) ||
+        (quiz.description ?? '').toLowerCase().includes(q) ||
+        quizTags(quiz).some((c) => c.toLowerCase().includes(q))
       return matchesQuery && (matchesDifficulty || !!q)
     })
-  }, [query, difficulty, featured.slug])
+  }, [quizzes, query, difficulty, featured])
 
   return (
     <>
@@ -113,10 +129,7 @@ export function LibraryBrowse() {
           <div className="flex items-center gap-8">
             <GatherflixLogo />
             <nav className="hidden items-center gap-7 md:flex">
-              <Link
-                href="/library"
-                className="font-display text-sm font-bold text-gold"
-              >
+              <Link href="/library" className="font-display text-sm font-bold text-gold">
                 Explore Packs
               </Link>
               <Link
@@ -206,52 +219,67 @@ export function LibraryBrowse() {
           Featured Quiz Packs
         </h1>
 
+        {/* Loading / error / empty states */}
+        {isLoading && (
+          <p className="mt-6 text-muted-foreground">Loading quiz packs…</p>
+        )}
+        {error && !isLoading && (
+          <p className="mt-6 text-muted-foreground">
+            Could not load quiz packs. Please refresh to try again.
+          </p>
+        )}
+        {!isLoading && !error && quizzes.length === 0 && (
+          <p className="mt-6 text-muted-foreground">No published quiz packs yet.</p>
+        )}
+
         {/* Featured wide banner */}
-        <Link
-          href={`/host/preview?deck=${featured.slug}`}
-          className="group mt-5 block overflow-hidden rounded-3xl border border-border bg-card/60 transition-transform hover:-translate-y-1"
-        >
-          <div className="relative aspect-[21/7]">
-            <Image
-              src={featured.image}
-              alt={featured.alt}
-              fill
-              sizes="100vw"
-              className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-              priority
-            />
-          </div>
-          <div className="flex items-center justify-between p-5">
-            <div>
-              <div className="flex items-center gap-2 text-sm">
-                <QuestionIcon />
-                <span className="text-muted-foreground">{featured.questionCount} Qs</span>
+        {featured && (
+          <Link
+            href={`/host/preview?quiz=${featured.id}`}
+            className="group mt-5 block overflow-hidden rounded-3xl border border-border bg-card/60 transition-transform hover:-translate-y-1"
+          >
+            <div className="relative aspect-[21/7]">
+              <Image
+                src={featured.coverImageUrl ?? FALLBACK_IMAGE}
+                alt={featured.title}
+                fill
+                sizes="100vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                priority
+              />
+            </div>
+            <div className="flex items-center justify-between p-5">
+              <div>
+                <div className="flex items-center gap-2 text-sm">
+                  <QuestionIcon />
+                  <span className="text-muted-foreground">{featured.questionCount} Qs</span>
+                </div>
+                <h2 className="mt-2 font-display text-2xl font-bold">{featured.title}</h2>
+                <div className="mt-3">
+                  <TagRow quiz={featured} />
+                </div>
               </div>
-              <h2 className="mt-2 font-display text-2xl font-bold">{featured.title}</h2>
-              <div className="mt-3">
-                <TagRow deck={featured} />
+              <div className="flex items-center gap-2 self-start text-sm">
+                <ClockIcon />
+                <span className="text-muted-foreground">{featured.minutes} min</span>
               </div>
             </div>
-            <div className="flex items-center gap-2 self-start text-sm">
-              <ClockIcon />
-              <span className="text-muted-foreground">{featured.minutes} min</span>
-            </div>
-          </div>
-        </Link>
+          </Link>
+        )}
 
         {/* Grid of remaining packs */}
         {results.length > 0 && (
           <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {results.slice(0, visible).map((deck) => (
-              <li key={deck.slug}>
+            {results.slice(0, visible).map((quiz) => (
+              <li key={quiz.id}>
                 <Link
-                  href={`/host/preview?deck=${deck.slug}`}
+                  href={`/host/preview?quiz=${quiz.id}`}
                   className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card/60 transition-transform hover:-translate-y-1"
                 >
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <Image
-                      src={deck.image}
-                      alt={deck.alt}
+                      src={quiz.coverImageUrl ?? FALLBACK_IMAGE}
+                      alt={quiz.title}
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
@@ -261,18 +289,18 @@ export function LibraryBrowse() {
                     <div className="flex items-center justify-between text-sm">
                       <span className="inline-flex items-center gap-1.5">
                         <QuestionIcon />
-                        <span className="text-muted-foreground">{deck.questionCount} Qs</span>
+                        <span className="text-muted-foreground">{quiz.questionCount} Qs</span>
                       </span>
                       <span className="inline-flex items-center gap-1.5">
                         <ClockIcon />
-                        <span className="text-muted-foreground">{deck.minutes} min</span>
+                        <span className="text-muted-foreground">{quiz.minutes} min</span>
                       </span>
                     </div>
                     <h3 className="mt-3 font-display text-lg font-bold tracking-tight">
-                      {deck.title}
+                      {quiz.title}
                     </h3>
                     <div className="mt-4">
-                      <TagRow deck={deck} />
+                      <TagRow quiz={quiz} />
                     </div>
                   </div>
                 </Link>
@@ -291,7 +319,9 @@ export function LibraryBrowse() {
               Load More Quiz Packs
             </button>
           ) : (
-            results.length === 0 && (
+            !isLoading &&
+            results.length === 0 &&
+            quizzes.length > 0 && (
               <p className="text-muted-foreground">
                 No packs match these filters. Try clearing a filter.
               </p>
