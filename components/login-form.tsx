@@ -1,23 +1,145 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+
+type Mode = 'signin' | 'signup' | 'forgot'
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const MIN_PASSWORD = 6 // Supabase default minimum
+
+const inputClass =
+  'h-14 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-5 text-[1.05rem] text-foreground placeholder:text-muted-foreground/70 outline-none transition-colors focus:border-gold/60 focus:bg-white/[0.06]'
 
 export function LoginForm() {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const router = useRouter()
+  const [mode, setMode] = useState<Mode>('signin')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+
   const isSignup = mode === 'signup'
+  const isForgot = mode === 'forgot'
+
+  function switchMode(next: Mode) {
+    setMode(next)
+    setError(null)
+    setNotice(null)
+    setPassword('')
+  }
+
+  // Where to send the auth-callback links (email confirm / password reset).
+  // Routes through the v0 dev redirect proxy in preview, otherwise this origin.
+  function callbackUrl(next: string) {
+    const base =
+      process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
+      `${window.location.origin}/auth/callback`
+    const sep = base.includes('?') ? '&' : '?'
+    return `${base}${sep}next=${encodeURIComponent(next)}`
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setNotice(null)
+
+    const cleanEmail = email.trim()
+    if (!EMAIL_RE.test(cleanEmail)) {
+      setError('Please enter a valid email address.')
+      return
+    }
+    if (!isForgot && password.length < MIN_PASSWORD) {
+      setError(`Password must be at least ${MIN_PASSWORD} characters.`)
+      return
+    }
+
+    const supabase = createClient()
+    setSubmitting(true)
+
+    try {
+      if (isForgot) {
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+          redirectTo: callbackUrl('/auth/update-password'),
+        })
+        if (resetError) {
+          setError(friendlyError(resetError.message))
+          return
+        }
+        setNotice('Check your email for a link to reset your password.')
+        return
+      }
+
+      if (isSignup) {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password,
+          options: {
+            emailRedirectTo: callbackUrl('/create'),
+            data: name.trim() ? { full_name: name.trim() } : undefined,
+          },
+        })
+        if (signUpError) {
+          setError(friendlyError(signUpError.message))
+          return
+        }
+        // Supabase obfuscates existing emails by returning a user with no
+        // identities rather than an error.
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+          setError('An account with this email already exists. Try signing in instead.')
+          return
+        }
+        if (data.session) {
+          // Email confirmation disabled — session is live immediately.
+          router.push(redirectTarget())
+          router.refresh()
+          return
+        }
+        setNotice('Account created! Check your email to confirm your address, then sign in.')
+        return
+      }
+
+      // Sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      })
+      if (signInError) {
+        setError(friendlyError(signInError.message))
+        return
+      }
+      router.push(redirectTarget())
+      router.refresh()
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const heading = isForgot ? 'Reset Password' : isSignup ? 'Create Account' : 'Sign In'
+  const cta = isForgot
+    ? 'Send Reset Link'
+    : isSignup
+      ? 'Create Account & Play'
+      : 'Sign In to Play'
 
   return (
     <div className="w-full rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl backdrop-blur-sm sm:p-7">
       <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground">
-        {isSignup ? 'Create Account' : 'Sign In'}
+        {heading}
       </h1>
 
-      <form
-        className="mt-6 flex flex-col gap-4"
-        onSubmit={(e) => {
-          e.preventDefault()
-        }}
-      >
+      {isForgot && (
+        <p className="mt-2 text-sm text-muted-foreground">
+          Enter your email and we&apos;ll send you a link to set a new password.
+        </p>
+      )}
+
+      <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
         {isSignup && (
           <div className="flex flex-col gap-2">
             <label htmlFor="name" className="sr-only">
@@ -28,8 +150,10 @@ export function LoginForm() {
               name="name"
               type="text"
               autoComplete="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="Amitabh Bachchan"
-              className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-5 text-[1.05rem] text-foreground placeholder:text-muted-foreground/70 outline-none transition-colors focus:border-gold/60 focus:bg-white/[0.06]"
+              className={inputClass}
             />
           </div>
         )}
@@ -43,47 +167,113 @@ export function LoginForm() {
             name="email"
             type="email"
             autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="amitabh@bachchan.com"
-            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-5 text-[1.05rem] text-foreground placeholder:text-muted-foreground/70 outline-none transition-colors focus:border-gold/60 focus:bg-white/[0.06]"
+            className={inputClass}
+            required
           />
         </div>
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor="password" className="sr-only">
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete={isSignup ? 'new-password' : 'current-password'}
-            placeholder="••••••••••••"
-            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-5 text-[1.05rem] text-foreground placeholder:text-muted-foreground/70 outline-none transition-colors focus:border-gold/60 focus:bg-white/[0.06]"
-          />
-        </div>
+        {!isForgot && (
+          <div className="flex flex-col gap-2">
+            <label htmlFor="password" className="sr-only">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete={isSignup ? 'new-password' : 'current-password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••••••"
+              className={inputClass}
+              required
+            />
+          </div>
+        )}
+
+        {mode === 'signin' && (
+          <button
+            type="button"
+            onClick={() => switchMode('forgot')}
+            className="-mt-1 self-end text-sm text-muted-foreground transition-colors hover:text-gold"
+          >
+            Forgot password?
+          </button>
+        )}
+
+        {error && (
+          <p role="alert" className="rounded-xl border border-brand/40 bg-brand/10 px-4 py-3 text-sm text-brand">
+            {error}
+          </p>
+        )}
+        {notice && (
+          <p role="status" className="rounded-xl border border-gold/40 bg-gold/10 px-4 py-3 text-sm text-gold">
+            {notice}
+          </p>
+        )}
 
         <button
           type="submit"
-          className="mt-2 h-14 w-full rounded-full bg-gold font-display text-lg font-bold text-gold-foreground shadow-[0_0_35px_-5px_var(--gold)] transition-transform hover:scale-[1.01] active:scale-[0.99]"
+          disabled={submitting}
+          className="mt-2 h-14 w-full rounded-full bg-gold font-display text-lg font-bold text-gold-foreground shadow-[0_0_35px_-5px_var(--gold)] transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSignup ? 'Create Account & Play' : 'Sign In to Play'}
+          {submitting ? 'Please wait…' : cta}
         </button>
       </form>
 
-      <p className="mt-7 text-center text-[0.95rem] text-muted-foreground">
-        {isSignup ? 'Already have an account? ' : "Don't have an account? "}
-        <button
-          type="button"
-          onClick={() => setMode(isSignup ? 'signin' : 'signup')}
-          className="font-display font-bold text-gold transition-opacity hover:opacity-80"
-        >
-          {isSignup ? 'Sign In' : 'Create Account'}
-        </button>
-      </p>
+      {isForgot ? (
+        <p className="mt-7 text-center text-[0.95rem] text-muted-foreground">
+          Remembered it?{' '}
+          <button
+            type="button"
+            onClick={() => switchMode('signin')}
+            className="font-display font-bold text-gold transition-opacity hover:opacity-80"
+          >
+            Back to Sign In
+          </button>
+        </p>
+      ) : (
+        <p className="mt-7 text-center text-[0.95rem] text-muted-foreground">
+          {isSignup ? 'Already have an account? ' : "Don't have an account? "}
+          <button
+            type="button"
+            onClick={() => switchMode(isSignup ? 'signin' : 'signup')}
+            className="font-display font-bold text-gold transition-opacity hover:opacity-80"
+          >
+            {isSignup ? 'Sign In' : 'Create Account'}
+          </button>
+        </p>
+      )}
 
       <p className="mt-3 text-center text-sm text-muted-foreground/55">
         By signing in, you agree to trivia-night honor code.
       </p>
     </div>
   )
+}
+
+function redirectTarget() {
+  const fromParam = new URLSearchParams(window.location.search).get('redirectedFrom')
+  return fromParam && fromParam.startsWith('/') ? fromParam : '/create'
+}
+
+// Map raw Supabase auth errors to clear, non-enumerating messages while still
+// surfacing what the user must act on (unconfirmed email, weak password, rate limits).
+function friendlyError(message: string): string {
+  const m = message.toLowerCase()
+  if (m.includes('invalid login credentials')) return 'Invalid email or password.'
+  if (m.includes('email not confirmed'))
+    return 'Please confirm your email address before signing in. Check your inbox.'
+  if (m.includes('already registered') || m.includes('already been registered'))
+    return 'An account with this email already exists. Try signing in instead.'
+  if (m.includes('password') && (m.includes('at least') || m.includes('weak') || m.includes('short')))
+    return `Password must be at least ${MIN_PASSWORD} characters.`
+  if (m.includes('rate limit') || m.includes('too many'))
+    return 'Too many attempts. Please wait a moment and try again.'
+  if (m.includes('unable to validate email') || m.includes('invalid email'))
+    return 'Please enter a valid email address.'
+  return message
 }
