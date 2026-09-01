@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { RoomCreated } from '@/components/host/room-created'
 import { HostTopbar } from '@/components/host/host-topbar'
 import { getDeck } from '@/lib/decks'
 import { getQuizWithQuestions, getPublishedQuizIdByTitle } from '@/lib/quiz-data'
+import { createServerSupabase } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
   title: 'Host a Room · Go Live — GatherFlix',
@@ -16,6 +18,22 @@ export default async function HostRoomPage({
   searchParams: Promise<{ quiz?: string; deck?: string }>
 }) {
   const { quiz: quizId, deck: slug } = await searchParams
+
+  // Hosting a live room requires an account. Send guests to sign in and bring
+  // them right back to this quiz once authenticated.
+  const supabase = await createServerSupabase()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    const params = new URLSearchParams()
+    if (quizId) params.set('quiz', quizId)
+    if (slug) params.set('deck', slug)
+    const query = params.toString()
+    const from = query ? `/host/room?${query}` : '/host/room'
+    redirect(`/login?redirectedFrom=${encodeURIComponent(from)}`)
+  }
 
   let id = quizId
   if (!id && slug) {

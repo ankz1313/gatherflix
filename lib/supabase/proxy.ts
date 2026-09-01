@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 // Paths that require an authenticated user. Anything under these prefixes
 // redirects to /login when there is no session.
-const PROTECTED_PREFIXES = ['/create']
+const PROTECTED_PREFIXES = ['/create', '/host/room']
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -44,8 +44,12 @@ export async function updateSession(request: NextRequest) {
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone()
+    // Preserve the original path AND query (e.g. ?quiz=...) so the user lands
+    // back on the exact quiz they tried to host after signing in.
+    const from = `${pathname}${request.nextUrl.search}`
     url.pathname = '/login'
-    url.searchParams.set('redirectedFrom', pathname)
+    url.search = ''
+    url.searchParams.set('redirectedFrom', from)
     return NextResponse.redirect(url)
   }
 
