@@ -5,17 +5,25 @@ import { QRCodeSVG } from 'qrcode.react'
 import { Clapperboard, Play } from 'lucide-react'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { CURRENT_SESSION, HOST_ROOM_PLAYERS } from '@/lib/session'
+import { AvatarBadge } from '@/components/join/avatar-badge'
+import { CURRENT_SESSION } from '@/lib/session'
 
 type RoomCreatedProps = {
   quizId: string
   quizTitle: string
 }
 
+type JoinedPlayer = {
+  id: string
+  nickname: string
+  avatar: string | null
+  score: number
+}
+
 export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
   const [code, setCode] = useState<string | null>(null)
   const [error, setError] = useState(false)
-  const [joined, setJoined] = useState<typeof HOST_ROOM_PLAYERS>([])
+  const [joined, setJoined] = useState<JoinedPlayer[]>([])
   const [origin, setOrigin] = useState('')
 
   useEffect(() => {
@@ -47,15 +55,29 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
     }
   }, [quizId])
 
-  // Simulated players trickling into the lobby (cosmetic until realtime lands).
+  // Poll the live roster so real players appear as they scan/join.
   useEffect(() => {
     if (!code) return
-    if (joined.length >= HOST_ROOM_PLAYERS.length) return
-    const t = setTimeout(() => {
-      setJoined((prev) => HOST_ROOM_PLAYERS.slice(0, prev.length + 1))
-    }, 550)
-    return () => clearTimeout(t)
-  }, [joined, code])
+    let cancelled = false
+
+    async function loadPlayers() {
+      try {
+        const res = await fetch(`/api/rooms/${code}/players`, { cache: 'no-store' })
+        if (!res.ok) return
+        const data = await res.json()
+        if (!cancelled) setJoined(data.players as JoinedPlayer[])
+      } catch (err) {
+        console.error('[v0] failed to load players:', err)
+      }
+    }
+
+    loadPlayers()
+    const interval = setInterval(loadPlayers, 2500)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [code])
 
   const joinUrl = code
     ? origin
@@ -149,34 +171,30 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
 
           <div className="my-6 h-px bg-border" />
 
-          <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {HOST_ROOM_PLAYERS.map((p) => {
-              const isIn = joined.some((j) => j.name === p.name)
-              return (
+          {joined.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-border bg-background/40 px-4 py-10 text-center text-sm text-muted-foreground text-pretty">
+              Waiting for players to scan the code and join&hellip;
+            </p>
+          ) : (
+            <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {joined.map((p) => (
                 <li
-                  key={p.name}
-                  className={`flex items-center gap-2 rounded-2xl border border-border bg-background/60 p-2.5 transition-opacity duration-300 ${
-                    isIn ? 'opacity-100' : 'opacity-0'
-                  }`}
+                  key={p.id}
+                  className="flex items-center gap-2 rounded-2xl border border-border bg-background/60 p-2.5"
                 >
-                  <span
-                    className="grid size-9 shrink-0 place-items-center rounded-xl bg-secondary text-lg"
-                    aria-hidden="true"
-                  >
-                    {p.emoji}
-                  </span>
+                  <AvatarBadge styleId={p.avatar ?? 'masala'} name={p.nickname} size={36} />
                   <div className="min-w-0">
                     <p className="truncate font-display text-[0.8rem] font-bold leading-tight">
-                      {p.name}
+                      {p.nickname}
                     </p>
                     <p className="whitespace-nowrap text-[0.7rem] text-muted-foreground">
-                      {p.points} Gold Pts
+                      {p.score} Gold Pts
                     </p>
                   </div>
                 </li>
-              )
-            })}
-          </ul>
+              ))}
+            </ul>
+          )}
 
           <button
             type="button"
