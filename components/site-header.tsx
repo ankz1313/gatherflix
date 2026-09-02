@@ -1,10 +1,10 @@
 'use client'
 
 import { Menu, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { createClient } from '@/lib/supabase/client'
+import { UserMenu } from '@/components/auth/user-menu'
 
 const NAV_LINKS = [
   { label: 'How it Works', href: '/#how-it-works' },
@@ -13,22 +13,6 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
-  const [signedIn, setSignedIn] = useState(false)
-
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => setSignedIn(!!data.user))
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSignedIn(!!session?.user)
-    })
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const accountLink = signedIn
-    ? { href: '/create', label: 'My Quizzes' }
-    : { href: '/login', label: 'Login' }
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl">
@@ -50,12 +34,9 @@ export function SiteHeader() {
         <div className="flex items-center gap-3 md:gap-5">
           <ThemeToggle />
 
-          <a
-            href={accountLink.href}
-            className="hidden rounded-full border border-border bg-secondary px-6 py-2.5 font-display text-[0.95rem] font-bold text-foreground transition-colors hover:bg-accent md:inline-flex"
-          >
-            {accountLink.label}
-          </a>
+          <div className="hidden md:block">
+            <UserMenu />
+          </div>
 
           <button
             type="button"
@@ -86,13 +67,9 @@ export function SiteHeader() {
               {link.label}
             </a>
           ))}
-          <a
-            href={accountLink.href}
-            onClick={() => setOpen(false)}
-            className="mt-2 rounded-full border border-border bg-secondary px-6 py-3 text-center font-display font-bold text-foreground"
-          >
-            {accountLink.label}
-          </a>
+          <div className="mt-2" onClick={() => setOpen(false)}>
+            <UserMenu className="block rounded-full border border-border bg-secondary px-6 py-3 text-center font-display font-bold text-foreground" />
+          </div>
         </nav>
       )}
     </header>
