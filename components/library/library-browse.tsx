@@ -7,6 +7,7 @@ import useSWR from 'swr'
 import { difficultyClass } from '@/lib/decks'
 import type { QuizSummary } from '@/lib/quiz-data'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
+import { UserMenu } from '@/components/auth/user-menu'
 
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'] as const
 const DECADES = ['90s', '2000s', '2010s', '2020s'] as const
@@ -148,24 +149,29 @@ export function LibraryBrowse() {
             </nav>
           </div>
 
-          <div className="relative w-full max-w-sm">
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search Bollywood trivia..."
-              aria-label="Search decks"
-              className="h-11 w-full rounded-xl border border-border bg-card/60 pl-4 pr-11 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-brand"
-            />
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden="true"
-            >
-              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
-              <path d="m20 20-3.2-3.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-            </svg>
+          <div className="flex items-center gap-4">
+            <div className="relative w-full max-w-sm">
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search Bollywood trivia..."
+                aria-label="Search decks"
+                className="h-11 w-full rounded-xl border border-border bg-card/60 pl-4 pr-11 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-brand"
+              />
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                className="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
+                <path d="m20 20-3.2-3.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            </div>
+            <div className="hidden shrink-0 md:block">
+              <UserMenu />
+            </div>
           </div>
         </div>
       </header>

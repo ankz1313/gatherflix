@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
+import { UserMenu } from '@/components/auth/user-menu'
 
 export function HostTopbar({ active = 'library' }: { active?: 'library' | 'custom' }) {
   return (
@@ -35,15 +36,7 @@ export function HostTopbar({ active = 'library' }: { active?: 'library' | 'custo
           </Link>
         </nav>
 
-        <div className="flex items-center gap-2.5">
-          <span className="hidden font-display text-sm font-bold sm:inline">Karan Johar</span>
-          <span
-            className="grid size-9 place-items-center rounded-full bg-secondary text-lg"
-            aria-hidden="true"
-          >
-            {'\u{1F37F}'}
-          </span>
-        </div>
+        <UserMenu />
       </div>
     </header>
   )

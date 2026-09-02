@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { createServerSupabase } from '@/lib/supabase/server'
-import { LogoutButton } from '@/components/auth/logout-button'
+import { UserMenu } from '@/components/auth/user-menu'
 
 const NAV = [
   { label: 'Explore Packs', href: '/library' },
@@ -8,17 +7,7 @@ const NAV = [
   { label: 'Global Leaderboards', href: '/results' },
 ]
 
-export async function CreatorNav({ active = 'My Quizzes' }: { active?: string }) {
-  const supabase = await createServerSupabase()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  const displayName =
-    (user?.user_metadata?.full_name as string | undefined) ??
-    user?.email?.split('@')[0] ??
-    'Guest'
-
+export function CreatorNav({ active = 'My Quizzes' }: { active?: string }) {
   return (
     <header className="border-b border-border/60">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
@@ -48,18 +37,7 @@ export async function CreatorNav({ active = 'My Quizzes' }: { active?: string })
           </nav>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="hidden items-center gap-2 rounded-full border border-border bg-card px-4 py-2 sm:flex">
-            <span
-              className="grid size-6 place-items-center rounded-full bg-brand/20 font-display text-xs font-black uppercase text-brand"
-              aria-hidden="true"
-            >
-              {displayName.charAt(0)}
-            </span>
-            <span className="font-display text-sm font-bold">{displayName}</span>
-          </span>
-          <LogoutButton />
-        </div>
+        <UserMenu />
       </div>
     </header>
   )
