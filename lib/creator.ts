@@ -10,41 +10,6 @@ export const CREATOR_STEPS: CreatorStep[] = [
   { n: 3, label: 'Review & Publish', href: '/create/review' },
 ]
 
-// A creator's existing quizzes shown on the dashboard.
-export type CreatorDeck = {
-  title: string
-  status: 'Published' | 'Draft'
-  questions: number
-  updated: string
-  image: string
-  alt: string
-}
-
-export const MY_DECKS: CreatorDeck[] = [
-  {
-    title: 'Classic 90s Romances',
-    status: 'Published',
-    questions: 15,
-    updated: '2 hours ago',
-    image: '/decks/deck-classic-90s-romance.png',
-    alt: 'Couple in a golden mustard field at sunset',
-  },
-  {
-    title: 'Epic SRK Dialogues Master',
-    status: 'Draft',
-    questions: 10,
-    updated: 'Yesterday',
-    image: '/decks/deck-warriors-pride.png',
-    alt: 'Action hero leaping through explosions in a neon city',
-  },
-]
-
-export const CREATOR_COUNTS = {
-  all: 4,
-  drafts: 1,
-  published: 3,
-}
-
 // Draft questions used to seed the editor + review screens (DDLJ set).
 export type DraftChoice = {
   label: string

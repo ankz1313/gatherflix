@@ -1,4 +1,4 @@
-import { createAnonClient } from '@/lib/supabase/server'
+import { createAnonClient, createServerSupabase } from '@/lib/supabase/server'
 
 export type Difficulty = 'Easy' | 'Medium' | 'Hard'
 
@@ -31,6 +31,49 @@ export type QuizSummary = {
 }
 
 export type QuizWithQuestions = QuizSummary & { questions: QuizQuestion[] }
+
+export type QuizStatus = 'published' | 'draft'
+
+export type MyQuiz = {
+  id: string
+  title: string
+  category: string | null
+  difficulty: Difficulty
+  coverImageUrl: string | null
+  status: QuizStatus
+  questionCount: number
+  createdAt: string
+}
+
+// Quizzes owned by the currently signed-in user (drafts + published).
+// Uses the authenticated cookie client so RLS scopes rows to auth.uid().
+// Returns an empty array when signed out.
+export async function getMyQuizzes(): Promise<MyQuiz[]> {
+  const supabase = await createServerSupabase()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data, error } = await supabase
+    .from('quizzes')
+    .select('id, title, category, difficulty, cover_image_url, status, created_at, questions(id)')
+    .eq('owner_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    title: row.title,
+    category: row.category,
+    difficulty: normalizeDifficulty(row.difficulty),
+    coverImageUrl: row.cover_image_url,
+    status: row.status === 'published' ? 'published' : 'draft',
+    questionCount: Array.isArray(row.questions) ? row.questions.length : 0,
+    createdAt: row.created_at,
+  }))
+}
 
 function minutesFromSeconds(totalSeconds: number, questionCount: number): number {
   // Fall back to a rough estimate if timers are missing.
