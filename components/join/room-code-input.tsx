@@ -12,10 +12,15 @@ const LENGTH = 6
 
 export function RoomCodeInput({
   onComplete,
+  initialCode = '',
 }: {
   onComplete?: (code: string) => void
+  initialCode?: string
 }) {
-  const [values, setValues] = useState<string[]>(Array(LENGTH).fill(''))
+  const [values, setValues] = useState<string[]>(() => {
+    const chars = initialCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, LENGTH)
+    return Array.from({ length: LENGTH }, (_, i) => chars[i] ?? '')
+  })
   const inputs = useRef<Array<HTMLInputElement | null>>([])
 
   function focusBox(i: number) {

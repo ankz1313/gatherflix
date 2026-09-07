@@ -6,25 +6,31 @@ import { Suspense, useEffect, useState } from 'react'
 import { MobileShell } from '@/components/mobile-shell'
 import { AvatarBadge } from '@/components/join/avatar-badge'
 import { AVATAR_STYLES } from '@/components/join/avatars'
-import { JOIN_LOBBY_PLAYERS, type JoinPlayer } from '@/lib/session'
 
-type Player = JoinPlayer & { you?: boolean }
-
-// Simulated gang that trickles in so the lobby feels live.
-const INCOMING: Player[] = JOIN_LOBBY_PLAYERS
+type LivePlayer = {
+  id: string
+  nickname: string
+  avatar: string | null
+  you?: boolean
+}
 
 function LobbyContent() {
   const params = useSearchParams()
-  const code = params.get('code') ?? 'MASALA'
+  const code = params.get('code') ?? ''
   const name = params.get('name') ?? 'You'
   const avatar = params.get('avatar') ?? AVATAR_STYLES[0].id
 
-  const [players, setPlayers] = useState<Player[]>([{ id: 'you', name, avatar, you: true }])
+  const [players, setPlayers] = useState<LivePlayer[]>([])
   const [joinError, setJoinError] = useState<string | null>(null)
   const [joined, setJoined] = useState(false)
 
   // Register this player in the room via the API.
   useEffect(() => {
+    if (!code || name.trim().length < 2) {
+      setJoinError('Missing room code or nickname.')
+      return
+    }
+
     let cancelled = false
 
     // Stable per-browser identity so a rejoin/refresh (and React StrictMode's
@@ -59,19 +65,40 @@ function LobbyContent() {
     }
   }, [code, name, avatar])
 
+  // Poll the real roster so everyone sees who just walked in.
   useEffect(() => {
-    if (!joined) return
-    let i = 0
-    const timer = setInterval(() => {
-      if (i >= INCOMING.length) {
-        clearInterval(timer)
-        return
+    if (!joined || !code) return
+    let cancelled = false
+
+    async function loadPlayers() {
+      try {
+        const res = await fetch(`/api/rooms/${encodeURIComponent(code)}/players`, {
+          cache: 'no-store',
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        if (cancelled) return
+        const next = (data.players as { id: string; nickname: string; avatar: string | null }[]).map(
+          (p) => ({
+            id: p.id,
+            nickname: p.nickname,
+            avatar: p.avatar,
+            you: p.nickname === name,
+          }),
+        )
+        setPlayers(next)
+      } catch (err) {
+        console.error('[v0] failed to load lobby players:', err)
       }
-      setPlayers((prev) => [...prev, INCOMING[i]])
-      i++
-    }, 1400)
-    return () => clearInterval(timer)
-  }, [joined])
+    }
+
+    loadPlayers()
+    const interval = setInterval(loadPlayers, 2000)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [joined, code, name])
 
   if (joinError) {
     return (
@@ -120,24 +147,30 @@ function LobbyContent() {
             </span>
           </div>
 
-          <ul className="grid grid-cols-3 gap-4">
-            {players.map((p) => (
-              <li key={p.id} className="flex flex-col items-center gap-2">
-                <span
-                  className={
-                    p.you
-                      ? 'rounded-full ring-2 ring-gold ring-offset-2 ring-offset-card'
-                      : ''
-                  }
-                >
-                  <AvatarBadge styleId={p.avatar} name={p.name} size={56} />
-                </span>
-                <span className="max-w-full truncate text-center font-display text-sm font-semibold text-foreground">
-                  {p.you ? 'You' : p.name}
-                </span>
-              </li>
-            ))}
-          </ul>
+          {players.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Connecting to the lobby…
+            </p>
+          ) : (
+            <ul className="grid grid-cols-3 gap-4">
+              {players.map((p) => (
+                <li key={p.id} className="flex flex-col items-center gap-2">
+                  <span
+                    className={
+                      p.you
+                        ? 'rounded-full ring-2 ring-gold ring-offset-2 ring-offset-card'
+                        : ''
+                    }
+                  >
+                    <AvatarBadge styleId={p.avatar ?? 'masala'} name={p.nickname} size={56} />
+                  </span>
+                  <span className="max-w-full truncate text-center font-display text-sm font-semibold text-foreground">
+                    {p.you ? 'You' : p.nickname}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="mt-auto flex items-center justify-center gap-3 rounded-2xl border border-border bg-secondary/40 py-4">

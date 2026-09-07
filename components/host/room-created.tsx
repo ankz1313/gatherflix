@@ -20,6 +20,42 @@ type JoinedPlayer = {
   score: number
 }
 
+const roomCreates = new Map<string, Promise<string>>()
+
+async function ensureLobbyRoom(quizId: string): Promise<string> {
+  const storageKey = `gf_host_room_${quizId}`
+  const existing = sessionStorage.getItem(storageKey)
+  if (existing) {
+    const lookup = await fetch(`/api/rooms/${encodeURIComponent(existing)}`, { cache: 'no-store' })
+    const lookupData = await lookup.json()
+    if (lookup.ok && lookupData.valid && lookupData.room?.status === 'lobby') {
+      return existing
+    }
+    sessionStorage.removeItem(storageKey)
+  }
+
+  const inflight = roomCreates.get(quizId)
+  if (inflight) return inflight
+
+  const promise = (async () => {
+    const res = await fetch('/api/rooms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quizId }),
+    })
+    if (!res.ok) throw new Error('Failed to create room')
+    const data = await res.json()
+    const nextCode = data.room.code as string
+    sessionStorage.setItem(storageKey, nextCode)
+    return nextCode
+  })().finally(() => {
+    roomCreates.delete(quizId)
+  })
+
+  roomCreates.set(quizId, promise)
+  return promise
+}
+
 export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
   const [code, setCode] = useState<string | null>(null)
   const [error, setError] = useState(false)
@@ -30,20 +66,14 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
     setOrigin(window.location.origin)
   }, [])
 
-  // Create a real room in the database for this quiz.
+  // Reuse the lobby room for this quiz in this browser tab, or create one.
   useEffect(() => {
     let cancelled = false
     async function createRoom() {
       setError(false)
       try {
-        const res = await fetch('/api/rooms', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ quizId }),
-        })
-        if (!res.ok) throw new Error('Failed to create room')
-        const data = await res.json()
-        if (!cancelled) setCode(data.room.code as string)
+        const nextCode = await ensureLobbyRoom(quizId)
+        if (!cancelled) setCode(nextCode)
       } catch (err) {
         console.error('[v0] room creation failed:', err)
         if (!cancelled) setError(true)
@@ -62,7 +92,9 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
 
     async function loadPlayers() {
       try {
-        const res = await fetch(`/api/rooms/${code}/players`, { cache: 'no-store' })
+        const res = await fetch(`/api/rooms/${encodeURIComponent(code)}/players`, {
+          cache: 'no-store',
+        })
         if (!res.ok) return
         const data = await res.json()
         if (!cancelled) setJoined(data.players as JoinedPlayer[])
