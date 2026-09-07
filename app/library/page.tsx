@@ -4,7 +4,7 @@ import { LibraryBrowse } from '@/components/library/library-browse'
 
 export const metadata: Metadata = {
   title: 'Explore Packs — GatherFlix',
-  description: 'Browse hundreds of fan-made Bollywood trivia decks. Search by era, mood, or genre.',
+  description: 'Browse fan-made trivia decks across Bollywood, Hollywood, TV series, and sports.',
 }
 
 export default function LibraryPage() {

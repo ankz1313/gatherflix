@@ -5,15 +5,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { saveQuizDetails } from '@/app/create/actions'
 import { ImageUpload } from '@/components/creator/image-upload'
-
-const CATEGORIES = [
-  { label: '\u{1F3AC} Bollywood Cinema', value: 'Bollywood Cinema', enabled: true },
-  { label: '\u{1F4FA} Series (Soon)', value: 'Series', enabled: false },
-  { label: '\u{1F3AC} Hollywood (Soon)', value: 'Hollywood', enabled: false },
-]
-
-const DECADES = ['90s', '2000s', '2010s', '2020s']
-const TYPES = ['Songs', 'Dialogues', 'Actors', 'Directors']
+import { QUIZ_CATEGORIES } from '@/lib/categories'
 
 const DIFFICULTIES = [
   { label: 'Easy (Freshman)', value: 'Easy', dot: 'var(--success)' },
@@ -31,10 +23,6 @@ export type QuizDetailsInitial = {
   coverImageUrl: string | null
 }
 
-function initialDecade(subtags: string[]): string {
-  return DECADES.find((d) => subtags.includes(d)) ?? '90s'
-}
-
 export function QuizDetailsForm({ initial }: { initial?: QuizDetailsInitial }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -42,22 +30,14 @@ export function QuizDetailsForm({ initial }: { initial?: QuizDetailsInitial }) {
   const [title, setTitle] = useState(initial?.title ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
   const [category, setCategory] = useState(() => {
-    const idx = CATEGORIES.findIndex((c) => c.value === initial?.category)
+    const idx = QUIZ_CATEGORIES.findIndex((c) => c.value === initial?.category)
     return idx >= 0 ? idx : 0
   })
-  const [decade, setDecade] = useState(() => initialDecade(initial?.subtags ?? []))
-  const [types, setTypes] = useState<string[]>(() =>
-    initial ? TYPES.filter((t) => initial.subtags.includes(t)) : ['Songs', 'Dialogues'],
-  )
   const [difficulty, setDifficulty] = useState(() => {
     const idx = DIFFICULTIES.findIndex((d) => d.value === initial?.difficulty)
     return idx >= 0 ? idx : 1
   })
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(initial?.coverImageUrl ?? null)
-
-  function toggleType(t: string) {
-    setTypes((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]))
-  }
 
   function handleNext() {
     setError('')
@@ -70,8 +50,8 @@ export function QuizDetailsForm({ initial }: { initial?: QuizDetailsInitial }) {
         quizId: initial?.quizId,
         title,
         description,
-        category: CATEGORIES[category].value,
-        subtags: [decade, ...types],
+        category: QUIZ_CATEGORIES[category].value,
+        subtags: initial?.subtags ?? [],
         difficulty: DIFFICULTIES[difficulty].value,
         coverImageUrl,
       })
@@ -100,12 +80,11 @@ export function QuizDetailsForm({ initial }: { initial?: QuizDetailsInitial }) {
         <div className="mt-8 rounded-2xl border border-border bg-card/60 p-6">
           <h3 className="font-display text-lg font-black text-gold">Lights, Camera, Action!</h3>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Every blockbuster quiz starts with high production value. Enter a catchy title, select
-            tags that specify which Bollywood era you&apos;re covering, and choose a color-coded
-            difficulty.
+            Every pack starts with a clear title, a category so players can find it, and a
+            color-coded difficulty.
           </p>
           <p className="mt-4 text-sm font-semibold text-brand">
-            Tip: Mixed actors and dialogue questions keep the pacing exciting!
+            Tip: Mix easy and spicy questions to keep the pacing exciting!
           </p>
         </div>
       </aside>
@@ -165,68 +144,20 @@ export function QuizDetailsForm({ initial }: { initial?: QuizDetailsInitial }) {
           <div>
             <span className="font-display text-sm font-bold">Primary Category</span>
             <div className="mt-2 flex flex-wrap gap-3">
-              {CATEGORIES.map((c, i) => (
+              {QUIZ_CATEGORIES.map((c, i) => (
                 <button
-                  key={c.label}
+                  key={c.value}
                   type="button"
-                  disabled={!c.enabled}
-                  onClick={() => c.enabled && setCategory(i)}
+                  onClick={() => setCategory(i)}
                   className={`rounded-xl border px-5 py-3 font-display text-sm font-bold transition-colors ${
-                    category === i && c.enabled
+                    category === i
                       ? 'border-brand bg-brand-soft text-brand'
-                      : c.enabled
-                        ? 'border-border bg-background/60 text-foreground hover:bg-accent'
-                        : 'cursor-not-allowed border-border bg-background/30 text-muted-foreground/50'
+                      : 'border-border bg-background/60 text-foreground hover:bg-accent'
                   }`}
                 >
-                  {c.label}
+                  {c.emoji} {c.label}
                 </button>
               ))}
-            </div>
-          </div>
-
-          {/* Sub-tags & decades */}
-          <div>
-            <span className="font-display text-sm font-bold">Sub-Tags &amp; Decades (Multi-select)</span>
-            <div className="mt-2 space-y-4 rounded-xl border border-border bg-background/40 p-5">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="w-20 text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                  Decade:
-                </span>
-                {DECADES.map((d) => (
-                  <button
-                    key={d}
-                    type="button"
-                    onClick={() => setDecade(d)}
-                    className={`rounded-full border px-4 py-1.5 font-display text-sm font-bold transition-colors ${
-                      decade === d
-                        ? 'border-brand bg-brand-soft text-brand'
-                        : 'border-border text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {d}
-                  </button>
-                ))}
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="w-20 text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                  Type:
-                </span>
-                {TYPES.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => toggleType(t)}
-                    className={`rounded-full border px-4 py-1.5 font-display text-sm font-bold transition-colors ${
-                      types.includes(t)
-                        ? 'border-brand bg-brand-soft text-brand'
-                        : 'border-border text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
             </div>
           </div>
 
