@@ -3,9 +3,16 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { DECKS, difficultyClass, type Deck } from '@/lib/decks'
+import { difficultyClass } from '@/lib/decks'
+import type { QuizSummary } from '@/lib/quiz-data'
 
 const DIFFICULTIES = ['All', 'Easy', 'Medium', 'Hard'] as const
+const FALLBACK_IMAGE = '/decks/deck-classic-90s-romance.png'
+
+function quizTags(quiz: QuizSummary): string[] {
+  const all = [quiz.category, ...quiz.subtags].filter(Boolean) as string[]
+  return Array.from(new Set(all)).slice(0, 3)
+}
 
 function QuestionIcon() {
   return (
@@ -31,16 +38,16 @@ function ClockIcon() {
   )
 }
 
-function DeckCard({ deck }: { deck: Deck }) {
+function QuizCard({ quiz }: { quiz: QuizSummary }) {
   return (
     <Link
-      href={`/host/preview?deck=${deck.slug}`}
+      href={`/host/preview?quiz=${quiz.id}`}
       className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card/60 transition-transform hover:-translate-y-1"
     >
       <div className="relative aspect-[16/9] overflow-hidden">
         <Image
-          src={deck.image}
-          alt={deck.alt}
+          src={quiz.coverImageUrl ?? FALLBACK_IMAGE}
+          alt={quiz.title}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
@@ -51,30 +58,30 @@ function DeckCard({ deck }: { deck: Deck }) {
         <div className="flex items-center justify-between text-sm">
           <span className="inline-flex items-center gap-1.5">
             <QuestionIcon />
-            <span className="text-muted-foreground">{deck.questionCount} Questions</span>
+            <span className="text-muted-foreground">{quiz.questionCount} Questions</span>
           </span>
           <span className="inline-flex items-center gap-1.5">
             <ClockIcon />
-            <span className="text-muted-foreground">{deck.minutes} min</span>
+            <span className="text-muted-foreground">{quiz.minutes} min</span>
           </span>
         </div>
 
-        <h2 className="mt-3 font-display text-xl font-bold tracking-tight">{deck.title}</h2>
+        <h2 className="mt-3 font-display text-xl font-bold tracking-tight">{quiz.title}</h2>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <span
             className={`rounded-md px-2.5 py-1 font-display text-[0.7rem] font-bold uppercase tracking-wide ${difficultyClass(
-              deck.difficulty,
+              quiz.difficulty,
             )}`}
           >
-            {deck.difficulty}
+            {quiz.difficulty}
           </span>
-          {deck.categories.map((cat) => (
+          {quizTags(quiz).map((tag) => (
             <span
-              key={cat}
+              key={tag}
               className="rounded-md bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground"
             >
-              {cat}
+              {tag}
             </span>
           ))}
         </div>
@@ -83,23 +90,23 @@ function DeckCard({ deck }: { deck: Deck }) {
   )
 }
 
-export function HostQuizGrid() {
+export function HostQuizGrid({ quizzes }: { quizzes: QuizSummary[] }) {
   const [query, setQuery] = useState('')
   const [difficulty, setDifficulty] = useState<(typeof DIFFICULTIES)[number]>('All')
   const [open, setOpen] = useState(false)
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return DECKS.filter((deck) => {
-      const matchesDifficulty = difficulty === 'All' || deck.difficulty === difficulty
+    return quizzes.filter((quiz) => {
+      const matchesDifficulty = difficulty === 'All' || quiz.difficulty === difficulty
       const matchesQuery =
         q === '' ||
-        deck.title.toLowerCase().includes(q) ||
-        deck.categories.some((c) => c.toLowerCase().includes(q)) ||
-        deck.blurb.toLowerCase().includes(q)
+        quiz.title.toLowerCase().includes(q) ||
+        (quiz.description ?? '').toLowerCase().includes(q) ||
+        quizTags(quiz).some((c) => c.toLowerCase().includes(q))
       return matchesDifficulty && matchesQuery
     })
-  }, [query, difficulty])
+  }, [quizzes, query, difficulty])
 
   return (
     <>
@@ -119,7 +126,7 @@ export function HostQuizGrid() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search movie, actor, director, genre or decade..."
-            aria-label="Search decks"
+            aria-label="Search quizzes"
             className="h-14 w-full rounded-2xl border border-border bg-card/60 pl-14 pr-5 text-base outline-none transition-colors placeholder:text-muted-foreground focus:border-brand"
           />
         </div>
@@ -167,15 +174,19 @@ export function HostQuizGrid() {
         </div>
       </div>
 
-      {results.length === 0 ? (
+      {quizzes.length === 0 ? (
         <p className="mt-16 text-center text-muted-foreground">
-          No decks match your search. Try a different genre or decade.
+          No published quizzes yet. Create a deck and publish it to the library.
+        </p>
+      ) : results.length === 0 ? (
+        <p className="mt-16 text-center text-muted-foreground">
+          No quizzes match your search. Try a different genre or decade.
         </p>
       ) : (
         <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {results.map((deck) => (
-            <li key={deck.slug}>
-              <DeckCard deck={deck} />
+          {results.map((quiz) => (
+            <li key={quiz.id}>
+              <QuizCard quiz={quiz} />
             </li>
           ))}
         </ul>
