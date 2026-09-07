@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { DRAFT_QUESTIONS, type DraftQuestion } from '@/lib/creator'
+import type { DraftQuestion } from '@/lib/creator'
+import { saveQuizQuestions, type QuestionInput } from '@/app/create/actions'
 
 function blank(): DraftQuestion {
   return {
@@ -17,14 +18,66 @@ function blank(): DraftQuestion {
   }
 }
 
-export function QuestionEditor() {
+function toQuestionInput(q: DraftQuestion): QuestionInput {
+  return {
+    text: q.prompt.trim(),
+    options: q.choices.map((c, i) => ({
+      label: c.label,
+      text: c.text.trim(),
+      correct: i === q.correctIndex,
+    })),
+    timerSeconds: q.timer,
+    points: q.points,
+  }
+}
+
+type QuestionEditorProps = {
+  quizId: string
+  quizTitle: string
+  initialQuestions: DraftQuestion[]
+}
+
+export function QuestionEditor({ quizId, quizTitle, initialQuestions }: QuestionEditorProps) {
   const router = useRouter()
-  const [questions, setQuestions] = useState<DraftQuestion[]>(DRAFT_QUESTIONS)
+  const [pending, startTransition] = useTransition()
+  const [error, setError] = useState('')
+  const [questions, setQuestions] = useState<DraftQuestion[]>(
+    initialQuestions.length > 0 ? initialQuestions : [blank()],
+  )
   const [activeIndex, setActiveIndex] = useState(0)
   const active = questions[activeIndex]
 
   function update(patch: Partial<DraftQuestion>) {
     setQuestions((qs) => qs.map((q, i) => (i === activeIndex ? { ...q, ...patch } : q)))
+  }
+
+  function validate(): string {
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i]
+      if (!q.prompt.trim()) return `Question ${i + 1} needs a title.`
+      const filled = q.choices.filter((c) => c.text.trim())
+      if (filled.length < 2) return `Question ${i + 1} needs at least 2 answer choices.`
+      if (!q.choices[q.correctIndex]?.text.trim())
+        return `Question ${i + 1}'s correct answer can't be empty.`
+    }
+    return ''
+  }
+
+  function persist(next: 'review' | 'dashboard') {
+    const message = validate()
+    if (message) {
+      setError(message)
+      return
+    }
+    setError('')
+    startTransition(async () => {
+      const result = await saveQuizQuestions(quizId, questions.map(toQuestionInput))
+      if (!result.ok) {
+        setError(result.error ?? 'Could not save questions.')
+        return
+      }
+      router.push(next === 'review' ? `/create/review?quiz=${quizId}` : '/create')
+    })
   }
 
   function updateChoice(i: number, text: string) {
@@ -103,7 +156,12 @@ export function QuestionEditor() {
       {/* Right: editor */}
       <div className="rounded-[2rem] border border-border bg-card/50 p-7 sm:p-9">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h1 className="font-display text-2xl font-black">Editing Question #{activeIndex + 1}</h1>
+          <div>
+            <p className="font-display text-xs font-black uppercase tracking-wide text-brand">
+              {quizTitle}
+            </p>
+            <h1 className="font-display text-2xl font-black">Editing Question #{activeIndex + 1}</h1>
+          </div>
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5 rounded-lg border border-border bg-background/60 px-3 py-2 text-sm">
               <span className="text-muted-foreground">Timer:</span>
@@ -206,6 +264,11 @@ export function QuestionEditor() {
         </div>
 
         {/* Nav */}
+        {error && (
+          <p className="mt-6 rounded-xl border border-brand/40 bg-brand/5 px-4 py-3 text-sm font-semibold text-brand">
+            {error}
+          </p>
+        )}
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6">
           <div className="flex flex-wrap items-center gap-3">
             <button
@@ -226,16 +289,19 @@ export function QuestionEditor() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              className="rounded-full border border-border bg-background/60 px-5 py-3 font-display text-sm font-bold transition-colors hover:bg-accent"
+              onClick={() => persist('dashboard')}
+              disabled={pending}
+              className="rounded-full border border-border bg-background/60 px-5 py-3 font-display text-sm font-bold transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Preview Slide
+              Save Draft
             </button>
             <button
               type="button"
-              onClick={() => router.push('/create/review')}
-              className="rounded-full bg-gold px-7 py-3 font-display text-sm font-bold text-gold-foreground shadow-[0_10px_45px_-12px] shadow-gold/70 transition-transform hover:scale-[1.02]"
+              onClick={() => persist('review')}
+              disabled={pending}
+              className="rounded-full bg-gold px-7 py-3 font-display text-sm font-bold text-gold-foreground shadow-[0_10px_45px_-12px] shadow-gold/70 transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Save &amp; Continue
+              {pending ? 'Saving\u2026' : 'Save & Continue'}
             </button>
           </div>
         </div>

@@ -1,14 +1,35 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { CreatorNav } from '@/components/creator/creator-nav'
-import { DRAFT_QUESTIONS, REVIEW_STATS } from '@/lib/creator'
+import { getMyQuizForEdit } from '@/lib/quiz-data'
+import { setQuizStatus } from '@/app/create/actions'
 
 export const metadata: Metadata = {
   title: 'Review & Publish · GatherFlix',
   description: 'Give your quiz a final look before sharing it with the world.',
 }
 
-export default function ReviewStepPage() {
+export default async function ReviewStepPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ quiz?: string }>
+}) {
+  const { quiz: quizId } = await searchParams
+  if (!quizId) redirect('/create/details')
+
+  const quiz = await getMyQuizForEdit(quizId)
+  if (!quiz) redirect('/create')
+
+  const totalQuestions = quiz.questions.length
+  const totalSeconds = quiz.questions.reduce((sum, q) => sum + (q.timerSeconds ?? 0), 0)
+  const totalPoints = quiz.questions.reduce((sum, q) => sum + (q.points ?? 0), 0)
+  const minutes = Math.max(1, Math.round((totalSeconds || totalQuestions * 20) / 60))
+  const tag = quiz.category ?? quiz.subtags[0] ?? 'Bollywood'
+
+  const publishAction = setQuizStatus.bind(null, quizId, 'published')
+  const draftAction = setQuizStatus.bind(null, quizId, 'draft')
+
   return (
     <div className="min-h-[100dvh]">
       <CreatorNav active="My Quizzes" />
@@ -30,24 +51,26 @@ export default function ReviewStepPage() {
             <h2 className="font-display text-xl font-black">Quick Trivia Stats</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="rounded-md bg-gold-soft px-3 py-1 font-display text-xs font-bold uppercase text-gold">
-                {REVIEW_STATS.difficulty}
+                {quiz.difficulty}
               </span>
               <span className="rounded-md bg-brand-soft px-3 py-1 font-display text-xs font-bold text-brand">
-                {REVIEW_STATS.tag}
+                {tag}
               </span>
             </div>
             <dl className="mt-5 space-y-3 text-sm">
               <div className="flex items-center justify-between">
                 <dt className="text-muted-foreground">Total Questions</dt>
-                <dd className="font-display font-bold">{REVIEW_STATS.totalQuestions} Questions</dd>
+                <dd className="font-display font-bold">{totalQuestions} Questions</dd>
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-muted-foreground">Lobby Duration</dt>
-                <dd className="font-display font-bold">{REVIEW_STATS.duration}</dd>
+                <dd className="font-display font-bold">Approx. {minutes} mins</dd>
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-muted-foreground">Max Lvl Potential</dt>
-                <dd className="font-display font-bold text-gold">{REVIEW_STATS.maxXp}</dd>
+                <dd className="font-display font-bold text-gold">
+                  {totalPoints.toLocaleString()} XP
+                </dd>
               </div>
             </dl>
           </div>
@@ -71,27 +94,30 @@ export default function ReviewStepPage() {
             Carefully review the answers and correct selections before going live.
           </p>
 
-          <div className="mt-6 space-y-4">
-            {DRAFT_QUESTIONS.map((q, i) => (
-              <div key={i} className="rounded-2xl border border-border bg-background/40 p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <span className="font-display text-sm font-black uppercase tracking-wide text-brand">
-                    Question {i + 1} of {REVIEW_STATS.totalQuestions}
-                  </span>
-                  <span className="shrink-0 text-sm text-muted-foreground">
-                    Timer: {q.timer}s | {q.points} XP
-                  </span>
-                </div>
-                <p className="mt-3 font-display text-lg font-bold">{q.prompt}</p>
+          {totalQuestions === 0 ? (
+            <p className="mt-6 rounded-2xl border border-dashed border-border bg-background/40 px-6 py-12 text-center text-muted-foreground text-pretty">
+              This quiz has no questions yet. Go back and add at least one before publishing.
+            </p>
+          ) : (
+            <div className="mt-6 space-y-4">
+              {quiz.questions.map((q, i) => (
+                <div key={q.id} className="rounded-2xl border border-border bg-background/40 p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="font-display text-sm font-black uppercase tracking-wide text-brand">
+                      Question {i + 1} of {totalQuestions}
+                    </span>
+                    <span className="shrink-0 text-sm text-muted-foreground">
+                      Timer: {q.timerSeconds}s | {q.points} XP
+                    </span>
+                  </div>
+                  <p className="mt-3 font-display text-lg font-bold">{q.text}</p>
 
-                <div className="mt-4 space-y-2.5">
-                  {q.choices.map((choice, ci) => {
-                    const correct = q.correctIndex === ci
-                    return (
+                  <div className="mt-4 space-y-2.5">
+                    {q.choices.map((choice, ci) => (
                       <div
                         key={ci}
                         className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 ${
-                          correct
+                          choice.correct
                             ? 'border-gold bg-gold-soft font-display font-bold text-gold'
                             : 'border-border bg-background/50 text-muted-foreground'
                         }`}
@@ -99,7 +125,7 @@ export default function ReviewStepPage() {
                         <span>
                           {choice.label}. {choice.text}
                         </span>
-                        {correct && (
+                        {choice.correct && (
                           <svg viewBox="0 0 24 24" fill="none" className="size-5 shrink-0 text-gold">
                             <path
                               d="M12 2a10 10 0 1 0 10 10"
@@ -117,34 +143,38 @@ export default function ReviewStepPage() {
                           </svg>
                         )}
                       </div>
-                    )
-                  })}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Actions */}
           <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6">
             <Link
-              href="/create/questions"
+              href={`/create/questions?quiz=${quizId}`}
               className="font-display text-sm font-bold text-muted-foreground hover:text-foreground"
             >
               Back to Edit Questions
             </Link>
             <div className="flex flex-wrap items-center gap-3">
-              <Link
-                href="/create"
-                className="rounded-full border border-border bg-background/60 px-6 py-3 font-display text-sm font-bold transition-colors hover:bg-accent"
-              >
-                Save as Draft
-              </Link>
-              <Link
-                href="/create"
-                className="rounded-full bg-gold px-7 py-3 font-display text-sm font-bold text-gold-foreground shadow-[0_10px_45px_-12px] shadow-gold/70 transition-transform hover:scale-[1.02]"
-              >
-                Publish to Library
-              </Link>
+              <form action={draftAction}>
+                <button
+                  type="submit"
+                  className="rounded-full border border-border bg-background/60 px-6 py-3 font-display text-sm font-bold transition-colors hover:bg-accent"
+                >
+                  Save as Draft
+                </button>
+              </form>
+              <form action={publishAction}>
+                <button
+                  type="submit"
+                  className="rounded-full bg-gold px-7 py-3 font-display text-sm font-bold text-gold-foreground shadow-[0_10px_45px_-12px] shadow-gold/70 transition-transform hover:scale-[1.02]"
+                >
+                  Publish to Library
+                </button>
+              </form>
             </div>
           </div>
         </div>
