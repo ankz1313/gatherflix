@@ -1,17 +1,16 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import useSWR from 'swr'
 import { difficultyClass } from '@/lib/decks'
 import type { QuizSummary } from '@/lib/quiz-data'
+import { QUIZ_CATEGORIES, quizMatchesCategory, type QuizCategory } from '@/lib/categories'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { UserMenu } from '@/components/auth/user-menu'
 
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'] as const
-const DECADES = ['90s', '2000s', '2010s', '2020s'] as const
-const TYPES = ['Songs', 'Dialogues', 'Actors', 'Directors'] as const
 
 const FALLBACK_IMAGE = '/decks/deck-classic-90s-romance.png'
 
@@ -86,7 +85,7 @@ function Pill({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-xl border px-4 py-2 font-display text-sm font-bold transition-colors ${
+      className={`inline-flex items-center gap-1.5 rounded-xl border px-4 py-2 font-display text-sm font-bold transition-colors ${
         active
           ? 'border-brand text-brand'
           : 'border-border bg-card/40 text-foreground hover:border-muted-foreground'
@@ -103,25 +102,29 @@ export function LibraryBrowse() {
 
   const [query, setQuery] = useState('')
   const [difficulty, setDifficulty] = useState<(typeof DIFFICULTIES)[number] | null>(null)
-  const [decade, setDecade] = useState<(typeof DECADES)[number] | null>(null)
-  const [type, setType] = useState<(typeof TYPES)[number] | null>(null)
+  const [category, setCategory] = useState<QuizCategory | null>(null)
   const [visible, setVisible] = useState(6)
 
-  const featured = quizzes[0] ?? null
+  useEffect(() => {
+    setVisible(6)
+  }, [category, difficulty, query])
 
-  const results = useMemo(() => {
+  const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return quizzes.filter((quiz) => {
-      if (featured && quiz.id === featured.id) return false
+      const matchesCategory = quizMatchesCategory(quiz, category)
       const matchesDifficulty = !difficulty || quiz.difficulty === difficulty
       const matchesQuery =
         !q ||
         quiz.title.toLowerCase().includes(q) ||
         (quiz.description ?? '').toLowerCase().includes(q) ||
         quizTags(quiz).some((c) => c.toLowerCase().includes(q))
-      return matchesQuery && (matchesDifficulty || !!q)
+      return matchesCategory && matchesQuery && (matchesDifficulty || !!q)
     })
-  }, [quizzes, query, difficulty, featured])
+  }, [quizzes, query, difficulty, category])
+
+  const featured = filtered[0] ?? null
+  const results = featured ? filtered.slice(1) : filtered
 
   return (
     <>
@@ -155,7 +158,7 @@ export function LibraryBrowse() {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search Bollywood trivia..."
+                placeholder="Search trivia packs..."
                 aria-label="Search decks"
                 className="h-11 w-full rounded-xl border border-border bg-card/60 pl-4 pr-11 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-brand"
               />
@@ -179,44 +182,35 @@ export function LibraryBrowse() {
       <section className="container-page py-8">
         {/* Filter panel */}
         <div className="rounded-3xl border border-border bg-card/40 p-5">
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              className="flex items-center gap-2 rounded-xl border border-brand px-4 py-2 font-display text-sm font-bold text-brand"
-            >
-              <span aria-hidden="true">{'\u{1F3AC}'}</span> Bollywood Cinema
-              <svg viewBox="0 0 24 24" fill="none" className="size-4" aria-hidden="true">
-                <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </button>
-            <div className="flex gap-2">
-              {DIFFICULTIES.map((d) => (
-                <Pill
-                  key={d}
-                  active={difficulty === d}
-                  onClick={() => setDifficulty(difficulty === d ? null : d)}
-                >
-                  {d}
-                </Pill>
-              ))}
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-1 font-display text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              Category:
+            </span>
+            <Pill active={category === null} onClick={() => setCategory(null)}>
+              All
+            </Pill>
+            {QUIZ_CATEGORIES.map((c) => (
+              <Pill
+                key={c.value}
+                active={category?.value === c.value}
+                onClick={() => setCategory(category?.value === c.value ? null : c)}
+              >
+                <span aria-hidden="true">{c.emoji}</span> {c.label}
+              </Pill>
+            ))}
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <span className="mr-1 font-display text-xs font-bold uppercase tracking-wide text-muted-foreground">
-              Decade:
+              Difficulty:
             </span>
-            {DECADES.map((d) => (
-              <Pill key={d} active={decade === d} onClick={() => setDecade(decade === d ? null : d)}>
+            {DIFFICULTIES.map((d) => (
+              <Pill
+                key={d}
+                active={difficulty === d}
+                onClick={() => setDifficulty(difficulty === d ? null : d)}
+              >
                 {d}
-              </Pill>
-            ))}
-            <span className="ml-4 mr-1 font-display text-xs font-bold uppercase tracking-wide text-muted-foreground">
-              Type:
-            </span>
-            {TYPES.map((t) => (
-              <Pill key={t} active={type === t} onClick={() => setType(type === t ? null : t)}>
-                {t}
               </Pill>
             ))}
           </div>
@@ -233,6 +227,11 @@ export function LibraryBrowse() {
         {error && !isLoading && (
           <p className="mt-6 text-muted-foreground">
             Could not load quiz packs. Please refresh to try again.
+          </p>
+        )}
+        {!isLoading && !error && filtered.length === 0 && quizzes.length > 0 && (
+          <p className="mt-6 text-muted-foreground">
+            No packs match these filters. Try clearing a filter.
           </p>
         )}
         {!isLoading && !error && quizzes.length === 0 && (
@@ -317,7 +316,7 @@ export function LibraryBrowse() {
         )}
 
         <div className="mt-10 flex justify-center">
-          {visible < results.length ? (
+          {visible < results.length && (
             <button
               type="button"
               onClick={() => setVisible((v) => v + 6)}
@@ -325,14 +324,6 @@ export function LibraryBrowse() {
             >
               Load More Quiz Packs
             </button>
-          ) : (
-            !isLoading &&
-            results.length === 0 &&
-            quizzes.length > 0 && (
-              <p className="text-muted-foreground">
-                No packs match these filters. Try clearing a filter.
-              </p>
-            )
           )}
         </div>
       </section>
