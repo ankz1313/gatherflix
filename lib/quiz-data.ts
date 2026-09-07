@@ -75,6 +75,74 @@ export async function getMyQuizzes(): Promise<MyQuiz[]> {
   }))
 }
 
+export type EditableQuiz = {
+  id: string
+  title: string
+  description: string | null
+  category: string | null
+  subtags: string[]
+  difficulty: Difficulty
+  coverImageUrl: string | null
+  status: QuizStatus
+  questions: QuizQuestion[]
+}
+
+// A single quiz owned by the current user (any status) plus its ordered
+// questions, for the create/edit flow. RLS scopes it to the owner.
+export async function getMyQuizForEdit(id: string): Promise<EditableQuiz | null> {
+  const supabase = await createServerSupabase()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data, error } = await supabase
+    .from('quizzes')
+    .select(
+      'id, title, description, category, subtags, difficulty, cover_image_url, status, questions(id, text, image_url, options, timer_seconds, points, order_index)',
+    )
+    .eq('id', id)
+    .eq('owner_id', user.id)
+    .maybeSingle()
+
+  if (error) throw error
+  if (!data) return null
+
+  const rawQuestions = (data.questions ?? []) as {
+    id: string
+    text: string
+    image_url: string | null
+    options: QuizChoice[]
+    timer_seconds: number
+    points: number
+    order_index: number
+  }[]
+
+  const questions: QuizQuestion[] = rawQuestions
+    .map((q) => ({
+      id: q.id,
+      text: q.text,
+      imageUrl: q.image_url,
+      choices: Array.isArray(q.options) ? q.options : [],
+      timerSeconds: q.timer_seconds,
+      points: q.points,
+      orderIndex: q.order_index,
+    }))
+    .sort((a, b) => a.orderIndex - b.orderIndex)
+
+  return {
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    category: data.category,
+    subtags: data.subtags ?? [],
+    difficulty: normalizeDifficulty(data.difficulty),
+    coverImageUrl: data.cover_image_url,
+    status: data.status === 'published' ? 'published' : 'draft',
+    questions,
+  }
+}
+
 function minutesFromSeconds(totalSeconds: number, questionCount: number): number {
   // Fall back to a rough estimate if timers are missing.
   const seconds = totalSeconds > 0 ? totalSeconds : questionCount * 20

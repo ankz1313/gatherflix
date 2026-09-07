@@ -133,7 +133,11 @@ export default async function CreatorDashboardPage() {
                     <hr className="my-4 border-border" />
                     <div className="mt-auto flex items-center justify-between font-display text-sm font-bold">
                       <Link
-                        href={`/host/room?quiz=${quiz.id}`}
+                        href={
+                          quiz.status === 'published'
+                            ? `/host/room?quiz=${quiz.id}`
+                            : `/create/questions?quiz=${quiz.id}`
+                        }
                         className={quiz.status === 'published' ? 'text-gold' : 'text-brand'}
                       >
                         {quiz.status === 'published' ? 'Host Quiz' : 'Continue Draft'}

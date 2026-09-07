@@ -1,24 +1,31 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { saveQuizDetails } from '@/app/create/actions'
 
 const CATEGORIES = [
-  { label: '\u{1F3AC} Bollywood Cinema', enabled: true },
-  { label: '\u{1F4FA} Series (Soon)', enabled: false },
-  { label: '\u{1F3AC} Hollywood (Soon)', enabled: false },
+  { label: '\u{1F3AC} Bollywood Cinema', value: 'Bollywood Cinema', enabled: true },
+  { label: '\u{1F4FA} Series (Soon)', value: 'Series', enabled: false },
+  { label: '\u{1F3AC} Hollywood (Soon)', value: 'Hollywood', enabled: false },
 ]
 
 const DECADES = ['90s', '2000s', '2010s', '2020s']
 const TYPES = ['Songs', 'Dialogues', 'Actors', 'Directors']
 
 const DIFFICULTIES = [
-  { label: 'Easy (Freshman)', dot: 'var(--success)' },
-  { label: 'Medium (Box Office)', dot: 'var(--gold)' },
-  { label: 'Hard (Director Cut)', dot: 'var(--brand)' },
+  { label: 'Easy (Freshman)', value: 'Easy', dot: 'var(--success)' },
+  { label: 'Medium (Box Office)', value: 'Medium', dot: 'var(--gold)' },
+  { label: 'Hard (Director Cut)', value: 'Hard', dot: 'var(--brand)' },
 ]
 
 export function QuizDetailsForm() {
+  const router = useRouter()
+  const [pending, startTransition] = useTransition()
+  const [error, setError] = useState('')
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
   const [category, setCategory] = useState(0)
   const [decade, setDecade] = useState('90s')
   const [types, setTypes] = useState<string[]>(['Songs', 'Dialogues'])
@@ -26,6 +33,28 @@ export function QuizDetailsForm() {
 
   function toggleType(t: string) {
     setTypes((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]))
+  }
+
+  function handleNext() {
+    setError('')
+    if (!title.trim()) {
+      setError('Please enter a quiz title before continuing.')
+      return
+    }
+    startTransition(async () => {
+      const result = await saveQuizDetails({
+        title,
+        description,
+        category: CATEGORIES[category].value,
+        subtags: [decade, ...types],
+        difficulty: DIFFICULTIES[difficulty].value,
+      })
+      if (!result.ok) {
+        setError(result.error)
+        return
+      }
+      router.push(`/create/questions?quiz=${result.quizId}`)
+    })
   }
 
   return (
@@ -68,6 +97,8 @@ export function QuizDetailsForm() {
             <input
               id="q-title"
               type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Ultimate Shah Rukh Khan Mega Fan Quiz"
               className="mt-2 w-full rounded-xl border border-border bg-background/60 px-4 py-3.5 outline-none placeholder:text-muted-foreground/70 focus:border-brand"
             />
@@ -81,6 +112,8 @@ export function QuizDetailsForm() {
             <textarea
               id="q-desc"
               rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="Write a short description to hook your players. What cinematic surprises do you have in store?"
               className="mt-2 w-full resize-none rounded-xl border border-border bg-background/60 px-4 py-3.5 outline-none placeholder:text-muted-foreground/70 focus:border-brand"
             />
@@ -179,6 +212,11 @@ export function QuizDetailsForm() {
         </div>
 
         {/* Nav */}
+        {error && (
+          <p className="mt-6 rounded-xl border border-brand/40 bg-brand/5 px-4 py-3 text-sm font-semibold text-brand">
+            {error}
+          </p>
+        )}
         <div className="mt-8 flex items-center justify-between border-t border-border pt-6">
           <Link
             href="/create"
@@ -186,12 +224,14 @@ export function QuizDetailsForm() {
           >
             Cancel Quiz Creation
           </Link>
-          <Link
-            href="/create/questions"
-            className="rounded-full bg-gold px-8 py-3.5 font-display text-sm font-bold text-gold-foreground shadow-[0_10px_45px_-12px] shadow-gold/70 transition-transform hover:scale-[1.02]"
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={pending}
+            className="rounded-full bg-gold px-8 py-3.5 font-display text-sm font-bold text-gold-foreground shadow-[0_10px_45px_-12px] shadow-gold/70 transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Next: Add Questions
-          </Link>
+            {pending ? 'Saving\u2026' : 'Next: Add Questions'}
+          </button>
         </div>
       </div>
     </main>
