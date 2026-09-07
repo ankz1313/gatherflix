@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { CreatorNav } from '@/components/creator/creator-nav'
 import { getMyQuizForEdit } from '@/lib/quiz-data'
@@ -111,6 +112,17 @@ export default async function ReviewStepPage({
                     </span>
                   </div>
                   <p className="mt-3 font-display text-lg font-bold">{q.text}</p>
+
+                  {q.imageUrl && (
+                    <div className="relative mt-4 aspect-[16/9] w-full overflow-hidden rounded-xl border border-border bg-background/40">
+                      <Image
+                        src={q.imageUrl || '/placeholder.svg'}
+                        alt={`Media for question ${i + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
 
                   <div className="mt-4 space-y-2.5">
                     {q.choices.map((choice, ci) => (

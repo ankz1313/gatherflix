@@ -132,16 +132,31 @@ export default async function CreatorDashboardPage() {
                     </p>
                     <hr className="my-4 border-border" />
                     <div className="mt-auto flex items-center justify-between font-display text-sm font-bold">
-                      <Link
-                        href={
-                          quiz.status === 'published'
-                            ? `/host/room?quiz=${quiz.id}`
-                            : `/create/questions?quiz=${quiz.id}`
-                        }
-                        className={quiz.status === 'published' ? 'text-gold' : 'text-brand'}
-                      >
-                        {quiz.status === 'published' ? 'Host Quiz' : 'Continue Draft'}
-                      </Link>
+                      {quiz.status === 'published' ? (
+                        <>
+                          <Link href={`/host/room?quiz=${quiz.id}`} className="text-gold">
+                            Host Quiz
+                          </Link>
+                          <Link
+                            href={`/create/details?quiz=${quiz.id}`}
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            Edit
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          <Link href={`/create/questions?quiz=${quiz.id}`} className="text-brand">
+                            Continue Draft
+                          </Link>
+                          <Link
+                            href={`/create/details?quiz=${quiz.id}`}
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            Edit Details
+                          </Link>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -4,10 +4,12 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import type { DraftQuestion } from '@/lib/creator'
 import { saveQuizQuestions, type QuestionInput } from '@/app/create/actions'
+import { ImageUpload } from '@/components/creator/image-upload'
 
 function blank(): DraftQuestion {
   return {
     prompt: '',
+    imageUrl: null,
     choices: [
       { label: 'A', text: '' },
       { label: 'B', text: '' },
@@ -21,6 +23,7 @@ function blank(): DraftQuestion {
 function toQuestionInput(q: DraftQuestion): QuestionInput {
   return {
     text: q.prompt.trim(),
+    imageUrl: q.imageUrl,
     options: q.choices.map((c, i) => ({
       label: c.label,
       text: c.text.trim(),
@@ -191,15 +194,14 @@ export function QuestionEditor({ quizId, quizTitle, initialQuestions }: Question
           />
         </div>
 
-        {/* Media dropzone */}
-        <div className="mt-6 grid place-items-center rounded-2xl border border-border bg-background/40 px-6 py-12 text-center">
-          <span className="grid size-12 place-items-center rounded-lg border-2 border-brand text-2xl text-brand">
-            {'\u{1F39E}\uFE0F'}
-          </span>
-          <p className="mt-4 font-display font-bold">Drag &amp; Drop a movie poster, GIF, or audio track</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Recommended: 16:9 cinematic aspect ratio (.mp4, .png, .jpeg max 10MB)
-          </p>
+        {/* Media upload */}
+        <div className="mt-6">
+          <ImageUpload
+            value={active.imageUrl}
+            onChange={(url) => update({ imageUrl: url })}
+            label="Drag & drop or click to add a movie poster or still"
+            hint={'Recommended: 16:9 cinematic aspect ratio \u00B7 PNG, JPEG, GIF, WEBP \u00B7 max 10MB'}
+          />
         </div>
 
         {/* Answer choices */}

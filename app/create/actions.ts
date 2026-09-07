@@ -6,6 +6,7 @@ import { createServerSupabase } from '@/lib/supabase/server'
 
 export type QuestionInput = {
   text: string
+  imageUrl: string | null
   options: { label: string; text: string; correct: boolean }[]
   timerSeconds: number
   points: number
@@ -18,6 +19,7 @@ type QuizDetailsInput = {
   category: string
   subtags: string[]
   difficulty: string
+  coverImageUrl: string | null
 }
 
 async function getSessionClient() {
@@ -45,6 +47,7 @@ export async function saveQuizDetails(
     category: input.category,
     subtags: input.subtags,
     difficulty: input.difficulty,
+    cover_image_url: input.coverImageUrl,
   }
 
   if (input.quizId) {
@@ -93,6 +96,7 @@ export async function saveQuizQuestions(
     const rows = questions.map((q, i) => ({
       quiz_id: quizId,
       text: q.text,
+      image_url: q.imageUrl,
       options: q.options,
       timer_seconds: q.timerSeconds,
       points: q.points,
