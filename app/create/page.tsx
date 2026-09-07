@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { CreatorNav } from '@/components/creator/creator-nav'
 import { getMyQuizzes } from '@/lib/quiz-data'
+import { setQuizStatus } from '@/app/create/actions'
 
 export const metadata: Metadata = {
   title: 'My Quizzes · GatherFlix',
@@ -137,24 +138,44 @@ export default async function CreatorDashboardPage() {
                           <Link href={`/host/room?quiz=${quiz.id}`} className="text-gold">
                             Host Quiz
                           </Link>
-                          <Link
-                            href={`/create/details?quiz=${quiz.id}`}
-                            className="text-muted-foreground hover:text-foreground"
-                          >
-                            Edit
-                          </Link>
+                          <div className="flex items-center gap-4">
+                            <Link
+                              href={`/create/details?quiz=${quiz.id}`}
+                              className="text-muted-foreground hover:text-foreground"
+                            >
+                              Edit
+                            </Link>
+                            <form action={setQuizStatus.bind(null, quiz.id, 'draft')}>
+                              <button
+                                type="submit"
+                                className="text-muted-foreground hover:text-foreground"
+                              >
+                                Make private
+                              </button>
+                            </form>
+                          </div>
                         </>
                       ) : (
                         <>
                           <Link href={`/create/questions?quiz=${quiz.id}`} className="text-brand">
                             Continue Draft
                           </Link>
-                          <Link
-                            href={`/create/details?quiz=${quiz.id}`}
-                            className="text-muted-foreground hover:text-foreground"
-                          >
-                            Edit Details
-                          </Link>
+                          <div className="flex items-center gap-4">
+                            {quiz.questionCount > 0 && (
+                              <Link
+                                href={`/create/review?quiz=${quiz.id}`}
+                                className="text-gold hover:text-foreground"
+                              >
+                                Publish
+                              </Link>
+                            )}
+                            <Link
+                              href={`/create/details?quiz=${quiz.id}`}
+                              className="text-muted-foreground hover:text-foreground"
+                            >
+                              Edit Details
+                            </Link>
+                          </div>
                         </>
                       )}
                     </div>
