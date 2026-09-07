@@ -7,13 +7,30 @@ export const QUIZ_CATEGORIES = [
 
 export type QuizCategory = (typeof QUIZ_CATEGORIES)[number]
 
-export function quizMatchesCategory(
-  quiz: { category: string | null; subtags: string[] },
-  selected: QuizCategory | null,
-): boolean {
+const BOLLYWOOD = QUIZ_CATEGORIES[0]
+
+type Categorized = { category: string | null; subtags: string[] }
+
+function blob(quiz: Categorized): string {
+  return [quiz.category, ...quiz.subtags].filter(Boolean).join(' ').toLowerCase()
+}
+
+function mentions(quiz: Categorized, cat: QuizCategory): boolean {
+  const hay = blob(quiz)
+  return hay.includes(cat.value.toLowerCase()) || hay.includes(cat.label.toLowerCase())
+}
+
+// Legacy packs were stored as Romance / Music / Action / etc. Those are Bollywood
+// unless they explicitly name Hollywood, TV Series, or Sports.
+export function resolveQuizCategory(quiz: Categorized): QuizCategory {
+  for (const cat of QUIZ_CATEGORIES) {
+    if (cat.value === BOLLYWOOD.value) continue
+    if (mentions(quiz, cat)) return cat
+  }
+  return BOLLYWOOD
+}
+
+export function quizMatchesCategory(quiz: Categorized, selected: QuizCategory | null): boolean {
   if (!selected) return true
-  const hay = [quiz.category, ...quiz.subtags].filter(Boolean).join(' ').toLowerCase()
-  const value = selected.value.toLowerCase()
-  const label = selected.label.toLowerCase()
-  return hay.includes(value) || hay.includes(label)
+  return resolveQuizCategory(quiz).value === selected.value
 }
