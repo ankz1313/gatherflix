@@ -16,21 +16,6 @@ export const metadata: Metadata = {
 
 const FALLBACK_IMAGE = '/decks/deck-classic-90s-romance.png'
 
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="size-5 text-gold" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
-      <path
-        d="m8.5 12 2.3 2.3 4.7-4.9"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
 async function resolveQuiz(
   quizId?: string,
   slug?: string,
@@ -73,7 +58,6 @@ export default async function HostPreviewPage({
   }
 
   const sample = quiz.questions[0]
-  const correctIndex = sample ? sample.choices.findIndex((c) => c.correct) : -1
 
   return (
     <>
@@ -181,26 +165,16 @@ export default async function HostPreviewPage({
                 </p>
 
                 <ul className="mt-6 flex flex-col gap-3">
-                  {sample.choices.map((opt, i) => {
-                    const correct = i === correctIndex
-                    return (
-                      <li
-                        key={opt.label}
-                        className={`flex items-center justify-between rounded-xl border px-5 py-3.5 ${
-                          correct ? 'border-gold bg-gold-soft' : 'border-border bg-background/40'
-                        }`}
-                      >
-                        <span
-                          className={`font-display text-[0.95rem] font-bold ${
-                            correct ? 'text-gold' : ''
-                          }`}
-                        >
-                          {opt.label}. {opt.text}
-                        </span>
-                        {correct && <CheckIcon />}
-                      </li>
-                    )
-                  })}
+                  {sample.choices.map((opt) => (
+                    <li
+                      key={opt.label}
+                      className="flex items-center rounded-xl border border-border bg-background/40 px-5 py-3.5"
+                    >
+                      <span className="font-display text-[0.95rem] font-bold">
+                        {opt.label}. {opt.text}
+                      </span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             ) : (
