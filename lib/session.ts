@@ -18,7 +18,7 @@ export const CURRENT_SESSION = {
   deckSlug: 'classic-90s-romances',
   hostName: 'Rahul Khanna',
   roomName: 'Bollywood Waiting Room',
-  minPlayers: 4,
+  minPlayers: 2,
 }
 
 // Desktop room lobby — icon-based avatars (see components/avatar-picker).
