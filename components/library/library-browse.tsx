@@ -6,7 +6,7 @@ import Image from 'next/image'
 import useSWR from 'swr'
 import { difficultyClass } from '@/lib/decks'
 import type { QuizSummary } from '@/lib/quiz-data'
-import { QUIZ_CATEGORIES, quizMatchesCategory, type QuizCategory } from '@/lib/categories'
+import { QUIZ_CATEGORIES, quizMatchesCategory, resolveQuizCategory, type QuizCategory } from '@/lib/categories'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { UserMenu } from '@/components/auth/user-menu'
 
@@ -45,8 +45,11 @@ function ClockIcon() {
 }
 
 function quizTags(quiz: QuizSummary): string[] {
-  const all = [quiz.category, ...quiz.subtags].filter(Boolean) as string[]
-  return Array.from(new Set(all)).slice(0, 3)
+  const canonical = resolveQuizCategory(quiz).label
+  const extras = [quiz.category, ...quiz.subtags].filter(Boolean) as string[]
+  const skip = new Set([canonical.toLowerCase(), 'bollywood cinema'])
+  const rest = extras.filter((t) => !skip.has(t.toLowerCase()))
+  return Array.from(new Set([canonical, ...rest])).slice(0, 3)
 }
 
 function TagRow({ quiz }: { quiz: QuizSummary }) {
