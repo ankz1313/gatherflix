@@ -1,23 +1,27 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { MobileShell } from '@/components/mobile-shell'
 import { RoomCodeInput } from '@/components/join/room-code-input'
 
-export default function JoinEnterCodePage() {
+function JoinEnterCodeContent() {
   const router = useRouter()
-  const [code, setCode] = useState('')
+  const params = useSearchParams()
+  const preset = (params.get('code') ?? '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 6)
+
+  const [code, setCode] = useState(preset)
   const [checking, setChecking] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const autoChecked = useRef(false)
 
   async function validateAndContinue(value?: string) {
-    const final = value ?? code
+    const final = (value ?? code).replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
     if (final.length < 6) return
     setChecking(true)
     setError(null)
     try {
-      const res = await fetch(`/api/rooms/${encodeURIComponent(final)}`)
+      const res = await fetch(`/api/rooms/${encodeURIComponent(final)}`, { cache: 'no-store' })
       const data = await res.json()
       if (!res.ok || !data.valid) {
         setError('No room found with that code. Double-check and try again.')
@@ -35,6 +39,14 @@ export default function JoinEnterCodePage() {
     }
   }
 
+  useEffect(() => {
+    if (autoChecked.current || preset.length < 6) return
+    autoChecked.current = true
+    void validateAndContinue(preset)
+    // Preset codes come from the host QR / shared link and should auto-enter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preset])
+
   return (
     <MobileShell>
       <div className="flex flex-1 flex-col justify-center gap-8 py-10">
@@ -48,6 +60,7 @@ export default function JoinEnterCodePage() {
         </div>
 
         <RoomCodeInput
+          initialCode={preset}
           onComplete={(value) => {
             setCode(value)
             validateAndContinue(value)
@@ -84,5 +97,13 @@ export default function JoinEnterCodePage() {
         </button>
       </div>
     </MobileShell>
+  )
+}
+
+export default function JoinEnterCodePage() {
+  return (
+    <Suspense fallback={null}>
+      <JoinEnterCodeContent />
+    </Suspense>
   )
 }
