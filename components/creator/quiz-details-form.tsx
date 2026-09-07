@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { saveQuizDetails } from '@/app/create/actions'
+import { ImageUpload } from '@/components/creator/image-upload'
 
 const CATEGORIES = [
   { label: '\u{1F3AC} Bollywood Cinema', value: 'Bollywood Cinema', enabled: true },
@@ -20,16 +21,39 @@ const DIFFICULTIES = [
   { label: 'Hard (Director Cut)', value: 'Hard', dot: 'var(--brand)' },
 ]
 
-export function QuizDetailsForm() {
+export type QuizDetailsInitial = {
+  quizId: string
+  title: string
+  description: string
+  category: string | null
+  subtags: string[]
+  difficulty: string
+  coverImageUrl: string | null
+}
+
+function initialDecade(subtags: string[]): string {
+  return DECADES.find((d) => subtags.includes(d)) ?? '90s'
+}
+
+export function QuizDetailsForm({ initial }: { initial?: QuizDetailsInitial }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState('')
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState(0)
-  const [decade, setDecade] = useState('90s')
-  const [types, setTypes] = useState<string[]>(['Songs', 'Dialogues'])
-  const [difficulty, setDifficulty] = useState(1)
+  const [title, setTitle] = useState(initial?.title ?? '')
+  const [description, setDescription] = useState(initial?.description ?? '')
+  const [category, setCategory] = useState(() => {
+    const idx = CATEGORIES.findIndex((c) => c.value === initial?.category)
+    return idx >= 0 ? idx : 0
+  })
+  const [decade, setDecade] = useState(() => initialDecade(initial?.subtags ?? []))
+  const [types, setTypes] = useState<string[]>(() =>
+    initial ? TYPES.filter((t) => initial.subtags.includes(t)) : ['Songs', 'Dialogues'],
+  )
+  const [difficulty, setDifficulty] = useState(() => {
+    const idx = DIFFICULTIES.findIndex((d) => d.value === initial?.difficulty)
+    return idx >= 0 ? idx : 1
+  })
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(initial?.coverImageUrl ?? null)
 
   function toggleType(t: string) {
     setTypes((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]))
@@ -43,11 +67,13 @@ export function QuizDetailsForm() {
     }
     startTransition(async () => {
       const result = await saveQuizDetails({
+        quizId: initial?.quizId,
         title,
         description,
         category: CATEGORIES[category].value,
         subtags: [decade, ...types],
         difficulty: DIFFICULTIES[difficulty].value,
+        coverImageUrl,
       })
       if (!result.ok) {
         setError(result.error)
@@ -117,6 +143,22 @@ export function QuizDetailsForm() {
               placeholder="Write a short description to hook your players. What cinematic surprises do you have in store?"
               className="mt-2 w-full resize-none rounded-xl border border-border bg-background/60 px-4 py-3.5 outline-none placeholder:text-muted-foreground/70 focus:border-brand"
             />
+          </div>
+
+          {/* Cover image */}
+          <div>
+            <span className="font-display text-sm font-bold">Cover Image</span>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Shown on your quiz card and the public library.
+            </p>
+            <div className="mt-2">
+              <ImageUpload
+                value={coverImageUrl}
+                onChange={setCoverImageUrl}
+                label="Drag & drop or click to add a cover image"
+                hint={'16:9 works best \u00B7 PNG, JPEG, GIF, WEBP \u00B7 max 10MB'}
+              />
+            </div>
           </div>
 
           {/* Primary category */}
@@ -230,7 +272,7 @@ export function QuizDetailsForm() {
             disabled={pending}
             className="rounded-full bg-gold px-8 py-3.5 font-display text-sm font-bold text-gold-foreground shadow-[0_10px_45px_-12px] shadow-gold/70 transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {pending ? 'Saving\u2026' : 'Next: Add Questions'}
+            {pending ? 'Saving\u2026' : initial ? 'Save & Edit Questions' : 'Next: Add Questions'}
           </button>
         </div>
       </div>

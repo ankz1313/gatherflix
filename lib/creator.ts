@@ -18,6 +18,7 @@ export type DraftChoice = {
 
 export type DraftQuestion = {
   prompt: string
+  imageUrl: string | null
   choices: DraftChoice[]
   correctIndex: number
   timer: number

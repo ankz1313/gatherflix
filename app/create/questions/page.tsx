@@ -23,6 +23,7 @@ export default async function QuestionsStepPage({
 
   const initialQuestions: DraftQuestion[] = quiz.questions.map((q) => ({
     prompt: q.text,
+    imageUrl: q.imageUrl,
     choices: q.choices.map((c) => ({ label: c.label, text: c.text })),
     correctIndex: Math.max(
       0,
