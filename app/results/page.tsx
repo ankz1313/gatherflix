@@ -5,6 +5,8 @@ import { getQuizWithQuestions } from '@/lib/quiz-data'
 import { rankPlayers } from '@/lib/score'
 import { createServiceClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Final Results · GatherFlix',
   description: 'The final leaderboard and podium for your Trivia Night battle.',
