@@ -7,10 +7,15 @@ export const metadata: Metadata = {
   description: 'Your final placement in the Trivia Night battle.',
 }
 
-export default function MobileFinalPage() {
+export default async function MobileFinalPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ code?: string }>
+}) {
+  const { code } = await searchParams
   return (
     <MobileShell>
-      <MobileFinal />
+      <MobileFinal code={code?.trim() ?? ''} />
     </MobileShell>
   )
 }

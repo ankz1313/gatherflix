@@ -10,12 +10,12 @@ export const metadata: Metadata = {
 export default async function MobileResultPage({
   searchParams,
 }: {
-  searchParams: Promise<{ correct?: string }>
+  searchParams: Promise<{ code?: string }>
 }) {
-  const { correct } = await searchParams
+  const { code } = await searchParams
   return (
     <MobileShell>
-      <MobileResult correct={correct === '1'} />
+      <MobileResult code={code?.trim() ?? ''} />
     </MobileShell>
   )
 }

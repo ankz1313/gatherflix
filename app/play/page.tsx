@@ -75,6 +75,7 @@ export default async function PlayPage({
       timerSeconds={question.timerSeconds || 20}
       playerCount={players?.length ?? 0}
       revealHref={`/play/reveal?code=${encodeURIComponent(normalized)}`}
+      choices={question.choices.map((c) => ({ label: c.label, text: c.text }))}
     />
   )
 }
