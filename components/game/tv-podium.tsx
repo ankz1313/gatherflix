@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { AvatarBadge } from '@/components/join/avatar-badge'
 
 export type Standing = {
@@ -22,12 +23,52 @@ const PODIUM_STYLE = [
 export function TvPodium({
   quizTitle,
   roomCode,
-  standings,
+  standings: initialStandings,
 }: {
   quizTitle: string
   roomCode: string
   standings: Standing[]
 }) {
+  const [standings, setStandings] = useState(initialStandings)
+
+  useEffect(() => {
+    setStandings(initialStandings)
+  }, [initialStandings])
+
+  useEffect(() => {
+    if (!roomCode) return
+    let cancelled = false
+
+    async function refresh() {
+      try {
+        const res = await fetch(`/api/rooms/${encodeURIComponent(roomCode)}/players`, {
+          cache: 'no-store',
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        const next = (data.players ?? []) as {
+          nickname: string
+          avatar: string | null
+          score: number
+        }[]
+        if (cancelled) return
+        setStandings(
+          [...next]
+            .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+            .map((p) => ({ name: p.nickname, avatar: p.avatar, score: p.score ?? 0 })),
+        )
+      } catch {
+        // Keep last known standings.
+      }
+    }
+
+    refresh()
+    const t = setInterval(refresh, 2000)
+    return () => {
+      cancelled = true
+      clearInterval(t)
+    }
+  }, [roomCode])
   const first = standings[0]
   const second = standings[1]
   const third = standings[2]

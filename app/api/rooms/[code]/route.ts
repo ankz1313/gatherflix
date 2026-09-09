@@ -51,7 +51,7 @@ export async function GET(
   )
 }
 
-// PATCH /api/rooms/[code] — host starts the game (lobby -> playing).
+// PATCH /api/rooms/[code] — host starts the game or opens final results.
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ code: string }> },
@@ -70,14 +70,14 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400, headers: NO_STORE })
   }
 
-  if (body.status !== 'playing') {
+  if (body.status !== 'playing' && body.status !== 'finished') {
     return NextResponse.json({ error: 'Unsupported status.' }, { status: 400, headers: NO_STORE })
   }
 
   const supabase = createServiceClient()
   const { data: room, error } = await supabase
     .from('rooms')
-    .update({ status: 'playing' })
+    .update({ status: body.status })
     .eq('code', normalized)
     .select('id, code, status, quiz_id')
     .maybeSingle()

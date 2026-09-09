@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { lastAnswerStorageKey, type QuestionResult } from '@/lib/score'
 
 export function MobileResult({ code }: { code: string }) {
+  const router = useRouter()
   const [result, setResult] = useState<QuestionResult | null>(null)
 
   useEffect(() => {
@@ -17,6 +19,33 @@ export function MobileResult({ code }: { code: string }) {
       setResult(null)
     }
   }, [code])
+
+  useEffect(() => {
+    if (!code) return
+    let cancelled = false
+    const finalHref = `/results/mobile?code=${encodeURIComponent(code)}`
+
+    async function checkFinished() {
+      try {
+        const res = await fetch(`/api/rooms/${encodeURIComponent(code)}/players`, {
+          cache: 'no-store',
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        if (!cancelled && data.status === 'finished') {
+          router.push(finalHref)
+        }
+      } catch {
+        // Stay on the round result until the host opens the podium.
+      }
+    }
+
+    const t = setInterval(checkFinished, 2000)
+    return () => {
+      cancelled = true
+      clearInterval(t)
+    }
+  }, [code, router])
 
   const correct = result?.correct ?? false
   const accent = correct ? 'var(--success)' : 'var(--brand)'

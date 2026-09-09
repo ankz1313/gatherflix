@@ -2,23 +2,46 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { lastAnswerStorageKey, type QuestionResult } from '@/lib/score'
 
 function ordinal(place: number) {
   return place === 1 ? '1st' : place === 2 ? '2nd' : place === 3 ? '3rd' : `${place}th`
 }
 
+type LiveMe = {
+  nickname: string
+  score: number
+  rank: number
+  playerCount: number
+}
+
 export function MobileFinal({ code }: { code: string }) {
-  const [me, setMe] = useState<QuestionResult | null>(null)
+  const [me, setMe] = useState<LiveMe | null>(null)
 
   useEffect(() => {
     if (!code) return
-    const raw = sessionStorage.getItem(lastAnswerStorageKey(code))
-    if (!raw) return
-    try {
-      setMe(JSON.parse(raw) as QuestionResult)
-    } catch {
-      setMe(null)
+    let cancelled = false
+
+    async function load() {
+      const token = sessionStorage.getItem(`gf_player_token_${code}`)
+      if (!token) return
+      try {
+        const res = await fetch(
+          `/api/rooms/${encodeURIComponent(code)}/me?token=${encodeURIComponent(token)}`,
+          { cache: 'no-store' },
+        )
+        if (!res.ok) return
+        const data = (await res.json()) as LiveMe
+        if (!cancelled) setMe(data)
+      } catch {
+        // Keep last known placement.
+      }
+    }
+
+    load()
+    const t = setInterval(load, 2000)
+    return () => {
+      cancelled = true
+      clearInterval(t)
     }
   }, [code])
 
@@ -27,7 +50,7 @@ export function MobileFinal({ code }: { code: string }) {
   return (
     <div className="flex min-h-[100dvh] flex-col px-6 pb-8 pt-10">
       <p className="text-center text-sm uppercase tracking-wider text-muted-foreground">
-        Your results
+        Final results
       </p>
 
       <div className="mt-6 flex flex-1 flex-col items-center rounded-[2rem] border border-border bg-card/60 px-7 py-9 text-center">
@@ -38,14 +61,16 @@ export function MobileFinal({ code }: { code: string }) {
         </div>
 
         <span className="mt-6 rounded-full bg-gold px-5 py-1.5 font-display text-sm font-black uppercase tracking-wide text-gold-foreground">
-          {place ? `${ordinal(place)} Place` : 'In the running'}
+          {place ? `${ordinal(place)} Place` : 'Tallying scores'}
         </span>
 
         <h1 className="mt-6 font-display text-4xl font-black tracking-tight text-balance">
-          {place ? `You Placed #${place}!` : 'Score saved'}
+          {place ? `You Placed #${place}!` : 'Hang tight'}
         </h1>
         <p className="mt-4 text-lg text-muted-foreground text-pretty">
-          Nice round — keep an eye on the TV for the podium.
+          {me?.nickname
+            ? `Nice run, ${me.nickname}. Watch the TV for the full podium.`
+            : 'Your score is coming in from the live room.'}
         </p>
 
         <hr className="my-7 w-full border-border" />
@@ -56,7 +81,7 @@ export function MobileFinal({ code }: { code: string }) {
               Score
             </p>
             <p className="mt-1 font-display text-4xl font-black text-gold">
-              {(me?.totalScore ?? 0).toLocaleString()}
+              {(me?.score ?? 0).toLocaleString()}
             </p>
           </div>
           <div>
@@ -71,7 +96,9 @@ export function MobileFinal({ code }: { code: string }) {
 
         <div className="mt-8 flex w-full items-center gap-3 rounded-2xl border border-brand/40 px-5 py-3.5">
           <span className="size-2.5 animate-pulse rounded-full bg-brand" />
-          <span className="font-semibold text-muted-foreground">Waiting for Host to replay…</span>
+          <span className="font-semibold text-muted-foreground">
+            {me?.playerCount ? `${me.playerCount} players on the board` : 'Waiting for Host…'}
+          </span>
         </div>
 
         <Link
