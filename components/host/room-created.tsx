@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { QRCodeSVG } from 'qrcode.react'
 import { Clapperboard, Play } from 'lucide-react'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
@@ -57,10 +58,13 @@ async function ensureLobbyRoom(quizId: string): Promise<string> {
 }
 
 export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
+  const router = useRouter()
   const [code, setCode] = useState<string | null>(null)
   const [error, setError] = useState(false)
   const [joined, setJoined] = useState<JoinedPlayer[]>([])
   const [origin, setOrigin] = useState('')
+  const [starting, setStarting] = useState(false)
+  const [startError, setStartError] = useState<string | null>(null)
 
   useEffect(() => {
     setOrigin(window.location.origin)
@@ -116,7 +120,30 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
       ? `${origin}/join?code=${code}`
       : `/join?code=${code}`
     : ''
-  const canStart = !!code && joined.length >= CURRENT_SESSION.minPlayers
+  const canStart = !!code && joined.length >= CURRENT_SESSION.minPlayers && !starting
+
+  async function handleStart() {
+    if (!code || !canStart) return
+    setStarting(true)
+    setStartError(null)
+    try {
+      const res = await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'playing' }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error ?? 'Could not start the game.')
+      }
+      router.push(`/play?code=${encodeURIComponent(code)}`)
+    } catch (err) {
+      console.error('[v0] failed to start game:', err)
+      setStartError('Could not start the game. Please try again.')
+      setStarting(false)
+    }
+  }
+
   const codeDigits = code ? code.split('') : Array(6).fill('')
 
   return (
@@ -231,11 +258,17 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
           <button
             type="button"
             disabled={!canStart}
+            onClick={() => void handleStart()}
             className="mt-6 inline-flex w-full items-center justify-center gap-2.5 rounded-2xl bg-gold px-8 py-4 font-display text-lg font-black uppercase tracking-wide text-gold-foreground shadow-[0_10px_45px_-10px] shadow-gold/70 transition-transform enabled:hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Start the Trivia Night
+            {starting ? 'Starting…' : 'Start the Trivia Night'}
             <Play className="size-5 fill-current" aria-hidden="true" />
           </button>
+          {startError && (
+            <p className="mt-2 text-center text-sm font-semibold text-brand" role="alert">
+              {startError}
+            </p>
+          )}
           <p className="mt-3 text-center text-xs text-muted-foreground">
             Minimum {CURRENT_SESSION.minPlayers} players required. Host holds controller.
           </p>
