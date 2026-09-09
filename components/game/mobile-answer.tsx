@@ -1,55 +1,100 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { SAMPLE_QUESTION } from '@/lib/game'
+import { AnswerShape } from '@/components/game/answer-shape'
+import { ANSWER_STYLES } from '@/lib/game'
+import { lastAnswerStorageKey, type QuestionResult } from '@/lib/score'
 
-const OPTIONS = [
-  { letter: 'A', color: 'var(--gold)' },
-  { letter: 'B', color: 'var(--brand)' },
-  { letter: 'C', color: 'var(--success)' },
-  { letter: 'D', color: '#f2622e' },
-]
-
-// The color code that matches the correct answer shown on the TV screen.
-const CORRECT_LETTER = OPTIONS[SAMPLE_QUESTION.correctIndex].letter
+type Choice = { label: string; text: string }
 
 type MobileAnswerProps = {
+  code: string
+  questionIndex?: number
   round?: number
   totalQuestions?: number
   points?: number
   timerSeconds?: number
+  choices: Choice[]
 }
 
 export function MobileAnswer({
+  code,
+  questionIndex = 0,
   round = 1,
   totalQuestions = 1,
   points = 250,
   timerSeconds = 20,
+  choices,
 }: MobileAnswerProps) {
   const router = useRouter()
   const [remaining, setRemaining] = useState(timerSeconds)
   const [locked, setLocked] = useState<string | null>(null)
+  const submitting = useRef(false)
+  const lockedRef = useRef(false)
 
   useEffect(() => {
-    if (remaining <= 0) return
-    const t = setTimeout(() => setRemaining((r) => r - 1), 1000)
-    return () => clearTimeout(t)
+    if (remaining > 0) {
+      const t = setTimeout(() => setRemaining((r) => r - 1), 1000)
+      return () => clearTimeout(t)
+    }
+    if (!lockedRef.current) {
+      void submit('')
+    }
   }, [remaining])
 
-  function pick(letter: string) {
-    if (locked) return
-    setLocked(letter)
-    setTimeout(() => {
-      router.push(`/play/mobile/result?correct=${letter === CORRECT_LETTER ? '1' : '0'}`)
-    }, 900)
+  async function submit(letter: string) {
+    if (submitting.current) return
+    submitting.current = true
+    lockedRef.current = true
+    if (letter) setLocked(letter)
+
+    const resultHref = `/play/mobile/result?code=${encodeURIComponent(code)}`
+    const token = sessionStorage.getItem(`gf_player_token_${code}`)
+
+    if (!token) {
+      router.push(resultHref)
+      return
+    }
+
+    const lockKey = `gf_scored_${code}_${questionIndex}`
+    if (sessionStorage.getItem(lockKey)) {
+      router.push(resultHref)
+      return
+    }
+    sessionStorage.setItem(lockKey, '1')
+
+    try {
+      const res = await fetch(`/api/rooms/${encodeURIComponent(code)}/answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token,
+          letter,
+          questionIndex,
+          timeRemaining: remaining,
+        }),
+      })
+      const data = (await res.json()) as QuestionResult & { error?: string }
+      if (res.ok) {
+        sessionStorage.setItem(lastAnswerStorageKey(code), JSON.stringify(data))
+      }
+    } catch {
+      // Result page still loads; it shows a fallback if scoring failed.
+    }
+
+    router.push(resultHref)
   }
 
-  const pct = Math.max(0, (remaining / timerSeconds) * 100)
+  function pick(letter: string) {
+    if (locked || submitting.current) return
+    void submit(letter)
+  }
+
+  const pct = Math.max(0, (remaining / Math.max(1, timerSeconds)) * 100)
 
   return (
     <div className="flex min-h-[100dvh] flex-col px-6 pb-10 pt-8">
-      {/* Header */}
       <div className="flex items-baseline justify-between">
         <span className="font-display text-lg font-black tracking-tight text-brand">
           ROUND {round} OF {totalQuestions}
@@ -59,7 +104,6 @@ export function MobileAnswer({
         </span>
       </div>
 
-      {/* Progress */}
       <div className="mt-4 flex items-center justify-between text-xs font-semibold uppercase tracking-wider">
         <span className="text-muted-foreground">Time Remaining</span>
         <span className="text-brand">{remaining}s</span>
@@ -71,37 +115,53 @@ export function MobileAnswer({
         />
       </div>
 
-      {/* Prompt card */}
       <div className="mt-6 rounded-3xl border border-border bg-card/60 px-6 py-5 text-center">
         <h1 className="font-display text-2xl font-black tracking-tight text-balance">
-          Read the TV Screen
+          Pick your answer
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Tap the correct color code to lock in!</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Same letters as the TV — tap to lock in
+        </p>
       </div>
 
-      {/* Answer tiles */}
-      <div className="mt-6 flex flex-col gap-4">
-        {OPTIONS.map((o) => {
-          const isLocked = locked === o.letter
+      <div className="mt-6 flex flex-col gap-3">
+        {choices.map((choice, i) => {
+          const style = ANSWER_STYLES[i] ?? ANSWER_STYLES[0]
+          const isLocked = locked === choice.label
           return (
             <button
-              key={o.letter}
+              key={choice.label}
               type="button"
-              onClick={() => pick(o.letter)}
+              onClick={() => pick(choice.label)}
               disabled={!!locked}
-              aria-label={`Option ${o.letter}`}
-              className="flex h-[4.5rem] items-center rounded-3xl border-2 px-6 text-left font-display text-2xl font-black transition-all active:scale-[0.99] disabled:cursor-default"
+              className="flex min-h-[4.75rem] items-center gap-4 rounded-3xl border-2 px-5 py-3 text-left transition-all active:scale-[0.99] disabled:cursor-default"
               style={
                 isLocked
-                  ? { backgroundColor: o.color, borderColor: o.color, color: '#fff' }
+                  ? { backgroundColor: style.color, borderColor: style.color, color: '#fff' }
                   : {
-                      borderColor: o.color,
-                      color: o.color,
-                      background: `linear-gradient(90deg, color-mix(in oklab, ${o.color} 16%, transparent), transparent)`,
+                      borderColor: style.color,
+                      background: `linear-gradient(90deg, ${style.soft}, transparent)`,
                     }
               }
             >
-              {isLocked ? `${o.letter} [ LOCKED IN ]` : o.letter}
+              <span
+                className="grid size-10 shrink-0 place-items-center rounded-xl text-white"
+                style={{ backgroundColor: style.color }}
+              >
+                <AnswerShape shape={style.shape} className="size-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span
+                  className="block font-display text-sm font-black"
+                  style={{ color: isLocked ? '#fff' : style.color }}
+                >
+                  {choice.label}
+                  {isLocked ? ' · LOCKED IN' : ''}
+                </span>
+                <span className="block font-display text-lg font-bold leading-snug text-balance">
+                  {choice.text}
+                </span>
+              </span>
             </button>
           )
         })}

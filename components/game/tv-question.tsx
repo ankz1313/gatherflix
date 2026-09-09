@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
+import { AnswerShape } from '@/components/game/answer-shape'
+import { ANSWER_STYLES } from '@/lib/game'
 
 const FALLBACK_IMAGE = '/decks/deck-classic-90s-romance.png'
 
@@ -17,6 +20,7 @@ type TvQuestionProps = {
   timerSeconds: number
   playerCount: number
   revealHref: string
+  choices: { label: string; text: string }[]
 }
 
 export function TvQuestion({
@@ -29,7 +33,9 @@ export function TvQuestion({
   timerSeconds,
   playerCount,
   revealHref,
+  choices,
 }: TvQuestionProps) {
+  const router = useRouter()
   const [remaining, setRemaining] = useState(timerSeconds)
 
   useEffect(() => {
@@ -37,10 +43,13 @@ export function TvQuestion({
   }, [timerSeconds])
 
   useEffect(() => {
-    if (remaining <= 0) return
-    const t = setTimeout(() => setRemaining((r) => r - 1), 1000)
+    if (remaining > 0) {
+      const t = setTimeout(() => setRemaining((r) => r - 1), 1000)
+      return () => clearTimeout(t)
+    }
+    const t = setTimeout(() => router.push(revealHref), 800)
     return () => clearTimeout(t)
-  }, [remaining])
+  }, [remaining, revealHref, router])
 
   const pct = timerSeconds > 0 ? (remaining / timerSeconds) * 100 : 0
   const still = imageUrl || FALLBACK_IMAGE
@@ -80,6 +89,35 @@ export function TvQuestion({
             {category ? `Category: ${category} • ` : ''}
             {points} Pts
           </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          {choices.map((choice, i) => {
+            const style = ANSWER_STYLES[i] ?? ANSWER_STYLES[0]
+            return (
+              <div
+                key={choice.label}
+                className="flex items-center gap-4 rounded-2xl border-2 px-5 py-4"
+                style={{
+                  borderColor: style.color,
+                  background: `linear-gradient(90deg, ${style.soft}, transparent)`,
+                }}
+              >
+                <span
+                  className="grid size-10 shrink-0 place-items-center rounded-xl text-white"
+                  style={{ backgroundColor: style.color }}
+                >
+                  <AnswerShape shape={style.shape} className="size-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="font-display text-sm font-black" style={{ color: style.color }}>
+                    {choice.label}
+                  </p>
+                  <p className="font-display text-lg font-bold text-balance">{choice.text}</p>
+                </div>
+              </div>
+            )
+          })}
         </div>
 
         <div className="grid grid-cols-3 items-center">

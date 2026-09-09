@@ -21,6 +21,7 @@ export default async function MobilePlayPage({
   let totalQuestions = 1
   let points = 250
   let timerSeconds = 20
+  let choices: { label: string; text: string }[] = []
 
   if (normalized) {
     const supabase = createServiceClient()
@@ -37,6 +38,7 @@ export default async function MobilePlayPage({
         totalQuestions = quiz.questionCount
         points = question.points
         timerSeconds = question.timerSeconds || 20
+        choices = question.choices.map((c) => ({ label: c.label, text: c.text }))
       }
     }
   }
@@ -44,10 +46,12 @@ export default async function MobilePlayPage({
   return (
     <MobileShell>
       <MobileAnswer
+        code={normalized ?? ''}
         round={round}
         totalQuestions={totalQuestions}
         points={points}
         timerSeconds={timerSeconds}
+        choices={choices}
       />
     </MobileShell>
   )
