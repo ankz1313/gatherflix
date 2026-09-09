@@ -3,11 +3,38 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { SAMPLE_QUESTION, GAME_META } from '@/lib/game'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 
-export function TvQuestion() {
-  const [remaining, setRemaining] = useState(GAME_META.timerSeconds)
+const FALLBACK_IMAGE = '/decks/deck-classic-90s-romance.png'
+
+type TvQuestionProps = {
+  prompt: string
+  category: string | null
+  points: number
+  imageUrl: string | null
+  questionNumber: number
+  totalQuestions: number
+  timerSeconds: number
+  playerCount: number
+  revealHref: string
+}
+
+export function TvQuestion({
+  prompt,
+  category,
+  points,
+  imageUrl,
+  questionNumber,
+  totalQuestions,
+  timerSeconds,
+  playerCount,
+  revealHref,
+}: TvQuestionProps) {
+  const [remaining, setRemaining] = useState(timerSeconds)
+
+  useEffect(() => {
+    setRemaining(timerSeconds)
+  }, [timerSeconds])
 
   useEffect(() => {
     if (remaining <= 0) return
@@ -15,11 +42,11 @@ export function TvQuestion() {
     return () => clearTimeout(t)
   }, [remaining])
 
-  const pct = (remaining / GAME_META.timerSeconds) * 100
+  const pct = timerSeconds > 0 ? (remaining / timerSeconds) * 100 : 0
+  const still = imageUrl || FALLBACK_IMAGE
 
   return (
     <main className="flex min-h-[100dvh] flex-col">
-      {/* Top bar */}
       <div className="container-page flex items-center justify-between py-6">
         <GatherflixLogo />
         <span className="inline-flex items-center gap-2 rounded-full border border-brand/50 bg-brand-soft px-4 py-1.5 font-display text-xs font-bold uppercase tracking-wide text-brand">
@@ -28,12 +55,11 @@ export function TvQuestion() {
       </div>
 
       <div className="container-page flex flex-1 flex-col justify-center gap-10 pb-10">
-        {/* Film still banner */}
         <div className="relative overflow-hidden rounded-3xl border border-border">
           <div className="relative aspect-[21/8]">
             <Image
-              src={SAMPLE_QUESTION.image}
-              alt={SAMPLE_QUESTION.imageAlt}
+              src={still}
+              alt=""
               fill
               sizes="100vw"
               className="object-cover"
@@ -42,33 +68,29 @@ export function TvQuestion() {
             <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
           </div>
           <span className="absolute left-6 top-6 rounded-full bg-brand px-4 py-1.5 font-display text-xs font-bold uppercase tracking-wide text-brand-foreground">
-            Question {String(GAME_META.questionNumber).padStart(2, '0')} of{' '}
-            {GAME_META.totalQuestions}
+            Question {String(questionNumber).padStart(2, '0')} of {totalQuestions}
           </span>
         </div>
 
-        {/* Question */}
         <div className="text-center">
           <h1 className="mx-auto max-w-4xl font-display text-4xl font-extrabold tracking-[-0.02em] text-balance lg:text-5xl">
-            {SAMPLE_QUESTION.prompt}
+            {prompt}
           </h1>
           <p className="mt-3 text-lg text-muted-foreground">
-            Category: {SAMPLE_QUESTION.category} &bull; {SAMPLE_QUESTION.points} Pts
+            {category ? `Category: ${category} • ` : ''}
+            {points} Pts
           </p>
         </div>
 
-        {/* Footer stats */}
         <div className="grid grid-cols-3 items-center">
           <div className="text-center">
-            <p className="font-display text-3xl font-black text-gold">
-              {GAME_META.playersLockedIn} / {GAME_META.playerCount}
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">Players Locked In</p>
+            <p className="font-display text-3xl font-black text-gold">{playerCount}</p>
+            <p className="mt-1 text-sm text-muted-foreground">Players in the room</p>
           </div>
 
           <div className="flex justify-center">
             <Link
-              href="/play/reveal"
+              href={revealHref}
               className="relative grid size-24 place-items-center"
               aria-label="Reveal answer"
             >

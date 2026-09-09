@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { SAMPLE_QUESTION, GAME_META } from '@/lib/game'
+import { SAMPLE_QUESTION } from '@/lib/game'
 
 const OPTIONS = [
   { letter: 'A', color: 'var(--gold)' },
@@ -14,9 +14,21 @@ const OPTIONS = [
 // The color code that matches the correct answer shown on the TV screen.
 const CORRECT_LETTER = OPTIONS[SAMPLE_QUESTION.correctIndex].letter
 
-export function MobileAnswer() {
+type MobileAnswerProps = {
+  round?: number
+  totalQuestions?: number
+  points?: number
+  timerSeconds?: number
+}
+
+export function MobileAnswer({
+  round = 1,
+  totalQuestions = 1,
+  points = 250,
+  timerSeconds = 20,
+}: MobileAnswerProps) {
   const router = useRouter()
-  const [remaining, setRemaining] = useState(GAME_META.timerSeconds)
+  const [remaining, setRemaining] = useState(timerSeconds)
   const [locked, setLocked] = useState<string | null>(null)
 
   useEffect(() => {
@@ -33,17 +45,17 @@ export function MobileAnswer() {
     }, 900)
   }
 
-  const pct = Math.max(0, (remaining / GAME_META.timerSeconds) * 100)
+  const pct = Math.max(0, (remaining / timerSeconds) * 100)
 
   return (
     <div className="flex min-h-[100dvh] flex-col px-6 pb-10 pt-8">
       {/* Header */}
       <div className="flex items-baseline justify-between">
         <span className="font-display text-lg font-black tracking-tight text-brand">
-          ROUND {GAME_META.round} OF {GAME_META.totalQuestions}
+          ROUND {round} OF {totalQuestions}
         </span>
         <span className="font-display text-lg font-black tracking-tight text-gold">
-          {SAMPLE_QUESTION.points} PTS MAX
+          {points} PTS MAX
         </span>
       </div>
 

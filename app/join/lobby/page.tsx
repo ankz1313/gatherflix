@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import { MobileShell } from '@/components/mobile-shell'
 import { AvatarBadge } from '@/components/join/avatar-badge'
@@ -15,6 +15,7 @@ type LivePlayer = {
 }
 
 function LobbyContent() {
+  const router = useRouter()
   const params = useSearchParams()
   const code = params.get('code') ?? ''
   const name = params.get('name') ?? 'You'
@@ -78,6 +79,10 @@ function LobbyContent() {
         if (!res.ok) return
         const data = await res.json()
         if (cancelled) return
+        if (data.status && data.status !== 'lobby') {
+          router.push(`/play/mobile?code=${encodeURIComponent(code)}`)
+          return
+        }
         const next = (data.players as { id: string; nickname: string; avatar: string | null }[]).map(
           (p) => ({
             id: p.id,
@@ -98,7 +103,7 @@ function LobbyContent() {
       cancelled = true
       clearInterval(interval)
     }
-  }, [joined, code, name])
+  }, [joined, code, name, router])
 
   if (joinError) {
     return (
