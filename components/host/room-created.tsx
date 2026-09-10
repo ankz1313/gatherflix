@@ -120,7 +120,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
       ? `${origin}/join?code=${code}`
       : `/join?code=${code}`
     : ''
-  const canStart = !!code && joined.length >= CURRENT_SESSION.minPlayers && !starting
+  const canStart = !!code && !starting
 
   async function handleStart() {
     if (!code || !canStart) return
@@ -270,7 +270,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
             </p>
           )}
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Minimum {CURRENT_SESSION.minPlayers} players required. Host holds controller.
+            Join on your phone with the code, then start. Host holds controller.
           </p>
         </section>
       </div>
