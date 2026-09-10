@@ -2,7 +2,16 @@ import { createClient } from '@supabase/supabase-js'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
-const LETTERS = ['A', 'B', 'C', 'D']
+function choiceLabel(index) {
+  let n = index + 1
+  let out = ''
+  while (n > 0) {
+    const rem = (n - 1) % 26
+    out = String.fromCharCode(65 + rem) + out
+    n = Math.floor((n - 1) / 26)
+  }
+  return out || 'A'
+}
 
 function loadEnvFile(raw) {
   for (const line of raw.split('\n')) {
@@ -66,16 +75,20 @@ if (deleteError) throw deleteError
 
 const rows = pack.questions.map((q, i) => {
   const correct = String(q.correct).trim().toUpperCase()
-  const correctIndex = LETTERS.indexOf(correct)
-  if (correctIndex < 0 || q.options.length !== 4) {
-    throw new Error(`Question ${i + 1} needs A–D options and CORRECT A/B/C/D`)
+  const options = Array.isArray(q.options) ? q.options : []
+  if (options.length < 2) {
+    throw new Error(`Question ${i + 1} needs at least 2 options`)
+  }
+  const correctIndex = options.findIndex((_, oi) => choiceLabel(oi) === correct)
+  if (correctIndex < 0) {
+    throw new Error(`Question ${i + 1} has an invalid CORRECT letter: ${correct}`)
   }
   return {
     quiz_id: quiz.id,
     text: q.text,
     image_url: null,
-    options: q.options.map((text, oi) => ({
-      label: LETTERS[oi],
+    options: options.map((text, oi) => ({
+      label: choiceLabel(oi),
       text,
       correct: oi === correctIndex,
     })),

@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
 import { parseRoomStatus, questionIndexFromPhase } from '@/lib/room-phase'
+import { findChoiceByLabel } from '@/lib/choice-label'
 import { awardPoints, rankPlayers, speedMultiplier } from '@/lib/score'
 
 export const dynamic = 'force-dynamic'
 
 const NO_STORE = { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
-const LETTERS = ['A', 'B', 'C', 'D'] as const
 
 // POST /api/rooms/[code]/answer — score a player's lock-in for the current question.
 export async function POST(
@@ -67,10 +67,7 @@ export async function POST(
     return NextResponse.json({ error: 'Question not found.' }, { status: 404, headers: NO_STORE })
   }
 
-  const choiceIndex = LETTERS.indexOf(letter as (typeof LETTERS)[number])
-  const choice =
-    question.choices.find((c) => c.label.toUpperCase() === letter) ??
-    (choiceIndex >= 0 ? question.choices[choiceIndex] : null)
+  const choice = findChoiceByLabel(question.choices, letter)
   const correct = Boolean(choice?.correct)
   const timerSeconds = question.timerSeconds || 20
   const awarded = awardPoints(question.points, timeRemaining, timerSeconds, correct)

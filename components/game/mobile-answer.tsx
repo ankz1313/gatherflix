@@ -164,7 +164,7 @@ export function MobileAnswer({
 
       <div className="mt-6 flex flex-col gap-3">
         {choices.map((choice, i) => {
-          const style = ANSWER_STYLES[i] ?? ANSWER_STYLES[0]
+          const style = ANSWER_STYLES[i % ANSWER_STYLES.length]
           const isLocked = locked === choice.label
           return (
             <button

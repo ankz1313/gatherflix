@@ -115,7 +115,7 @@ export function TvQuestion({
 
         <div className="grid gap-3 sm:grid-cols-2">
           {choices.map((choice, i) => {
-            const style = ANSWER_STYLES[i] ?? ANSWER_STYLES[0]
+            const style = ANSWER_STYLES[i % ANSWER_STYLES.length]
             return (
               <div
                 key={choice.label}

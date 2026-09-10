@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { DraftQuestion } from '@/lib/creator'
 import { saveQuizQuestions, type QuestionInput } from '@/app/create/actions'
 import { ImageUpload } from '@/components/creator/image-upload'
+import { choiceLabel } from '@/lib/choice-label'
 
 function blank(): DraftQuestion {
   return {
@@ -88,9 +89,22 @@ export function QuestionEditor({ quizId, quizTitle, initialQuestions }: Question
   }
 
   function addChoice() {
-    if (active.choices.length >= 4) return
-    const label = String.fromCharCode(65 + active.choices.length)
-    update({ choices: [...active.choices, { label, text: '' }] })
+    const next = [...active.choices, { label: choiceLabel(active.choices.length), text: '' }]
+    update({ choices: next })
+  }
+
+  function removeChoice(i: number) {
+    if (active.choices.length <= 2) return
+    const next = active.choices
+      .filter((_, idx) => idx !== i)
+      .map((c, idx) => ({ ...c, label: choiceLabel(idx) }))
+    const correctIndex =
+      active.correctIndex === i
+        ? 0
+        : active.correctIndex > i
+          ? active.correctIndex - 1
+          : active.correctIndex
+    update({ choices: next, correctIndex })
   }
 
   function addQuestion() {
@@ -255,6 +269,15 @@ export function QuestionEditor({ quizId, quizTitle, initialQuestions }: Question
                     isCorrect ? 'font-display font-bold text-gold' : 'text-foreground'
                   }`}
                 />
+                {active.choices.length > 2 && (
+                  <button
+                    type="button"
+                    onClick={() => removeChoice(i)}
+                    className="shrink-0 text-xs font-semibold text-muted-foreground hover:text-foreground"
+                  >
+                    Remove
+                  </button>
+                )}
                 {isCorrect && (
                   <span className="font-display text-xs font-black uppercase tracking-wide text-gold">
                     Correct Answer
