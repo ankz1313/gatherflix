@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
+import { parseRoomStatus, questionIndexFromPhase } from '@/lib/room-phase'
 import { awardPoints, rankPlayers, speedMultiplier } from '@/lib/score'
 
 export const dynamic = 'force-dynamic'
@@ -25,7 +26,6 @@ export async function POST(
 
   const token = body.token?.trim()
   const letter = body.letter?.trim().toUpperCase() ?? ''
-  const questionIndex = typeof body.questionIndex === 'number' ? body.questionIndex : 0
   const timeRemaining = typeof body.timeRemaining === 'number' ? body.timeRemaining : 0
 
   if (!normalized) {
@@ -45,6 +45,10 @@ export async function POST(
   if (roomError || !room) {
     return NextResponse.json({ error: 'Room not found.' }, { status: 404, headers: NO_STORE })
   }
+
+  const liveIndex = questionIndexFromPhase(parseRoomStatus(room.status))
+  const questionIndex =
+    typeof body.questionIndex === 'number' ? body.questionIndex : liveIndex
 
   const { data: player, error: playerError } = await supabase
     .from('players')

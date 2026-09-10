@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import { parseRoomStatus, questionIndexFromPhase } from '@/lib/room-phase'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,6 +50,8 @@ export async function GET(
   return NextResponse.json(
     {
       status: room.status,
+      questionIndex: questionIndexFromPhase(parseRoomStatus(room.status)),
+      phase: parseRoomStatus(room.status).kind,
       players: (players ?? []).map((p) => ({
         id: p.id,
         nickname: p.nickname,

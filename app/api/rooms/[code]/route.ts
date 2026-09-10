@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { isAllowedRoomStatus } from '@/lib/room-phase'
 import { createServiceClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
@@ -70,7 +71,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400, headers: NO_STORE })
   }
 
-  if (body.status !== 'playing' && body.status !== 'finished') {
+  if (!body.status || !isAllowedRoomStatus(body.status)) {
     return NextResponse.json({ error: 'Unsupported status.' }, { status: 400, headers: NO_STORE })
   }
 

@@ -12,12 +12,16 @@ export function TvReveal({
   code,
   choices,
   leaders: initialLeaders,
-  resultsHref,
+  nextLabel,
+  nextStatus,
+  nextHref,
 }: {
   code: string
   choices: RevealChoice[]
   leaders: Leader[]
-  resultsHref: string
+  nextLabel: string
+  nextStatus: string
+  nextHref: string
 }) {
   const router = useRouter()
   const [leaders, setLeaders] = useState(initialLeaders)
@@ -158,16 +162,16 @@ export function TvReveal({
                 await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
                   method: 'PATCH',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ status: 'finished' }),
+                  body: JSON.stringify({ status: nextStatus }),
                 })
               } catch {
-                // Still show the podium even if the status update fails.
+                // Still advance so the host is not stuck on reveal.
               }
-              router.push(resultsHref)
+              router.push(nextHref)
             }}
             className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gold px-8 py-4 font-display text-base font-bold uppercase tracking-wide text-gold-foreground transition-transform hover:scale-[1.01] disabled:opacity-70"
           >
-            Final Results
+            {nextLabel}
             <svg viewBox="0 0 24 24" fill="none" className="size-5" aria-hidden="true">
               <path d="m9 6 6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

@@ -1,8 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { TvQuestion } from '@/components/game/tv-question'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
+import { parseRoomStatus, questionIndexFromPhase } from '@/lib/room-phase'
 import { createServiceClient } from '@/lib/supabase/server'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Live Question — GatherFlix',
@@ -12,10 +16,11 @@ export const metadata: Metadata = {
 export default async function PlayPage({
   searchParams,
 }: {
-  searchParams: Promise<{ code?: string }>
+  searchParams: Promise<{ code?: string; q?: string }>
 }) {
-  const { code } = await searchParams
+  const { code, q } = await searchParams
   const normalized = code?.trim()
+  const qParam = Number.parseInt(q ?? '', 10)
 
   if (!normalized) {
     return (
@@ -32,7 +37,7 @@ export default async function PlayPage({
   const supabase = createServiceClient()
   const { data: room } = await supabase
     .from('rooms')
-    .select('id, quiz_id')
+    .select('id, quiz_id, status')
     .eq('code', normalized)
     .maybeSingle()
 
@@ -47,12 +52,24 @@ export default async function PlayPage({
     )
   }
 
+  const phase = parseRoomStatus(room.status)
+  if (phase.kind === 'finished' && !Number.isFinite(qParam)) {
+    redirect(`/results?code=${encodeURIComponent(normalized)}`)
+  }
+  if (phase.kind === 'reveal' && !Number.isFinite(qParam)) {
+    redirect(`/play/reveal?code=${encodeURIComponent(normalized)}`)
+  }
+
+  const questionIndex = Number.isFinite(qParam)
+    ? qParam
+    : questionIndexFromPhase(phase)
+
   const [{ data: players }, quiz] = await Promise.all([
     supabase.from('players').select('id').eq('room_id', room.id),
     getQuizWithQuestions(room.quiz_id),
   ])
 
-  const question = quiz?.questions[0]
+  const question = quiz?.questions[questionIndex]
   if (!quiz || !question) {
     return (
       <main className="container-page flex min-h-[100dvh] flex-col items-center justify-center gap-4 text-center">
@@ -66,11 +83,13 @@ export default async function PlayPage({
 
   return (
     <TvQuestion
+      code={normalized}
+      questionIndex={questionIndex}
       prompt={question.text}
       category={quiz.category}
       points={question.points}
       imageUrl={question.imageUrl}
-      questionNumber={1}
+      questionNumber={questionIndex + 1}
       totalQuestions={quiz.questionCount}
       timerSeconds={question.timerSeconds || 20}
       playerCount={players?.length ?? 0}

@@ -1,16 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { AnswerShape } from '@/components/game/answer-shape'
 import { ANSWER_STYLES } from '@/lib/game'
+import { revealStatus } from '@/lib/room-phase'
 
 const FALLBACK_IMAGE = '/decks/deck-classic-90s-romance.png'
 
 type TvQuestionProps = {
+  code: string
+  questionIndex: number
   prompt: string
   category: string | null
   points: number
@@ -24,6 +26,8 @@ type TvQuestionProps = {
 }
 
 export function TvQuestion({
+  code,
+  questionIndex,
   prompt,
   category,
   points,
@@ -37,19 +41,37 @@ export function TvQuestion({
 }: TvQuestionProps) {
   const router = useRouter()
   const [remaining, setRemaining] = useState(timerSeconds)
+  const leaving = useRef(false)
 
   useEffect(() => {
     setRemaining(timerSeconds)
   }, [timerSeconds])
+
+  async function goToReveal() {
+    if (leaving.current) return
+    leaving.current = true
+    try {
+      await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: revealStatus(questionIndex) }),
+      })
+    } catch {
+      // Still reveal so the host is not stuck on a dead timer.
+    }
+    router.push(revealHref)
+  }
 
   useEffect(() => {
     if (remaining > 0) {
       const t = setTimeout(() => setRemaining((r) => r - 1), 1000)
       return () => clearTimeout(t)
     }
-    const t = setTimeout(() => router.push(revealHref), 800)
+    const t = setTimeout(() => {
+      void goToReveal()
+    }, 800)
     return () => clearTimeout(t)
-  }, [remaining, revealHref, router])
+  }, [remaining])
 
   const pct = timerSeconds > 0 ? (remaining / timerSeconds) * 100 : 0
   const still = imageUrl || FALLBACK_IMAGE
@@ -127,8 +149,9 @@ export function TvQuestion({
           </div>
 
           <div className="flex justify-center">
-            <Link
-              href={revealHref}
+            <button
+              type="button"
+              onClick={() => void goToReveal()}
               className="relative grid size-24 place-items-center"
               aria-label="Reveal answer"
             >
@@ -148,7 +171,7 @@ export function TvQuestion({
                 />
               </svg>
               <span className="font-display text-3xl font-black">{remaining}</span>
-            </Link>
+            </button>
           </div>
 
           <div className="text-center">

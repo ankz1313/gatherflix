@@ -1,9 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { TvReveal } from '@/components/game/tv-reveal'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
+import { parseRoomStatus, playingStatus, questionIndexFromPhase } from '@/lib/room-phase'
 import { rankPlayers } from '@/lib/score'
 import { createServiceClient } from '@/lib/supabase/server'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Answer Revealed — GatherFlix',
@@ -32,7 +36,7 @@ export default async function RevealPage({
   const supabase = createServiceClient()
   const { data: room } = await supabase
     .from('rooms')
-    .select('id, quiz_id')
+    .select('id, quiz_id, status')
     .eq('code', normalized)
     .maybeSingle()
 
@@ -47,24 +51,42 @@ export default async function RevealPage({
     )
   }
 
+  const phase = parseRoomStatus(room.status)
+  if (phase.kind === 'finished') {
+    redirect(`/results?code=${encodeURIComponent(normalized)}`)
+  }
+
+  const questionIndex = questionIndexFromPhase(phase)
+
   const [{ data: players }, quiz] = await Promise.all([
     supabase.from('players').select('nickname, avatar, score').eq('room_id', room.id),
     getQuizWithQuestions(room.quiz_id),
   ])
 
-  const question = quiz?.questions[0]
-  const ranked = rankPlayers(players ?? []).map((p) => ({
+  const question = quiz?.questions[questionIndex]
+  const ranked = rankPlayers(
+    (players ?? []).map((p) => ({ ...p, score: p.score ?? 0 })),
+  ).map((p) => ({
     name: p.nickname,
     avatar: p.avatar,
-    score: p.score ?? 0,
+    score: p.score,
   }))
+
+  const total = quiz?.questionCount ?? 1
+  const isLast = questionIndex >= total - 1
+  const nextStatus = isLast ? 'finished' : playingStatus(questionIndex + 1)
+  const nextHref = isLast
+    ? `/results?code=${encodeURIComponent(normalized)}`
+    : `/play?code=${encodeURIComponent(normalized)}&q=${questionIndex + 1}`
 
   return (
     <TvReveal
       code={normalized}
       choices={question?.choices ?? []}
       leaders={ranked}
-      resultsHref={`/results?code=${encodeURIComponent(normalized)}`}
+      nextLabel={isLast ? 'Final Results' : 'Next Question'}
+      nextStatus={nextStatus}
+      nextHref={nextHref}
     />
   )
 }

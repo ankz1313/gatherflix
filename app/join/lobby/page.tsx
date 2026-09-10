@@ -6,6 +6,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { MobileShell } from '@/components/mobile-shell'
 import { AvatarBadge } from '@/components/join/avatar-badge'
 import { AVATAR_STYLES } from '@/components/join/avatars'
+import { parseRoomStatus } from '@/lib/room-phase'
 
 type LivePlayer = {
   id: string
@@ -80,7 +81,12 @@ function LobbyContent() {
         const data = await res.json()
         if (cancelled) return
         if (data.status && data.status !== 'lobby') {
-          router.push(`/play/mobile?code=${encodeURIComponent(code)}`)
+          const phase = parseRoomStatus(data.status)
+          if (phase.kind === 'finished') {
+            router.push(`/results/mobile?code=${encodeURIComponent(code)}`)
+          } else {
+            router.push(`/play/mobile?code=${encodeURIComponent(code)}`)
+          }
           return
         }
         const next = (data.players as { id: string; nickname: string; avatar: string | null }[]).map(
