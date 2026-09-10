@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { TvQuestion } from '@/components/game/tv-question'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
 import { parseRoomStatus } from '@/lib/room-phase'
-import { loadRoomByCode } from '@/lib/room-store'
+import { loadRoomByCode, withoutRoomCursor } from '@/lib/room-store'
 import { createServiceClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
@@ -56,7 +56,7 @@ export default async function PlayPage({
 
   const supabase = createServiceClient()
   const [{ data: players }, quiz] = await Promise.all([
-    supabase.from('players').select('id').eq('room_id', room.id),
+    supabase.from('players').select('id, nickname, player_token').eq('room_id', room.id),
     getQuizWithQuestions(room.quiz_id),
   ])
 
@@ -83,8 +83,8 @@ export default async function PlayPage({
       questionNumber={questionIndex + 1}
       totalQuestions={quiz.questions.length}
       timerSeconds={question.timerSeconds || 20}
-      playerCount={players?.length ?? 0}
-      revealHref={`/play/reveal?code=${encodeURIComponent(normalized)}`}
+      playerCount={withoutRoomCursor(players ?? []).length}
+      revealHref={`/play/reveal?code=${encodeURIComponent(normalized)}&q=${questionIndex}`}
       choices={question.choices.map((c) => ({ label: c.label, text: c.text }))}
     />
   )

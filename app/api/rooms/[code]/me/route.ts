@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { rankPlayers } from '@/lib/score'
+import { withoutRoomCursor } from '@/lib/room-store'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,7 +44,7 @@ export async function GET(
   }
 
   const ranked = rankPlayers(
-    (roster ?? []).map((p) => ({ ...p, score: p.score ?? 0 })),
+    withoutRoomCursor(roster ?? []).map((p) => ({ ...p, score: p.score ?? 0 })),
   )
   const me = ranked.find((p) => p.player_token === token)
   if (!me) {

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
-import { loadRoomByCode } from '@/lib/room-store'
+import { loadRoomByCode, withoutRoomCursor } from '@/lib/room-store'
 import { findChoiceByLabel } from '@/lib/choice-label'
 import { awardPoints, rankPlayers, speedMultiplier } from '@/lib/score'
 
@@ -81,12 +81,12 @@ export async function POST(
 
   const { data: roster } = await supabase
     .from('players')
-    .select('id, nickname, score')
+    .select('id, nickname, score, player_token')
     .eq('room_id', room.id)
     .order('score', { ascending: false })
 
   const ranked = rankPlayers(
-    (roster ?? []).map((p) => ({ ...p, score: p.score ?? 0 })),
+    withoutRoomCursor(roster ?? []).map((p) => ({ ...p, score: p.score ?? 0 })),
   )
   const me = ranked.find((p) => p.id === player.id)
   const myIndex = ranked.findIndex((p) => p.id === player.id)

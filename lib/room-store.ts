@@ -9,6 +9,84 @@ export type RoomRow = {
   questionIndex: number
 }
 
+export const ROOM_CURSOR_NICKNAME = 'gf-round'
+
+export function isRoomCursorPlayer(row: {
+  nickname?: string | null
+  player_token?: string | null
+}) {
+  return (
+    row.nickname === ROOM_CURSOR_NICKNAME ||
+    (row.player_token?.startsWith('gf.cursor.') ?? false)
+  )
+}
+
+export function withoutRoomCursor<T extends { nickname?: string | null; player_token?: string | null }>(
+  players: T[],
+) {
+  return players.filter((player) => !isRoomCursorPlayer(player))
+}
+
+function cursorToken(roomId: string) {
+  return `gf.cursor.${roomId}`
+}
+
+function parseCursorAvatar(avatar: string | null | undefined) {
+  const match = /^q:(\d+)$/.exec(avatar ?? '')
+  return match ? Number(match[1]) : null
+}
+
+async function readRoomCursor(roomId: string): Promise<number | null> {
+  const supabase = createServiceClient()
+  const { data, error } = await supabase
+    .from('players')
+    .select('avatar')
+    .eq('room_id', roomId)
+    .eq('player_token', cursorToken(roomId))
+    .maybeSingle()
+
+  if (error || !data) return null
+  return parseCursorAvatar(data.avatar)
+}
+
+async function saveRoomCursor(roomId: string, questionIndex: number) {
+  const supabase = createServiceClient()
+  const token = cursorToken(roomId)
+  const avatar = `q:${questionIndex}`
+  const { data: existing } = await supabase
+    .from('players')
+    .select('id')
+    .eq('room_id', roomId)
+    .eq('player_token', token)
+    .maybeSingle()
+
+  if (existing) {
+    const { error } = await supabase
+      .from('players')
+      .update({ avatar, score: 0 })
+      .eq('id', existing.id)
+    return !error
+  }
+
+  const inserted = await supabase.from('players').insert({
+    room_id: roomId,
+    nickname: ROOM_CURSOR_NICKNAME,
+    avatar,
+    player_token: token,
+    score: 0,
+  })
+
+  if (!inserted.error) return true
+
+  const fallback = await supabase
+    .from('players')
+    .update({ avatar, score: 0 })
+    .eq('room_id', roomId)
+    .eq('player_token', token)
+
+  return !fallback.error
+}
+
 export async function loadRoomByCode(code: string): Promise<RoomRow | null> {
   const supabase = createServiceClient()
   const full = await supabase
@@ -17,33 +95,27 @@ export async function loadRoomByCode(code: string): Promise<RoomRow | null> {
     .eq('code', code)
     .maybeSingle()
 
-  if (!full.error && full.data) {
-    const questionIndex =
-      typeof full.data.question_index === 'number'
-        ? full.data.question_index
-        : questionIndexFromPhase(parseRoomStatus(full.data.status))
-    return {
-      id: full.data.id,
-      code: full.data.code,
-      status: full.data.status,
-      quiz_id: full.data.quiz_id,
-      questionIndex,
-    }
-  }
+  const row = !full.error && full.data ? full.data : null
+  const basic = row
+    ? null
+    : await supabase.from('rooms').select('id, code, status, quiz_id').eq('code', code).maybeSingle()
 
-  const basic = await supabase
-    .from('rooms')
-    .select('id, code, status, quiz_id')
-    .eq('code', code)
-    .maybeSingle()
+  const data = row ?? (!basic?.error && basic?.data ? basic.data : null)
+  if (!data) return null
 
-  if (basic.error || !basic.data) return null
+  const fromCursor = await readRoomCursor(data.id)
+  const fromColumn =
+    'question_index' in data && typeof full.data?.question_index === 'number'
+      ? full.data.question_index
+      : null
+  const fromStatus = questionIndexFromPhase(parseRoomStatus(data.status))
+
   return {
-    id: basic.data.id,
-    code: basic.data.code,
-    status: basic.data.status,
-    quiz_id: basic.data.quiz_id,
-    questionIndex: questionIndexFromPhase(parseRoomStatus(basic.data.status)),
+    id: data.id,
+    code: data.code,
+    status: data.status,
+    quiz_id: data.quiz_id,
+    questionIndex: fromCursor ?? fromColumn ?? fromStatus,
   }
 }
 
@@ -54,28 +126,29 @@ export async function saveRoomProgress(
 ) {
   const supabase = createServiceClient()
 
-  const withColumn = await supabase
+  // Keep rooms.status on the values the table already allows.
+  const saved = await supabase
     .from('rooms')
-    .update({ status, question_index: questionIndex })
-    .eq('code', code)
-    .select('id, code, status, quiz_id, question_index')
-    .maybeSingle()
-
-  if (!withColumn.error && withColumn.data) {
-    return withColumn.data
-  }
-
-  const encoded = status === 'finished' ? 'finished' : questionIndex <= 0 ? 'playing' : `playing:${questionIndex}`
-  const fallback = await supabase
-    .from('rooms')
-    .update({ status: encoded })
+    .update({ status })
     .eq('code', code)
     .select('id, code, status, quiz_id')
     .maybeSingle()
 
-  if (fallback.error) {
-    console.error('[v0] saveRoomProgress failed:', withColumn.error, fallback.error)
+  if (saved.error || !saved.data) {
+    console.error('[v0] saveRoomProgress failed:', saved.error)
     return null
   }
-  return fallback.data
+
+  const withColumn = await supabase
+    .from('rooms')
+    .update({ question_index: questionIndex })
+    .eq('code', code)
+
+  const cursorOk = await saveRoomCursor(saved.data.id, questionIndex)
+  if (withColumn.error && !cursorOk) {
+    console.error('[v0] saveRoomProgress could not persist question index')
+    return null
+  }
+
+  return saved.data
 }

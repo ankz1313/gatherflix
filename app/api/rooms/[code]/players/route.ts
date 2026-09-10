@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { parseRoomStatus } from '@/lib/room-phase'
-import { loadRoomByCode } from '@/lib/room-store'
+import { loadRoomByCode, withoutRoomCursor } from '@/lib/room-store'
 import { createServiceClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
@@ -26,7 +26,7 @@ export async function GET(
   const supabase = createServiceClient()
   const { data: players, error: playersError } = await supabase
     .from('players')
-    .select('id, nickname, avatar, score')
+    .select('id, nickname, avatar, score, player_token')
     .eq('room_id', room.id)
     .order('created_at', { ascending: true })
 
@@ -42,7 +42,7 @@ export async function GET(
       status: room.status,
       questionIndex: room.questionIndex,
       phase: phase.kind,
-      players: (players ?? []).map((p) => ({
+      players: withoutRoomCursor(players ?? []).map((p) => ({
         id: p.id,
         nickname: p.nickname,
         avatar: p.avatar,

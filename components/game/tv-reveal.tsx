@@ -29,19 +29,27 @@ export function TvReveal({
   const [leaders, setLeaders] = useState(initialLeaders)
   const [finishing, setFinishing] = useState(false)
   const leaving = useRef(false)
+  const correct = choices.find((choice) => choice.correct)
 
   async function goNext() {
     if (leaving.current) return
     leaving.current = true
     setFinishing(true)
     try {
-      await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
+      const res = await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: nextStatus, questionIndex: nextQuestionIndex }),
       })
+      if (!res.ok) {
+        leaving.current = false
+        setFinishing(false)
+        return
+      }
     } catch {
-      // Still advance so the host is not stuck on reveal.
+      leaving.current = false
+      setFinishing(false)
+      return
     }
     router.push(nextHref)
   }

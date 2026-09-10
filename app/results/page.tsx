@@ -4,6 +4,7 @@ import { TvPodium } from '@/components/game/tv-podium'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
 import { rankPlayers } from '@/lib/score'
 import { createServiceClient } from '@/lib/supabase/server'
+import { withoutRoomCursor } from '@/lib/room-store'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,11 +51,11 @@ export default async function ResultsPage({
   }
 
   const [{ data: players }, quiz] = await Promise.all([
-    supabase.from('players').select('nickname, avatar, score').eq('room_id', room.id),
+    supabase.from('players').select('nickname, avatar, score, player_token').eq('room_id', room.id),
     getQuizWithQuestions(room.quiz_id),
   ])
 
-  const standings = rankPlayers(players ?? []).map((p) => ({
+  const standings = rankPlayers(withoutRoomCursor(players ?? [])).map((p) => ({
     name: p.nickname,
     avatar: p.avatar,
     score: p.score ?? 0,

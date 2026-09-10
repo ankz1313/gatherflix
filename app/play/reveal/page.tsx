@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { TvReveal } from '@/components/game/tv-reveal'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
 import { parseRoomStatus } from '@/lib/room-phase'
-import { loadRoomByCode } from '@/lib/room-store'
+import { loadRoomByCode, withoutRoomCursor } from '@/lib/room-store'
 import { createServiceClient } from '@/lib/supabase/server'
 import { rankPlayers } from '@/lib/score'
 
@@ -18,9 +18,9 @@ export const metadata: Metadata = {
 export default async function RevealPage({
   searchParams,
 }: {
-  searchParams: Promise<{ code?: string }>
+  searchParams: Promise<{ code?: string; q?: string }>
 }) {
-  const { code } = await searchParams
+  const { code, q } = await searchParams
   const normalized = code?.trim()
 
   if (!normalized) {
@@ -51,16 +51,17 @@ export default async function RevealPage({
     redirect(`/results?code=${encodeURIComponent(normalized)}`)
   }
 
-  const questionIndex = room.questionIndex
+  const qParam = Number.parseInt(q ?? '', 10)
+  const questionIndex = Number.isFinite(qParam) ? qParam : room.questionIndex
   const supabase = createServiceClient()
   const [{ data: players }, quiz] = await Promise.all([
-    supabase.from('players').select('nickname, avatar, score').eq('room_id', room.id),
+    supabase.from('players').select('nickname, avatar, score, player_token').eq('room_id', room.id),
     getQuizWithQuestions(room.quiz_id),
   ])
 
   const question = quiz?.questions[questionIndex]
   const ranked = rankPlayers(
-    (players ?? []).map((p) => ({ ...p, score: p.score ?? 0 })),
+    withoutRoomCursor(players ?? []).map((p) => ({ ...p, score: p.score ?? 0 })),
   ).map((p) => ({
     name: p.nickname,
     avatar: p.avatar,

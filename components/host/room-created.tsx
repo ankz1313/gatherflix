@@ -136,7 +136,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error ?? 'Could not start the game.')
       }
-      router.push(`/play?code=${encodeURIComponent(code)}`)
+      router.push(`/play?code=${encodeURIComponent(code)}&q=0`)
     } catch (err) {
       console.error('[v0] failed to start game:', err)
       setStartError('Could not start the game. Please try again.')
