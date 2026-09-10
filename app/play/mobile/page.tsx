@@ -3,8 +3,8 @@ import { redirect } from 'next/navigation'
 import { MobileShell } from '@/components/mobile-shell'
 import { MobileAnswer } from '@/components/game/mobile-answer'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
-import { parseRoomStatus, questionIndexFromPhase } from '@/lib/room-phase'
-import { createServiceClient } from '@/lib/supabase/server'
+import { parseRoomStatus } from '@/lib/room-phase'
+import { loadRoomByCode } from '@/lib/room-store'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,28 +29,18 @@ export default async function MobilePlayPage({
   let questionIndex = 0
 
   if (normalized) {
-    const supabase = createServiceClient()
-    const { data: room } = await supabase
-      .from('rooms')
-      .select('quiz_id, status')
-      .eq('code', normalized)
-      .maybeSingle()
+    const room = await loadRoomByCode(normalized)
     if (room) {
-      const phase = parseRoomStatus(room.status)
+      const phase = parseRoomStatus(room.status, room.questionIndex)
       if (phase.kind === 'finished') {
         redirect(`/results/mobile?code=${encodeURIComponent(normalized)}`)
       }
-      questionIndex = questionIndexFromPhase(phase)
-      if (phase.kind === 'reveal') {
-        redirect(
-          `/play/mobile/result?code=${encodeURIComponent(normalized)}&q=${questionIndex}`,
-        )
-      }
+      questionIndex = room.questionIndex
       const quiz = await getQuizWithQuestions(room.quiz_id)
       const question = quiz?.questions[questionIndex]
       if (quiz && question) {
         round = questionIndex + 1
-        totalQuestions = quiz.questionCount
+        totalQuestions = quiz.questions.length
         points = question.points
         timerSeconds = question.timerSeconds || 20
         choices = question.choices.map((c) => ({ label: c.label, text: c.text }))

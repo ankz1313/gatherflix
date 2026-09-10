@@ -130,7 +130,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
       const res = await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'playing' }),
+        body: JSON.stringify({ status: 'playing', questionIndex: 0 }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))

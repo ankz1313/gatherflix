@@ -35,6 +35,14 @@ export function MobileAnswer({
   const lockedRef = useRef(false)
 
   useEffect(() => {
+    if (!code) return
+    const lockKey = `gf_scored_${code}_${questionIndex}`
+    if (sessionStorage.getItem(lockKey)) {
+      router.replace(`/play/mobile/result?code=${encodeURIComponent(code)}&q=${questionIndex}`)
+    }
+  }, [code, questionIndex, router])
+
+  useEffect(() => {
     if (remaining > 0) {
       const t = setTimeout(() => setRemaining((r) => r - 1), 1000)
       return () => clearTimeout(t)
@@ -56,17 +64,20 @@ export function MobileAnswer({
         if (!res.ok) return
         const data = await res.json()
         if (cancelled) return
-        const phase = parseRoomStatus(data.status)
+        const idx =
+          typeof data.questionIndex === 'number'
+            ? data.questionIndex
+            : parseRoomStatus(data.status).kind === 'playing'
+              ? parseRoomStatus(data.status).questionIndex
+              : 0
+        const phase = parseRoomStatus(data.status, idx)
         if (phase.kind === 'finished') {
           router.push(`/results/mobile?code=${encodeURIComponent(code)}`)
           return
         }
-        if (phase.kind === 'playing' && phase.questionIndex > questionIndex) {
+        if (phase.kind === 'playing' && idx > questionIndex) {
           router.push(`/play/mobile?code=${encodeURIComponent(code)}`)
           return
-        }
-        if (phase.kind === 'reveal' && phase.questionIndex === questionIndex && !lockedRef.current) {
-          void submit('')
         }
       } catch {
         // Keep answering until the host moves on.

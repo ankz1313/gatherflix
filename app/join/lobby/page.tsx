@@ -81,7 +81,7 @@ function LobbyContent() {
         const data = await res.json()
         if (cancelled) return
         if (data.status && data.status !== 'lobby') {
-          const phase = parseRoomStatus(data.status)
+          const phase = parseRoomStatus(data.status, data.questionIndex)
           if (phase.kind === 'finished') {
             router.push(`/results/mobile?code=${encodeURIComponent(code)}`)
           } else {

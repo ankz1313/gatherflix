@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { AvatarBadge } from '@/components/join/avatar-badge'
@@ -14,19 +14,44 @@ export function TvReveal({
   leaders: initialLeaders,
   nextLabel,
   nextStatus,
+  nextQuestionIndex,
   nextHref,
 }: {
   code: string
   choices: RevealChoice[]
   leaders: Leader[]
   nextLabel: string
-  nextStatus: string
+  nextStatus: 'playing' | 'finished'
+  nextQuestionIndex: number
   nextHref: string
 }) {
   const router = useRouter()
   const [leaders, setLeaders] = useState(initialLeaders)
   const [finishing, setFinishing] = useState(false)
-  const correct = choices.find((c) => c.correct)
+  const leaving = useRef(false)
+
+  async function goNext() {
+    if (leaving.current) return
+    leaving.current = true
+    setFinishing(true)
+    try {
+      await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus, questionIndex: nextQuestionIndex }),
+      })
+    } catch {
+      // Still advance so the host is not stuck on reveal.
+    }
+    router.push(nextHref)
+  }
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      void goNext()
+    }, 6000)
+    return () => clearTimeout(t)
+  }, [code, nextHref, nextStatus, nextQuestionIndex])
 
   useEffect(() => {
     setLeaders(initialLeaders)
@@ -156,19 +181,7 @@ export function TvReveal({
           <button
             type="button"
             disabled={finishing}
-            onClick={async () => {
-              setFinishing(true)
-              try {
-                await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ status: nextStatus }),
-                })
-              } catch {
-                // Still advance so the host is not stuck on reveal.
-              }
-              router.push(nextHref)
-            }}
+            onClick={() => void goNext()}
             className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gold px-8 py-4 font-display text-base font-bold uppercase tracking-wide text-gold-foreground transition-transform hover:scale-[1.01] disabled:opacity-70"
           >
             {nextLabel}

@@ -3,9 +3,10 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { TvReveal } from '@/components/game/tv-reveal'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
-import { parseRoomStatus, playingStatus, questionIndexFromPhase } from '@/lib/room-phase'
-import { rankPlayers } from '@/lib/score'
+import { parseRoomStatus } from '@/lib/room-phase'
+import { loadRoomByCode } from '@/lib/room-store'
 import { createServiceClient } from '@/lib/supabase/server'
+import { rankPlayers } from '@/lib/score'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,13 +34,7 @@ export default async function RevealPage({
     )
   }
 
-  const supabase = createServiceClient()
-  const { data: room } = await supabase
-    .from('rooms')
-    .select('id, quiz_id, status')
-    .eq('code', normalized)
-    .maybeSingle()
-
+  const room = await loadRoomByCode(normalized)
   if (!room) {
     return (
       <main className="container-page flex min-h-[100dvh] flex-col items-center justify-center gap-4 text-center">
@@ -51,13 +46,13 @@ export default async function RevealPage({
     )
   }
 
-  const phase = parseRoomStatus(room.status)
+  const phase = parseRoomStatus(room.status, room.questionIndex)
   if (phase.kind === 'finished') {
     redirect(`/results?code=${encodeURIComponent(normalized)}`)
   }
 
-  const questionIndex = questionIndexFromPhase(phase)
-
+  const questionIndex = room.questionIndex
+  const supabase = createServiceClient()
   const [{ data: players }, quiz] = await Promise.all([
     supabase.from('players').select('nickname, avatar, score').eq('room_id', room.id),
     getQuizWithQuestions(room.quiz_id),
@@ -72,12 +67,12 @@ export default async function RevealPage({
     score: p.score,
   }))
 
-  const total = quiz?.questionCount ?? 1
+  const total = quiz?.questions.length ?? 1
   const isLast = questionIndex >= total - 1
-  const nextStatus = isLast ? 'finished' : playingStatus(questionIndex + 1)
+  const nextQuestionIndex = questionIndex + 1
   const nextHref = isLast
     ? `/results?code=${encodeURIComponent(normalized)}`
-    : `/play?code=${encodeURIComponent(normalized)}&q=${questionIndex + 1}`
+    : `/play?code=${encodeURIComponent(normalized)}&q=${nextQuestionIndex}`
 
   return (
     <TvReveal
@@ -85,7 +80,8 @@ export default async function RevealPage({
       choices={question?.choices ?? []}
       leaders={ranked}
       nextLabel={isLast ? 'Final Results' : 'Next Question'}
-      nextStatus={nextStatus}
+      nextStatus={isLast ? 'finished' : 'playing'}
+      nextQuestionIndex={isLast ? questionIndex : nextQuestionIndex}
       nextHref={nextHref}
     />
   )

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
-import { parseRoomStatus, questionIndexFromPhase } from '@/lib/room-phase'
+import { loadRoomByCode } from '@/lib/room-store'
 import { findChoiceByLabel } from '@/lib/choice-label'
 import { awardPoints, rankPlayers, speedMultiplier } from '@/lib/score'
 
@@ -35,21 +35,16 @@ export async function POST(
     return NextResponse.json({ error: 'Missing player token.' }, { status: 400, headers: NO_STORE })
   }
 
-  const supabase = createServiceClient()
-  const { data: room, error: roomError } = await supabase
-    .from('rooms')
-    .select('id, quiz_id, status')
-    .eq('code', normalized)
-    .maybeSingle()
-
-  if (roomError || !room) {
+  const room = await loadRoomByCode(normalized)
+  if (!room) {
     return NextResponse.json({ error: 'Room not found.' }, { status: 404, headers: NO_STORE })
   }
 
-  const liveIndex = questionIndexFromPhase(parseRoomStatus(room.status))
+  const liveIndex = room.questionIndex
   const questionIndex =
     typeof body.questionIndex === 'number' ? body.questionIndex : liveIndex
 
+  const supabase = createServiceClient()
   const { data: player, error: playerError } = await supabase
     .from('players')
     .select('id, nickname, score, player_token')

@@ -34,12 +34,18 @@ export function MobileResult({ code, questionIndex }: { code: string; questionIn
         if (!res.ok) return
         const data = await res.json()
         if (cancelled) return
-        const phase = parseRoomStatus(data.status)
+        const idx =
+          typeof data.questionIndex === 'number'
+            ? data.questionIndex
+            : parseRoomStatus(data.status).kind === 'playing'
+              ? parseRoomStatus(data.status).questionIndex
+              : 0
+        const phase = parseRoomStatus(data.status, idx)
         if (phase.kind === 'finished') {
           router.push(finalHref)
           return
         }
-        if (phase.kind === 'playing' && phase.questionIndex > questionIndex) {
+        if (phase.kind === 'playing' && idx > questionIndex) {
           router.push(playHref)
         }
       } catch {

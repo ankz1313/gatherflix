@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { AnswerShape } from '@/components/game/answer-shape'
 import { ANSWER_STYLES } from '@/lib/game'
-import { revealStatus } from '@/lib/room-phase'
 
 const FALLBACK_IMAGE = '/decks/deck-classic-90s-romance.png'
 
@@ -47,18 +46,17 @@ export function TvQuestion({
     setRemaining(timerSeconds)
   }, [timerSeconds])
 
+  useEffect(() => {
+    void fetch(`/api/rooms/${encodeURIComponent(code)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'playing', questionIndex }),
+    })
+  }, [code, questionIndex])
+
   async function goToReveal() {
     if (leaving.current) return
     leaving.current = true
-    try {
-      await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: revealStatus(questionIndex) }),
-      })
-    } catch {
-      // Still reveal so the host is not stuck on a dead timer.
-    }
     router.push(revealHref)
   }
 
