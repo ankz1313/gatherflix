@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { isCoreRoomStatus } from '@/lib/room-phase'
+import { loadRoomByCode, saveRoomProgress } from '@/lib/room-store'
 import { createServiceClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
@@ -51,7 +53,7 @@ export async function GET(
   )
 }
 
-// PATCH /api/rooms/[code] — host starts the game or opens final results.
+// PATCH /api/rooms/[code] — host starts, advances a question, or finishes.
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ code: string }> },
@@ -63,35 +65,51 @@ export async function PATCH(
     return NextResponse.json({ error: 'Missing room code.' }, { status: 400, headers: NO_STORE })
   }
 
-  let body: { status?: string }
+  let body: { status?: string; questionIndex?: number }
   try {
     body = await request.json()
   } catch {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400, headers: NO_STORE })
   }
 
-  if (body.status !== 'playing' && body.status !== 'finished') {
+  if (!body.status || !isCoreRoomStatus(body.status)) {
     return NextResponse.json({ error: 'Unsupported status.' }, { status: 400, headers: NO_STORE })
   }
 
-  const supabase = createServiceClient()
-  const { data: room, error } = await supabase
-    .from('rooms')
-    .update({ status: body.status })
-    .eq('code', normalized)
-    .select('id, code, status, quiz_id')
-    .maybeSingle()
-
-  if (error) {
-    console.error('[v0] PATCH /api/rooms/[code] failed:', error)
-    return NextResponse.json({ error: 'Failed to start room.' }, { status: 500, headers: NO_STORE })
+  if (body.status === 'lobby') {
+    const supabase = createServiceClient()
+    const { data: room, error } = await supabase
+      .from('rooms')
+      .update({ status: 'lobby' })
+      .eq('code', normalized)
+      .select('id, code, status, quiz_id')
+      .maybeSingle()
+    if (error || !room) {
+      return NextResponse.json({ error: 'Failed to update room.' }, { status: 500, headers: NO_STORE })
+    }
+    return NextResponse.json(
+      { room: { id: room.id, code: room.code, status: room.status, quizId: room.quiz_id } },
+      { headers: NO_STORE },
+    )
   }
+
+  const questionIndex = typeof body.questionIndex === 'number' ? body.questionIndex : 0
+  const room = await saveRoomProgress(normalized, body.status, questionIndex)
   if (!room) {
-    return NextResponse.json({ error: 'Room not found.' }, { status: 404, headers: NO_STORE })
+    return NextResponse.json({ error: 'Failed to update room.' }, { status: 500, headers: NO_STORE })
   }
 
+  const existing = await loadRoomByCode(normalized)
   return NextResponse.json(
-    { room: { id: room.id, code: room.code, status: room.status, quizId: room.quiz_id } },
+    {
+      room: {
+        id: room.id,
+        code: room.code,
+        status: room.status,
+        quizId: room.quiz_id,
+        questionIndex: existing?.questionIndex ?? questionIndex,
+      },
+    },
     { headers: NO_STORE },
   )
 }

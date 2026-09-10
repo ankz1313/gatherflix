@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
+import { loadRoomByCode, withoutRoomCursor } from '@/lib/room-store'
+import { findChoiceByLabel } from '@/lib/choice-label'
 import { awardPoints, rankPlayers, speedMultiplier } from '@/lib/score'
 
 export const dynamic = 'force-dynamic'
 
 const NO_STORE = { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
-const LETTERS = ['A', 'B', 'C', 'D'] as const
 
 // POST /api/rooms/[code]/answer — score a player's lock-in for the current question.
 export async function POST(
@@ -25,7 +26,6 @@ export async function POST(
 
   const token = body.token?.trim()
   const letter = body.letter?.trim().toUpperCase() ?? ''
-  const questionIndex = typeof body.questionIndex === 'number' ? body.questionIndex : 0
   const timeRemaining = typeof body.timeRemaining === 'number' ? body.timeRemaining : 0
 
   if (!normalized) {
@@ -35,17 +35,16 @@ export async function POST(
     return NextResponse.json({ error: 'Missing player token.' }, { status: 400, headers: NO_STORE })
   }
 
-  const supabase = createServiceClient()
-  const { data: room, error: roomError } = await supabase
-    .from('rooms')
-    .select('id, quiz_id, status')
-    .eq('code', normalized)
-    .maybeSingle()
-
-  if (roomError || !room) {
+  const room = await loadRoomByCode(normalized)
+  if (!room) {
     return NextResponse.json({ error: 'Room not found.' }, { status: 404, headers: NO_STORE })
   }
 
+  const liveIndex = room.questionIndex
+  const questionIndex =
+    typeof body.questionIndex === 'number' ? body.questionIndex : liveIndex
+
+  const supabase = createServiceClient()
   const { data: player, error: playerError } = await supabase
     .from('players')
     .select('id, nickname, score, player_token')
@@ -63,10 +62,7 @@ export async function POST(
     return NextResponse.json({ error: 'Question not found.' }, { status: 404, headers: NO_STORE })
   }
 
-  const choiceIndex = LETTERS.indexOf(letter as (typeof LETTERS)[number])
-  const choice =
-    question.choices.find((c) => c.label.toUpperCase() === letter) ??
-    (choiceIndex >= 0 ? question.choices[choiceIndex] : null)
+  const choice = findChoiceByLabel(question.choices, letter)
   const correct = Boolean(choice?.correct)
   const timerSeconds = question.timerSeconds || 20
   const awarded = awardPoints(question.points, timeRemaining, timerSeconds, correct)
@@ -85,12 +81,12 @@ export async function POST(
 
   const { data: roster } = await supabase
     .from('players')
-    .select('id, nickname, score')
+    .select('id, nickname, score, player_token')
     .eq('room_id', room.id)
     .order('score', { ascending: false })
 
   const ranked = rankPlayers(
-    (roster ?? []).map((p) => ({ ...p, score: p.score ?? 0 })),
+    withoutRoomCursor(roster ?? []).map((p) => ({ ...p, score: p.score ?? 0 })),
   )
   const me = ranked.find((p) => p.id === player.id)
   const myIndex = ranked.findIndex((p) => p.id === player.id)

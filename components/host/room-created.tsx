@@ -120,7 +120,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
       ? `${origin}/join?code=${code}`
       : `/join?code=${code}`
     : ''
-  const canStart = !!code && joined.length >= CURRENT_SESSION.minPlayers && !starting
+  const canStart = !!code && !starting
 
   async function handleStart() {
     if (!code || !canStart) return
@@ -130,13 +130,13 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
       const res = await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'playing' }),
+        body: JSON.stringify({ status: 'playing', questionIndex: 0 }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error ?? 'Could not start the game.')
       }
-      router.push(`/play?code=${encodeURIComponent(code)}`)
+      router.push(`/play?code=${encodeURIComponent(code)}&q=0`)
     } catch (err) {
       console.error('[v0] failed to start game:', err)
       setStartError('Could not start the game. Please try again.')
@@ -270,7 +270,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
             </p>
           )}
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Minimum {CURRENT_SESSION.minPlayers} players required. Host holds controller.
+            Join on your phone with the code, then start. Host holds controller.
           </p>
         </section>
       </div>

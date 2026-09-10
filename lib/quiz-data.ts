@@ -1,4 +1,5 @@
 import { createAnonClient, createServerSupabase } from '@/lib/supabase/server'
+import { choiceLabel } from '@/lib/choice-label'
 
 export type Difficulty = 'Easy' | 'Medium' | 'Hard'
 
@@ -8,12 +9,10 @@ function normalizeDifficulty(value: string | null): Difficulty {
 
 export type QuizChoice = { label: string; text: string; correct: boolean }
 
-const LETTERS = ['A', 'B', 'C', 'D'] as const
-
 function parseChoices(options: unknown): QuizChoice[] {
   if (!Array.isArray(options)) return []
   return options.map((item, i) => {
-    const label = LETTERS[i] ?? String(i + 1)
+    const label = choiceLabel(i)
     if (typeof item === 'string') {
       return { label, text: item, correct: false }
     }

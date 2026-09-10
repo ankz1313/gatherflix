@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { lastAnswerStorageKey, type QuestionResult } from '@/lib/score'
+import { parseRoomStatus } from '@/lib/room-phase'
 
-export function MobileResult({ code }: { code: string }) {
+export function MobileResult({ code, questionIndex }: { code: string; questionIndex: number }) {
   const router = useRouter()
   const [result, setResult] = useState<QuestionResult | null>(null)
 
@@ -23,33 +23,46 @@ export function MobileResult({ code }: { code: string }) {
   useEffect(() => {
     if (!code) return
     let cancelled = false
+    const playHref = `/play/mobile?code=${encodeURIComponent(code)}`
     const finalHref = `/results/mobile?code=${encodeURIComponent(code)}`
 
-    async function checkFinished() {
+    async function followHost() {
       try {
         const res = await fetch(`/api/rooms/${encodeURIComponent(code)}/players`, {
           cache: 'no-store',
         })
         if (!res.ok) return
         const data = await res.json()
-        if (!cancelled && data.status === 'finished') {
+        if (cancelled) return
+        const idx =
+          typeof data.questionIndex === 'number'
+            ? data.questionIndex
+            : parseRoomStatus(data.status).kind === 'playing'
+              ? parseRoomStatus(data.status).questionIndex
+              : 0
+        const phase = parseRoomStatus(data.status, idx)
+        if (phase.kind === 'finished') {
           router.push(finalHref)
+          return
+        }
+        if (phase.kind === 'playing' && idx > questionIndex) {
+          router.push(playHref)
         }
       } catch {
-        // Stay on the round result until the host opens the podium.
+        // Stay on the round result until the host advances.
       }
     }
 
-    const t = setInterval(checkFinished, 2000)
+    followHost()
+    const t = setInterval(followHost, 2000)
     return () => {
       cancelled = true
       clearInterval(t)
     }
-  }, [code, router])
+  }, [code, questionIndex, router])
 
   const correct = result?.correct ?? false
   const accent = correct ? 'var(--success)' : 'var(--brand)'
-  const finalHref = `/results/mobile?code=${encodeURIComponent(code)}`
 
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center px-6">
@@ -137,12 +150,7 @@ export function MobileResult({ code }: { code: string }) {
         </div>
       </div>
 
-      <Link
-        href={finalHref}
-        className="mt-6 text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
-      >
-        Skip to final results
-      </Link>
+      <p className="mt-6 text-sm text-muted-foreground">Waiting for the next question on the TV…</p>
     </div>
   )
 }

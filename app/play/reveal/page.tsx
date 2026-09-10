@@ -1,9 +1,14 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { TvReveal } from '@/components/game/tv-reveal'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
-import { rankPlayers } from '@/lib/score'
+import { parseRoomStatus } from '@/lib/room-phase'
+import { loadRoomByCode, withoutRoomCursor } from '@/lib/room-store'
 import { createServiceClient } from '@/lib/supabase/server'
+import { rankPlayers } from '@/lib/score'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Answer Revealed — GatherFlix',
@@ -13,9 +18,9 @@ export const metadata: Metadata = {
 export default async function RevealPage({
   searchParams,
 }: {
-  searchParams: Promise<{ code?: string }>
+  searchParams: Promise<{ code?: string; q?: string }>
 }) {
-  const { code } = await searchParams
+  const { code, q } = await searchParams
   const normalized = code?.trim()
 
   if (!normalized) {
@@ -29,13 +34,7 @@ export default async function RevealPage({
     )
   }
 
-  const supabase = createServiceClient()
-  const { data: room } = await supabase
-    .from('rooms')
-    .select('id, quiz_id')
-    .eq('code', normalized)
-    .maybeSingle()
-
+  const room = await loadRoomByCode(normalized)
   if (!room) {
     return (
       <main className="container-page flex min-h-[100dvh] flex-col items-center justify-center gap-4 text-center">
@@ -47,24 +46,44 @@ export default async function RevealPage({
     )
   }
 
+  const phase = parseRoomStatus(room.status, room.questionIndex)
+  if (phase.kind === 'finished') {
+    redirect(`/results?code=${encodeURIComponent(normalized)}`)
+  }
+
+  const qParam = Number.parseInt(q ?? '', 10)
+  const questionIndex = Number.isFinite(qParam) ? qParam : room.questionIndex
+  const supabase = createServiceClient()
   const [{ data: players }, quiz] = await Promise.all([
-    supabase.from('players').select('nickname, avatar, score').eq('room_id', room.id),
+    supabase.from('players').select('nickname, avatar, score, player_token').eq('room_id', room.id),
     getQuizWithQuestions(room.quiz_id),
   ])
 
-  const question = quiz?.questions[0]
-  const ranked = rankPlayers(players ?? []).map((p) => ({
+  const question = quiz?.questions[questionIndex]
+  const ranked = rankPlayers(
+    withoutRoomCursor(players ?? []).map((p) => ({ ...p, score: p.score ?? 0 })),
+  ).map((p) => ({
     name: p.nickname,
     avatar: p.avatar,
-    score: p.score ?? 0,
+    score: p.score,
   }))
+
+  const total = quiz?.questions.length ?? 1
+  const isLast = questionIndex >= total - 1
+  const nextQuestionIndex = questionIndex + 1
+  const nextHref = isLast
+    ? `/results?code=${encodeURIComponent(normalized)}`
+    : `/play?code=${encodeURIComponent(normalized)}&q=${nextQuestionIndex}`
 
   return (
     <TvReveal
       code={normalized}
       choices={question?.choices ?? []}
       leaders={ranked}
-      resultsHref={`/results?code=${encodeURIComponent(normalized)}`}
+      nextLabel={isLast ? 'Final Results' : 'Next Question'}
+      nextStatus={isLast ? 'finished' : 'playing'}
+      nextQuestionIndex={isLast ? questionIndex : nextQuestionIndex}
+      nextHref={nextHref}
     />
   )
 }

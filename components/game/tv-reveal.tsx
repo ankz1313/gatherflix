@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { AvatarBadge } from '@/components/join/avatar-badge'
@@ -12,17 +12,54 @@ export function TvReveal({
   code,
   choices,
   leaders: initialLeaders,
-  resultsHref,
+  nextLabel,
+  nextStatus,
+  nextQuestionIndex,
+  nextHref,
 }: {
   code: string
   choices: RevealChoice[]
   leaders: Leader[]
-  resultsHref: string
+  nextLabel: string
+  nextStatus: 'playing' | 'finished'
+  nextQuestionIndex: number
+  nextHref: string
 }) {
   const router = useRouter()
   const [leaders, setLeaders] = useState(initialLeaders)
   const [finishing, setFinishing] = useState(false)
-  const correct = choices.find((c) => c.correct)
+  const leaving = useRef(false)
+  const correct = choices.find((choice) => choice.correct)
+
+  async function goNext() {
+    if (leaving.current) return
+    leaving.current = true
+    setFinishing(true)
+    try {
+      const res = await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus, questionIndex: nextQuestionIndex }),
+      })
+      if (!res.ok) {
+        leaving.current = false
+        setFinishing(false)
+        return
+      }
+    } catch {
+      leaving.current = false
+      setFinishing(false)
+      return
+    }
+    router.push(nextHref)
+  }
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      void goNext()
+    }, 6000)
+    return () => clearTimeout(t)
+  }, [code, nextHref, nextStatus, nextQuestionIndex])
 
   useEffect(() => {
     setLeaders(initialLeaders)
@@ -152,22 +189,10 @@ export function TvReveal({
           <button
             type="button"
             disabled={finishing}
-            onClick={async () => {
-              setFinishing(true)
-              try {
-                await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ status: 'finished' }),
-                })
-              } catch {
-                // Still show the podium even if the status update fails.
-              }
-              router.push(resultsHref)
-            }}
+            onClick={() => void goNext()}
             className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gold px-8 py-4 font-display text-base font-bold uppercase tracking-wide text-gold-foreground transition-transform hover:scale-[1.01] disabled:opacity-70"
           >
-            Final Results
+            {nextLabel}
             <svg viewBox="0 0 24 24" fill="none" className="size-5" aria-hidden="true">
               <path d="m9 6 6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

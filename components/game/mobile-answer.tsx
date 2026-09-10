@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { AnswerShape } from '@/components/game/answer-shape'
 import { ANSWER_STYLES } from '@/lib/game'
 import { lastAnswerStorageKey, type QuestionResult } from '@/lib/score'
+import { parseRoomStatus } from '@/lib/room-phase'
 
 type Choice = { label: string; text: string }
 
@@ -34,6 +35,14 @@ export function MobileAnswer({
   const lockedRef = useRef(false)
 
   useEffect(() => {
+    if (!code) return
+    const lockKey = `gf_scored_${code}_${questionIndex}`
+    if (sessionStorage.getItem(lockKey)) {
+      router.replace(`/play/mobile/result?code=${encodeURIComponent(code)}&q=${questionIndex}`)
+    }
+  }, [code, questionIndex, router])
+
+  useEffect(() => {
     if (remaining > 0) {
       const t = setTimeout(() => setRemaining((r) => r - 1), 1000)
       return () => clearTimeout(t)
@@ -43,13 +52,53 @@ export function MobileAnswer({
     }
   }, [remaining])
 
+  useEffect(() => {
+    if (!code) return
+    let cancelled = false
+
+    async function followHost() {
+      try {
+        const res = await fetch(`/api/rooms/${encodeURIComponent(code)}/players`, {
+          cache: 'no-store',
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        if (cancelled) return
+        const idx =
+          typeof data.questionIndex === 'number'
+            ? data.questionIndex
+            : parseRoomStatus(data.status).kind === 'playing'
+              ? parseRoomStatus(data.status).questionIndex
+              : 0
+        const phase = parseRoomStatus(data.status, idx)
+        if (phase.kind === 'finished') {
+          router.push(`/results/mobile?code=${encodeURIComponent(code)}`)
+          return
+        }
+        if (phase.kind === 'playing' && idx > questionIndex) {
+          router.push(`/play/mobile?code=${encodeURIComponent(code)}`)
+          return
+        }
+      } catch {
+        // Keep answering until the host moves on.
+      }
+    }
+
+    followHost()
+    const t = setInterval(followHost, 2000)
+    return () => {
+      cancelled = true
+      clearInterval(t)
+    }
+  }, [code, questionIndex, router])
+
   async function submit(letter: string) {
     if (submitting.current) return
     submitting.current = true
     lockedRef.current = true
     if (letter) setLocked(letter)
 
-    const resultHref = `/play/mobile/result?code=${encodeURIComponent(code)}`
+    const resultHref = `/play/mobile/result?code=${encodeURIComponent(code)}&q=${questionIndex}`
     const token = sessionStorage.getItem(`gf_player_token_${code}`)
 
     if (!token) {
@@ -126,7 +175,7 @@ export function MobileAnswer({
 
       <div className="mt-6 flex flex-col gap-3">
         {choices.map((choice, i) => {
-          const style = ANSWER_STYLES[i] ?? ANSWER_STYLES[0]
+          const style = ANSWER_STYLES[i % ANSWER_STYLES.length]
           const isLocked = locked === choice.label
           return (
             <button
