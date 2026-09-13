@@ -38,6 +38,8 @@ export function TvQuestion({
 }: TvQuestionProps) {
   const router = useRouter()
   const [remaining, setRemaining] = useState(timerSeconds)
+  const [lockedIn, setLockedIn] = useState(0)
+  const [livePlayers, setLivePlayers] = useState(playerCount)
   const leaving = useRef(false)
 
   useEffect(() => {
@@ -57,6 +59,38 @@ export function TvQuestion({
     leaving.current = true
     router.push(revealHref)
   }
+
+  useEffect(() => {
+    if (!code) return
+    let cancelled = false
+
+    async function checkAnswers() {
+      try {
+        const res = await fetch(`/api/rooms/${encodeURIComponent(code)}/players`, {
+          cache: 'no-store',
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        if (cancelled) return
+        const humans = typeof data.playerCount === 'number' ? data.playerCount : playerCount
+        const answered = typeof data.answeredCount === 'number' ? data.answeredCount : 0
+        setLivePlayers(humans)
+        setLockedIn(answered)
+        if (humans > 0 && answered >= humans) {
+          void goToReveal()
+        }
+      } catch {
+        // Keep the timer running until everyone has locked in.
+      }
+    }
+
+    checkAnswers()
+    const t = setInterval(checkAnswers, 1000)
+    return () => {
+      cancelled = true
+      clearInterval(t)
+    }
+  }, [code, playerCount, revealHref])
 
   useEffect(() => {
     if (remaining > 0) {
@@ -149,8 +183,10 @@ export function TvQuestion({
 
         <div className="grid grid-cols-3 items-center">
           <div className="text-center">
-            <p className="font-display text-3xl font-black text-gold">{playerCount}</p>
-            <p className="mt-1 text-sm text-muted-foreground">Players in the room</p>
+            <p className="font-display text-3xl font-black text-gold">{livePlayers}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {lockedIn}/{livePlayers} locked in
+            </p>
           </div>
 
           <div className="flex justify-center">

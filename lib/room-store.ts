@@ -11,20 +11,28 @@ export type RoomRow = {
 
 export const ROOM_CURSOR_NICKNAME = 'gf-round'
 
-export function isRoomCursorPlayer(row: {
+export function isHiddenRoomPlayer(row: {
   nickname?: string | null
   player_token?: string | null
 }) {
   return (
     row.nickname === ROOM_CURSOR_NICKNAME ||
-    (row.player_token?.startsWith('gf.cursor.') ?? false)
+    (row.player_token?.startsWith('gf.cursor.') ?? false) ||
+    (row.player_token?.startsWith('gf.answer.') ?? false)
   )
+}
+
+export function isRoomCursorPlayer(row: {
+  nickname?: string | null
+  player_token?: string | null
+}) {
+  return isHiddenRoomPlayer(row)
 }
 
 export function withoutRoomCursor<T extends { nickname?: string | null; player_token?: string | null }>(
   players: T[],
 ) {
-  return players.filter((player) => !isRoomCursorPlayer(player))
+  return players.filter((player) => !isHiddenRoomPlayer(player))
 }
 
 function cursorToken(roomId: string) {
@@ -85,6 +93,49 @@ async function saveRoomCursor(roomId: string, questionIndex: number) {
     .eq('player_token', token)
 
   return !fallback.error
+}
+
+function answerToken(playerId: string, questionIndex: number) {
+  return `gf.answer.${playerId}.${questionIndex}`
+}
+
+function answerNickname(playerId: string, questionIndex: number) {
+  const compact = playerId.replace(/-/g, '').slice(0, 10)
+  return `gf.${questionIndex}.${compact}`.slice(0, 16)
+}
+
+export async function recordPlayerAnswer(roomId: string, playerId: string, questionIndex: number) {
+  const supabase = createServiceClient()
+  const token = answerToken(playerId, questionIndex)
+  const { data: existing } = await supabase
+    .from('players')
+    .select('id')
+    .eq('player_token', token)
+    .maybeSingle()
+  if (existing) return true
+
+  const { error } = await supabase.from('players').insert({
+    room_id: roomId,
+    nickname: answerNickname(playerId, questionIndex),
+    avatar: `a:${questionIndex}`,
+    player_token: token,
+    score: 0,
+  })
+  return !error || error.code === '23505'
+}
+
+export async function countAnswersForQuestion(roomId: string, questionIndex: number) {
+  const supabase = createServiceClient()
+  const { data, error } = await supabase
+    .from('players')
+    .select('id, player_token, avatar')
+    .eq('room_id', roomId)
+    .like('player_token', 'gf.answer.%')
+
+  if (error || !data) return 0
+  const suffix = `.${questionIndex}`
+  return data.filter((row) => row.player_token?.endsWith(suffix) || row.avatar === `a:${questionIndex}`)
+    .length
 }
 
 export async function loadRoomByCode(code: string): Promise<RoomRow | null> {
