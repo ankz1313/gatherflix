@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { AvatarBadge } from '@/components/join/avatar-badge'
+import { GatherflixLogo } from '@/components/gatherflix-logo'
 
 export type Standing = {
   name: string
@@ -77,14 +78,7 @@ export function TvPodium({
   return (
     <main className="min-h-[100dvh] px-8 py-8">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="grid size-9 place-items-center rounded-lg bg-brand font-display text-lg font-black text-brand-foreground">
-            G
-          </span>
-          <span className="font-display text-xl font-black tracking-tight">
-            GATHER<span className="text-gold">FLIX</span>
-          </span>
-        </div>
+        <GatherflixLogo />
         <span className="inline-flex items-center gap-2 rounded-full border border-brand/50 bg-brand/10 px-4 py-1.5 font-display text-sm font-bold text-brand">
           {'\u{1F3C6}'} FINAL STANDINGS
         </span>
@@ -123,7 +117,13 @@ export function TvPodium({
             })}
           </div>
 
-          <div className="mt-10 flex items-center gap-3">
+          <div className="mt-10 flex flex-wrap items-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center rounded-full border border-border bg-secondary/70 px-7 py-3.5 font-display text-base font-bold text-foreground transition-colors hover:bg-accent"
+            >
+              Home
+            </Link>
             <Link
               href="/host"
               className="inline-flex items-center justify-center rounded-full bg-gold px-7 py-3.5 font-display text-base font-bold text-gold-foreground shadow-[0_10px_45px_-12px] shadow-gold/70 transition-transform hover:scale-[1.02]"

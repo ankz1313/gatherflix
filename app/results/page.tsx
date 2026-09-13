@@ -25,8 +25,8 @@ export default async function ResultsPage({
     return (
       <main className="container-page flex min-h-[100dvh] flex-col items-center justify-center gap-4 text-center">
         <h1 className="font-display text-3xl font-extrabold">No live room</h1>
-        <Link href="/host" className="font-display font-bold text-gold">
-          Back to Host
+        <Link href="/" className="font-display font-bold text-gold">
+          Back to Home
         </Link>
       </main>
     )
@@ -43,8 +43,8 @@ export default async function ResultsPage({
     return (
       <main className="container-page flex min-h-[100dvh] flex-col items-center justify-center gap-4 text-center">
         <h1 className="font-display text-3xl font-extrabold">Room not found</h1>
-        <Link href="/host" className="font-display font-bold text-gold">
-          Back to Host
+        <Link href="/" className="font-display font-bold text-gold">
+          Back to Home
         </Link>
       </main>
     )
