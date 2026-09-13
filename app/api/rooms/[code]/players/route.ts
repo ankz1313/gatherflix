@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { parseRoomStatus } from '@/lib/room-phase'
-import { loadRoomByCode, withoutRoomCursor } from '@/lib/room-store'
+import { loadRoomByCode, countAnswersForQuestion, withoutRoomCursor } from '@/lib/room-store'
 import { createServiceClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
@@ -37,12 +37,17 @@ export async function GET(
 
   const phase = parseRoomStatus(room.status, room.questionIndex)
 
+  const humans = withoutRoomCursor(players ?? [])
+  const answeredCount = await countAnswersForQuestion(room.id, room.questionIndex)
+
   return NextResponse.json(
     {
       status: room.status,
       questionIndex: room.questionIndex,
       phase: phase.kind,
-      players: withoutRoomCursor(players ?? []).map((p) => ({
+      answeredCount,
+      playerCount: humans.length,
+      players: humans.map((p) => ({
         id: p.id,
         nickname: p.nickname,
         avatar: p.avatar,

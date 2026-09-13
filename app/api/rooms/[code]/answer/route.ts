@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
-import { loadRoomByCode, withoutRoomCursor } from '@/lib/room-store'
+import { loadRoomByCode, recordPlayerAnswer, withoutRoomCursor } from '@/lib/room-store'
 import { findChoiceByLabel } from '@/lib/choice-label'
 import { awardPoints, rankPlayers, speedMultiplier } from '@/lib/score'
 
@@ -78,6 +78,8 @@ export async function POST(
     console.error('[v0] answer score update failed:', updateError)
     return NextResponse.json({ error: 'Failed to save score.' }, { status: 500, headers: NO_STORE })
   }
+
+  await recordPlayerAnswer(room.id, player.id, questionIndex)
 
   const { data: roster } = await supabase
     .from('players')
