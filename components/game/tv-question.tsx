@@ -7,8 +7,6 @@ import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { AnswerShape } from '@/components/game/answer-shape'
 import { ANSWER_STYLES } from '@/lib/game'
 
-const FALLBACK_IMAGE = '/decks/deck-classic-90s-romance.png'
-
 type TvQuestionProps = {
   code: string
   questionIndex: number
@@ -72,7 +70,8 @@ export function TvQuestion({
   }, [remaining])
 
   const pct = timerSeconds > 0 ? (remaining / timerSeconds) * 100 : 0
-  const still = imageUrl || FALLBACK_IMAGE
+  const still = imageUrl?.trim() || null
+  const roundLabel = `Question ${String(questionNumber).padStart(2, '0')} of ${totalQuestions}`
 
   return (
     <main className="flex min-h-[100dvh] flex-col">
@@ -84,22 +83,30 @@ export function TvQuestion({
       </div>
 
       <div className="container-page flex flex-1 flex-col justify-center gap-10 pb-10">
-        <div className="relative overflow-hidden rounded-3xl border border-border">
-          <div className="relative aspect-[21/8]">
-            <Image
-              src={still}
-              alt=""
-              fill
-              sizes="100vw"
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
+        {still ? (
+          <div className="relative overflow-hidden rounded-3xl border border-border">
+            <div className="relative aspect-[21/8]">
+              <Image
+                src={still}
+                alt=""
+                fill
+                sizes="100vw"
+                className="object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
+            </div>
+            <span className="absolute left-6 top-6 rounded-full bg-brand px-4 py-1.5 font-display text-xs font-bold uppercase tracking-wide text-brand-foreground">
+              {roundLabel}
+            </span>
           </div>
-          <span className="absolute left-6 top-6 rounded-full bg-brand px-4 py-1.5 font-display text-xs font-bold uppercase tracking-wide text-brand-foreground">
-            Question {String(questionNumber).padStart(2, '0')} of {totalQuestions}
-          </span>
-        </div>
+        ) : (
+          <div className="flex justify-center">
+            <span className="rounded-full bg-brand px-4 py-1.5 font-display text-xs font-bold uppercase tracking-wide text-brand-foreground">
+              {roundLabel}
+            </span>
+          </div>
+        )}
 
         <div className="text-center">
           <h1 className="mx-auto max-w-4xl font-display text-4xl font-extrabold tracking-[-0.02em] text-balance lg:text-5xl">
