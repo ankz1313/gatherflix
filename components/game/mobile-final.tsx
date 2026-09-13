@@ -107,6 +107,12 @@ export function MobileFinal({ code }: { code: string }) {
         >
           Play Again?
         </Link>
+        <Link
+          href="/"
+          className="mt-3 flex w-full items-center justify-center rounded-2xl border border-border bg-secondary/70 px-8 py-4 font-display text-lg font-bold text-foreground"
+        >
+          Home
+        </Link>
       </div>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
