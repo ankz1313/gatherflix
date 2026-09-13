@@ -1,5 +1,4 @@
 import { Clapperboard, Play, Plus } from 'lucide-react'
-import Image from 'next/image'
 
 export function Hero() {
   return (
@@ -44,20 +43,22 @@ export function Hero() {
 
         {/* Featured room card */}
         <div className="rounded-3xl border border-border bg-card p-3.5 shadow-[0_24px_70px_-30px_rgb(0_0_0/0.45)] sm:p-4">
-          <div className="relative aspect-[16/9] overflow-hidden rounded-2xl">
-            <Image
-              src="/decks/hero-sholay-masala-night.png"
-              alt="Dancers in embroidered outfits performing on an ornate Bollywood theatre stage under spotlights"
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 45vw"
-              className="object-cover"
-            />
+          <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-secondary">
+            <video
+              className="absolute inset-0 size-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+              aria-label="Friends playing a trivia night together"
+            >
+              <source src="/decks/hero-quiz-night.mp4" type="video/mp4" />
+            </video>
           </div>
 
           <div className="px-1.5 pt-5 pb-2">
-            <h2 className="font-display text-xl font-bold tracking-tight sm:text-[1.35rem]">Sholay Masala Night</h2>
-            <p className="mt-1.5 text-[0.95rem] text-muted-foreground">Hosted by Rahul Khanna</p>
+            <h2 className="font-display text-xl font-bold tracking-tight sm:text-[1.35rem]">Trivia Night</h2>
+            <p className="mt-1.5 text-[0.95rem] text-muted-foreground">Gather your crew. Play on your phones.</p>
           </div>
         </div>
       </div>
