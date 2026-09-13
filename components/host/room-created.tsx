@@ -184,56 +184,55 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
               {quizTitle}
             </p>
             <h1 className="mt-3 font-display text-5xl font-black tracking-tight text-balance lg:text-6xl">
-              Scan, tap, or type the join link
+              Scan the QR, or enter the code
             </h1>
           </div>
 
-          {/* Segmented code */}
-          <div className="rounded-3xl border-2 border-brand bg-background/40 p-4 shadow-[0_0_35px_-8px] shadow-brand/60">
-            {error ? (
-              <p className="py-6 text-center font-display text-lg font-bold text-brand">
-                Could not create room. Please refresh to try again.
-              </p>
-            ) : (
-              <div className="flex justify-between gap-2 sm:gap-3">
-                {codeDigits.map((digit, i) => (
-                  <div
-                    key={i}
-                    className="flex h-16 flex-1 items-center justify-center rounded-2xl bg-card font-display text-3xl font-black text-gold sm:h-20 sm:text-4xl"
-                  >
-                    {digit || (
-                      <span className="animate-pulse text-muted-foreground" aria-hidden="true">
-                        ·
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Scan with your camera */}
-          <div className="flex items-center gap-5 rounded-3xl border border-border bg-card/70 p-5">
-            <div className="grid size-24 shrink-0 place-items-center rounded-2xl bg-white p-2">
+          <div className="flex flex-col items-center rounded-3xl border border-border bg-card/70 p-6">
+            <p className="font-display text-lg font-bold">Scan with your camera</p>
+            <p className="mt-1 text-center text-sm text-muted-foreground text-pretty">
+              Opens the join page on your phone with this room already selected.
+            </p>
+            <div className="mt-5 grid size-64 place-items-center rounded-3xl bg-white p-4">
               {joinUrl ? (
-                <QRCodeSVG value={joinUrl} size={80} bgColor="#ffffff" fgColor="#0a0509" level="M" />
+                <QRCodeSVG value={joinUrl} size={208} bgColor="#ffffff" fgColor="#0a0509" level="M" />
               ) : (
-                <div className="size-20 animate-pulse rounded-lg bg-neutral-200" aria-hidden="true" />
+                <div className="size-44 animate-pulse rounded-lg bg-neutral-200" aria-hidden="true" />
               )}
             </div>
-            <div>
-              <p className="font-display text-lg font-bold">Scan with your camera</p>
-              <p className="mt-1 text-sm text-muted-foreground text-pretty">
-                Instantly join on your mobile browser. Choose your avatar look and nickname to enter
-                the lobby!
-              </p>
-            </div>
           </div>
 
+          <div>
+            <p className="mb-3 text-center font-display text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              6-digit room code
+            </p>
+            <div className="rounded-3xl border-2 border-brand bg-background/40 p-4 shadow-[0_0_35px_-8px] shadow-brand/60">
+              {error ? (
+                <p className="py-6 text-center font-display text-lg font-bold text-brand">
+                  Could not create room. Please refresh to try again.
+                </p>
+              ) : (
+                <div className="flex justify-between gap-2 sm:gap-3">
+                  {codeDigits.map((digit, i) => (
+                    <div
+                      key={i}
+                      className="flex h-16 flex-1 items-center justify-center rounded-2xl bg-card font-display text-3xl font-black text-gold sm:h-20 sm:text-4xl"
+                    >
+                      {digit || (
+                        <span className="animate-pulse text-muted-foreground" aria-hidden="true">
+                          ·
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
           <div className="rounded-3xl border border-border bg-card/70 p-5">
             <p className="font-display text-lg font-bold">Or type this on your phone</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Open the join page, then enter the 6-digit code above.
+              Open the join page, then enter the 6-digit code.
             </p>
             <p className="mt-4 break-all font-display text-xl font-extrabold tracking-tight text-gold sm:text-2xl">
               {joinPageDisplay}
