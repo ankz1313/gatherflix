@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { QRCodeSVG } from 'qrcode.react'
-import { Clapperboard, Play } from 'lucide-react'
+import { Check, Clapperboard, Copy, Play } from 'lucide-react'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AvatarBadge } from '@/components/join/avatar-badge'
@@ -65,6 +65,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
   const [origin, setOrigin] = useState('')
   const [starting, setStarting] = useState(false)
   const [startError, setStartError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     setOrigin(window.location.origin)
@@ -120,7 +121,21 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
       ? `${origin}/join?code=${code}`
       : `/join?code=${code}`
     : ''
+  const joinPageDisplay = origin
+    ? `${origin.replace(/^https?:\/\//, '')}/join`
+    : 'gatherflix-6j.vercel.app/join'
   const canStart = !!code && !starting
+
+  async function copyJoinLink() {
+    if (!joinUrl) return
+    try {
+      await navigator.clipboard.writeText(joinUrl)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setCopied(false)
+    }
+  }
 
   async function handleStart() {
     if (!code || !canStart) return
@@ -169,7 +184,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
               {quizTitle}
             </p>
             <h1 className="mt-3 font-display text-5xl font-black tracking-tight text-balance lg:text-6xl">
-              Scan QR or Enter Code
+              Scan, tap, or type the join link
             </h1>
           </div>
 
@@ -213,6 +228,29 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
                 the lobby!
               </p>
             </div>
+          </div>
+
+          <div className="rounded-3xl border border-border bg-card/70 p-5">
+            <p className="font-display text-lg font-bold">Or type this on your phone</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Open the join page, then enter the 6-digit code above.
+            </p>
+            <p className="mt-4 break-all font-display text-xl font-extrabold tracking-tight text-gold sm:text-2xl">
+              {joinPageDisplay}
+            </p>
+            {joinUrl && (
+              <button
+                type="button"
+                onClick={() => void copyJoinLink()}
+                className="mt-4 inline-flex items-center gap-2 rounded-full border border-brand/40 bg-brand-soft px-4 py-2 font-display text-sm font-bold text-brand"
+              >
+                {copied ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
+                {copied ? 'Copied join link' : 'Copy join link'}
+              </button>
+            )}
+            {joinUrl && (
+              <p className="mt-3 break-all text-xs text-muted-foreground">{joinUrl}</p>
+            )}
           </div>
         </section>
 
