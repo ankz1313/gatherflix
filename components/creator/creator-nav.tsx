@@ -4,7 +4,6 @@ import { UserMenu } from '@/components/auth/user-menu'
 const NAV = [
   { label: 'Explore Packs', href: '/library' },
   { label: 'My Quizzes', href: '/create' },
-  { label: 'Global Leaderboards', href: '/results' },
 ]
 
 export function CreatorNav({ active = 'My Quizzes' }: { active?: string }) {
