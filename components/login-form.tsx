@@ -152,7 +152,7 @@ export function LoginForm() {
               autoComplete="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Amitabh Bachchan"
+              placeholder="First name"
               className={inputClass}
             />
           </div>
@@ -169,7 +169,7 @@ export function LoginForm() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="amitabh@bachchan.com"
+            placeholder="you@email.com"
             className={inputClass}
             required
           />
