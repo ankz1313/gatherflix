@@ -16,6 +16,9 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl">
+      <p className="border-b border-gold/25 bg-gold/10 px-4 py-2.5 text-center text-[0.8rem] leading-snug text-gold sm:text-sm">
+        Work in progress — GatherFlix is in early access. Look around, play a round, and expect a few things to still be in flux.
+      </p>
       <div className="container-page flex h-[4.5rem] items-center justify-between gap-4">
         <GatherflixLogo />
 
