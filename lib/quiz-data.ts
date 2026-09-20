@@ -1,4 +1,4 @@
-import { createAnonClient, createServerSupabase } from '@/lib/supabase/server'
+import { createAnonClient, createServerSupabase, createServiceClient } from '@/lib/supabase/server'
 import { choiceLabel } from '@/lib/choice-label'
 
 export type Difficulty = 'Easy' | 'Medium' | 'Hard'
@@ -267,4 +267,35 @@ export async function getQuizWithQuestions(id: string): Promise<QuizWithQuestion
     minutes: minutesFromSeconds(totalSeconds, questions.length),
     questions,
   }
+}
+
+async function getQuizPlayCounts(): Promise<Map<string, number>> {
+  const counts = new Map<string, number>()
+  try {
+    const supabase = createServiceClient()
+    const { data, error } = await supabase.from('rooms').select('quiz_id')
+    if (error || !data) return counts
+    for (const row of data) {
+      if (!row.quiz_id) continue
+      counts.set(row.quiz_id, (counts.get(row.quiz_id) ?? 0) + 1)
+    }
+  } catch {
+    // No service role (local) or rooms unreadable — featured falls back to catalog order.
+  }
+  return counts
+}
+
+// Homepage featured row: published quizzes ranked by how many rooms were hosted.
+export async function getMostPlayedPublishedQuizzes(limit = 4): Promise<QuizSummary[]> {
+  const quizzes = await getPublishedQuizzes()
+  if (quizzes.length === 0) return []
+
+  const plays = await getQuizPlayCounts()
+  return [...quizzes]
+    .sort((a, b) => {
+      const playDelta = (plays.get(b.id) ?? 0) - (plays.get(a.id) ?? 0)
+      if (playDelta !== 0) return playDelta
+      return b.questionCount - a.questionCount
+    })
+    .slice(0, limit)
 }

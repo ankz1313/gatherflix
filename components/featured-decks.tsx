@@ -1,8 +1,17 @@
 import Image from 'next/image'
-import { getFeaturedDecks } from '@/lib/decks'
+import { DECKS } from '@/lib/decks'
+import { getMostPlayedPublishedQuizzes } from '@/lib/quiz-data'
 
-export function FeaturedDecks() {
-  const decks = getFeaturedDecks(4)
+const FALLBACK_IMAGE = '/decks/deck-classic-90s-romance.png'
+
+function coverFor(title: string, coverImageUrl: string | null): string {
+  if (coverImageUrl?.trim()) return coverImageUrl
+  return DECKS.find((d) => d.title === title)?.image ?? FALLBACK_IMAGE
+}
+
+export async function FeaturedDecks() {
+  const decks = await getMostPlayedPublishedQuizzes(4)
+  if (decks.length === 0) return null
 
   return (
     <section id="featured-decks" className="container-page scroll-mt-24 py-16 lg:py-24">
@@ -12,7 +21,7 @@ export function FeaturedDecks() {
             Featured Movie Decks
           </h2>
           <p className="mt-3 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Voted best for group game nights this week
+            The packs crews have hosted the most
           </p>
         </div>
 
@@ -26,15 +35,15 @@ export function FeaturedDecks() {
 
       <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4">
         {decks.map((deck) => (
-          <li key={deck.slug}>
+          <li key={deck.id}>
             <a
-              href={`/host/preview?deck=${deck.slug}`}
+              href={`/host/preview?quiz=${deck.id}`}
               className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-[0_20px_50px_-32px_rgb(0_0_0/0.4)] transition-transform hover:-translate-y-1"
             >
               <div className="relative aspect-[3/2] overflow-hidden">
                 <Image
-                  src={deck.image}
-                  alt={deck.alt}
+                  src={coverFor(deck.title, deck.coverImageUrl)}
+                  alt={deck.title}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
@@ -43,7 +52,9 @@ export function FeaturedDecks() {
 
               <div className="flex flex-1 flex-col p-5">
                 <h3 className="font-display text-lg font-bold tracking-tight">{deck.title}</h3>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{deck.blurb}</p>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                  {deck.description ?? ''}
+                </p>
 
                 <div className="mt-5 flex items-center gap-3">
                   <span className="rounded-full bg-brand-soft px-3 py-1 font-display text-xs font-bold text-brand">
