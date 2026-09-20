@@ -64,7 +64,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
   const [joined, setJoined] = useState<JoinedPlayer[]>([])
   const [origin, setOrigin] = useState('')
   const [starting, setStarting] = useState(false)
-  const [countdown, setCountdown] = useState<number | null>(null)
+  const [countdown, setCountdown] = useState<number | 'go' | null>(null)
   const [startError, setStartError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -143,16 +143,21 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
     setStarting(true)
     setStartError(null)
     try {
-      for (const n of [3, 2, 1]) {
+      let startPromise: Promise<Response> | null = null
+      for (const n of [3, 2, 1] as const) {
         setCountdown(n)
-        await new Promise((resolve) => window.setTimeout(resolve, 1000))
+        const tick = new Promise<void>((resolve) => window.setTimeout(resolve, 1000))
+        if (n === 1) {
+          startPromise = fetch(`/api/rooms/${encodeURIComponent(code)}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'playing', questionIndex: 0 }),
+          })
+        }
+        await tick
       }
-      setCountdown(null)
-      const res = await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'playing', questionIndex: 0 }),
-      })
+      setCountdown('go')
+      const res = await startPromise!
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error ?? 'Could not start the game.')
@@ -175,7 +180,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
           className="fixed inset-0 z-50 grid place-items-center bg-[#0a0509]/92 backdrop-blur-sm"
           role="status"
           aria-live="assertive"
-          aria-label={`${countdown}`}
+          aria-label={countdown === 'go' ? 'Go' : `${countdown}`}
         >
           <div className="flex flex-col items-center">
             <p className="font-display text-sm font-bold uppercase tracking-[0.25em] text-brand">
@@ -185,7 +190,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
               key={countdown}
               className="mt-4 font-display text-[8rem] font-black leading-none text-gold sm:text-[10rem]"
             >
-              {countdown}
+              {countdown === 'go' ? 'Go!' : countdown}
             </p>
           </div>
         </div>
