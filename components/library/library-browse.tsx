@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import useSWR from 'swr'
-import { difficultyClass } from '@/lib/decks'
+import { DECKS, difficultyClass } from '@/lib/decks'
 import type { QuizSummary } from '@/lib/quiz-data'
 import { QUIZ_CATEGORIES, quizMatchesCategory, resolveQuizCategory, type QuizCategory } from '@/lib/categories'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
@@ -13,6 +13,11 @@ import { UserMenu } from '@/components/auth/user-menu'
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'] as const
 
 const FALLBACK_IMAGE = '/decks/deck-classic-90s-romance.png'
+
+function coverFor(quiz: QuizSummary): string {
+  if (quiz.coverImageUrl?.trim()) return quiz.coverImageUrl
+  return DECKS.find((d) => d.title === quiz.title)?.image ?? FALLBACK_IMAGE
+}
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -126,6 +131,7 @@ export function LibraryBrowse() {
     })
   }, [quizzes, query, difficulty, category])
 
+  // API returns packs ordered by host count, so the first match is the featured hero.
   const featured = filtered[0] ?? null
   const results = featured ? filtered.slice(1) : filtered
 
@@ -249,7 +255,7 @@ export function LibraryBrowse() {
           >
             <div className="relative aspect-[21/7]">
               <Image
-                src={featured.coverImageUrl ?? FALLBACK_IMAGE}
+                src={coverFor(featured)}
                 alt={featured.title}
                 fill
                 sizes="100vw"
@@ -287,7 +293,7 @@ export function LibraryBrowse() {
                 >
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <Image
-                      src={quiz.coverImageUrl ?? FALLBACK_IMAGE}
+                      src={coverFor(quiz)}
                       alt={quiz.title}
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
