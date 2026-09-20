@@ -68,40 +68,6 @@ export const DECKS: Deck[] = [
     trending: true,
   },
   {
-    slug: 'grand-shaadi-anthems',
-    title: 'Grand Shaadi Anthems',
-    blurb:
-      'Wedding season is a whole vibe! From sangeet floor-fillers to baraat bangers, guess the biggest big-fat-Indian-wedding anthems ever put on screen.',
-    image: '/decks/deck-sangeet-superhits.png',
-    alt: 'Crowd of dancers in bright lehengas celebrating under colorful stage lights',
-    questionCount: 12,
-    minutes: 8,
-    difficulty: 'Easy',
-    categories: ['Music', 'Karan Johar', 'Dance'],
-    creator: 'DholBaaja',
-    host: 'DholBaaja',
-    plays: '3.1K',
-    preview: {
-      question: 'Which chartbuster is the undisputed sangeet anthem of every 2000s wedding?',
-      options: [
-        { label: 'A', text: 'Bole Chudiyan' },
-        { label: 'B', text: 'Mehndi Laga Ke Rakhna' },
-        { label: 'C', text: 'Aaj Mere Yaar Ki Shaadi Hai' },
-        { label: 'D', text: 'Gallan Goodiyaan' },
-      ],
-      correctIndex: 0,
-      points: 100,
-      tip: 'Crank up the room speakers — this deck is packed with dance-along audio rounds!',
-    },
-    sampleQuestions: [
-      'Which song is the undisputed sangeet anthem of the 2000s?',
-      'Name the composer duo behind this chartbuster album.',
-      'Which dance step went viral from this wedding number?',
-    ],
-    tags: ['Trending', 'Music'],
-    trending: true,
-  },
-  {
     slug: 'angry-young-man-retro',
     title: 'Angry Young Man Retro',
     blurb:
