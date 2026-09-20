@@ -271,16 +271,8 @@ export function getDeck(slug: string | null | undefined): Deck {
   return DECKS.find((d) => d.slug === slug) ?? DECKS[0]
 }
 
-// Curated set shown on the landing page. Prefers decks flagged `featured`,
-// then fills with trending decks, then falls back to catalog order.
-// SEAM: swap for a `SELECT ... WHERE featured ORDER BY plays LIMIT n` query later.
-export function getFeaturedDecks(limit = 4): Deck[] {
-  const ranked = [...DECKS].sort((a, b) => {
-    const score = (d: Deck) => (d.featured ? 2 : 0) + (d.trending ? 1 : 0)
-    return score(b) - score(a)
-  })
-  return ranked.slice(0, limit)
-}
+// Static catalog used for host preview fallbacks and cover art.
+// Homepage featured decks now come from getMostPlayedPublishedQuizzes.
 
 export function difficultyClass(difficulty: Deck['difficulty']): string {
   switch (difficulty) {
