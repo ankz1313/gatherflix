@@ -64,6 +64,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
   const [joined, setJoined] = useState<JoinedPlayer[]>([])
   const [origin, setOrigin] = useState('')
   const [starting, setStarting] = useState(false)
+  const [countdown, setCountdown] = useState<number | null>(null)
   const [startError, setStartError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -142,6 +143,11 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
     setStarting(true)
     setStartError(null)
     try {
+      for (const n of [3, 2, 1]) {
+        setCountdown(n)
+        await new Promise((resolve) => window.setTimeout(resolve, 1000))
+      }
+      setCountdown(null)
       const res = await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -155,6 +161,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
     } catch (err) {
       console.error('[v0] failed to start game:', err)
       setStartError('Could not start the game. Please try again.')
+      setCountdown(null)
       setStarting(false)
     }
   }
@@ -163,6 +170,26 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
 
   return (
     <main className="flex min-h-[100dvh] flex-col">
+      {countdown !== null && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-[#0a0509]/92 backdrop-blur-sm"
+          role="status"
+          aria-live="assertive"
+          aria-label={`${countdown}`}
+        >
+          <div className="flex flex-col items-center">
+            <p className="font-display text-sm font-bold uppercase tracking-[0.25em] text-brand">
+              Get ready
+            </p>
+            <p
+              key={countdown}
+              className="mt-4 font-display text-[8rem] font-black leading-none text-gold sm:text-[10rem]"
+            >
+              {countdown}
+            </p>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="container-page flex items-center justify-between py-6">
         <GatherflixLogo />
