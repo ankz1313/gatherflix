@@ -183,21 +183,28 @@ export async function getPublishedQuizzes(): Promise<QuizSummary[]> {
 
   if (error) throw error
 
-  return (data ?? []).map((row) => {
-    const questions = (row.questions ?? []) as { timer_seconds: number }[]
-    const totalSeconds = questions.reduce((sum, q) => sum + (q.timer_seconds ?? 0), 0)
-    return {
-      id: row.id,
-      title: row.title,
-      description: row.description,
-      category: row.category,
-      subtags: row.subtags ?? [],
-      difficulty: normalizeDifficulty(row.difficulty),
-      coverImageUrl: row.cover_image_url,
-      questionCount: questions.length,
-      minutes: minutesFromSeconds(totalSeconds, questions.length),
-    }
-  })
+  const plays = await getQuizPlayCounts()
+  return (data ?? [])
+    .map((row) => {
+      const questions = (row.questions ?? []) as { timer_seconds: number }[]
+      const totalSeconds = questions.reduce((sum, q) => sum + (q.timer_seconds ?? 0), 0)
+      return {
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        category: row.category,
+        subtags: row.subtags ?? [],
+        difficulty: normalizeDifficulty(row.difficulty),
+        coverImageUrl: row.cover_image_url,
+        questionCount: questions.length,
+        minutes: minutesFromSeconds(totalSeconds, questions.length),
+      }
+    })
+    .sort((a, b) => {
+      const playDelta = (plays.get(b.id) ?? 0) - (plays.get(a.id) ?? 0)
+      if (playDelta !== 0) return playDelta
+      return b.questionCount - a.questionCount
+    })
 }
 
 // Resolve a published quiz id by its exact title. Used to bridge the static
@@ -288,14 +295,5 @@ async function getQuizPlayCounts(): Promise<Map<string, number>> {
 // Homepage featured row: published quizzes ranked by how many rooms were hosted.
 export async function getMostPlayedPublishedQuizzes(limit = 4): Promise<QuizSummary[]> {
   const quizzes = await getPublishedQuizzes()
-  if (quizzes.length === 0) return []
-
-  const plays = await getQuizPlayCounts()
-  return [...quizzes]
-    .sort((a, b) => {
-      const playDelta = (plays.get(b.id) ?? 0) - (plays.get(a.id) ?? 0)
-      if (playDelta !== 0) return playDelta
-      return b.questionCount - a.questionCount
-    })
-    .slice(0, limit)
+  return quizzes.slice(0, limit)
 }
