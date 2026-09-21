@@ -8,6 +8,7 @@ import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AvatarBadge } from '@/components/join/avatar-badge'
 import { CURRENT_SESSION } from '@/lib/session'
+import { trackTriviaStarted } from '@/lib/analytics'
 
 type RoomCreatedProps = {
   quizId: string
@@ -162,6 +163,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error ?? 'Could not start the game.')
       }
+      trackTriviaStarted(quizId, quizTitle)
       router.push(`/play?code=${encodeURIComponent(code)}&q=0`)
     } catch (err) {
       console.error('[v0] failed to start game:', err)

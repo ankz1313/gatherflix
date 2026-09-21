@@ -7,6 +7,7 @@ import { MobileShell } from '@/components/mobile-shell'
 import { AvatarBadge } from '@/components/join/avatar-badge'
 import { AVATAR_STYLES } from '@/components/join/avatars'
 import { parseRoomStatus } from '@/lib/room-phase'
+import { trackPlayerJoined } from '@/lib/analytics'
 
 type LivePlayer = {
   id: string
@@ -56,7 +57,10 @@ function LobbyContent() {
           if (!cancelled) setJoinError(data.error ?? 'Could not join this room.')
           return
         }
-        if (!cancelled) setJoined(true)
+        if (!cancelled) {
+          setJoined(true)
+          trackPlayerJoined()
+        }
       } catch {
         if (!cancelled) setJoinError('Could not reach the server. Please try again.')
       }
