@@ -253,13 +253,14 @@ export function LibraryBrowse() {
             href={`/host/preview?quiz=${featured.id}`}
             className="group mt-5 block overflow-hidden rounded-3xl border border-border bg-card/60 transition-transform hover:-translate-y-1"
           >
-            <div className="relative aspect-[21/7]">
+            <div className="flex min-h-[12rem] items-center justify-center bg-secondary px-4 py-6 sm:min-h-[16rem]">
               <Image
                 src={coverFor(featured)}
                 alt={featured.title}
-                fill
+                width={1200}
+                height={1600}
                 sizes="100vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                className="h-auto max-h-[min(20rem,50vh)] w-auto max-w-full object-contain"
                 priority
               />
             </div>
@@ -291,13 +292,14 @@ export function LibraryBrowse() {
                   href={`/host/preview?quiz=${quiz.id}`}
                   className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card/60 transition-transform hover:-translate-y-1"
                 >
-                  <div className="relative aspect-[16/9] overflow-hidden">
+                  <div className="flex min-h-[11rem] items-center justify-center bg-secondary px-4 py-5">
                     <Image
                       src={coverFor(quiz)}
                       alt={quiz.title}
-                      fill
+                      width={1200}
+                      height={1600}
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                      className="h-auto max-h-44 w-auto max-w-full object-contain"
                     />
                   </div>
                   <div className="flex flex-1 flex-col p-5">

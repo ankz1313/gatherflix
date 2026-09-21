@@ -97,14 +97,15 @@ export default async function HostPreviewPage({
         <div className="mt-6 grid gap-10 lg:grid-cols-2 lg:items-start">
           {/* Left: cover + details */}
           <div>
-            <div className="overflow-hidden rounded-2xl border border-border shadow-[0_0_40px_-12px] shadow-brand/40">
-              <div className="relative aspect-[16/9]">
+            <div className="overflow-hidden rounded-2xl border border-border bg-secondary shadow-[0_0_40px_-12px] shadow-brand/40">
+              <div className="flex min-h-[18rem] items-center justify-center px-4 py-6 sm:min-h-[22rem]">
                 <Image
                   src={quiz.coverImageUrl ?? FALLBACK_IMAGE}
                   alt={quiz.title}
-                  fill
+                  width={1200}
+                  height={1600}
                   sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover"
+                  className="h-auto max-h-[min(28rem,70vh)] w-auto max-w-full object-contain"
                   priority
                 />
               </div>
