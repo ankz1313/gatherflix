@@ -3,14 +3,34 @@ import Link from 'next/link'
 import { TvPodium } from '@/components/game/tv-podium'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
 import { rankPlayers } from '@/lib/score'
+import { SITE_URL } from '@/lib/site'
 import { createServiceClient } from '@/lib/supabase/server'
 import { withoutRoomCursor } from '@/lib/room-store'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: 'Final Results · GatherFlix',
-  description: 'The final leaderboard and podium for your Trivia Night battle.',
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ code?: string }>
+}): Promise<Metadata> {
+  const { code } = await searchParams
+  const normalized = code?.trim()
+  if (!normalized) {
+    return {
+      title: 'Final Results · GatherFlix',
+      description: 'The final leaderboard for a GatherFlix trivia night.',
+    }
+  }
+  return {
+    title: `Final standings · Room ${normalized} · GatherFlix`,
+    description: 'See who took the podium at this GatherFlix trivia night.',
+    openGraph: {
+      title: `GatherFlix leaderboard · Room ${normalized}`,
+      description: 'Final standings from a live trivia night.',
+      url: `${SITE_URL}/results?code=${encodeURIComponent(normalized)}`,
+    },
+  }
 }
 
 export default async function ResultsPage({

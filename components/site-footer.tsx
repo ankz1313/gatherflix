@@ -1,4 +1,6 @@
 import { GatherflixLogo } from '@/components/gatherflix-logo'
+import { ShareActions } from '@/components/share-actions'
+import { SITE_TITLE, SITE_URL } from '@/lib/site'
 
 const FOOTER_LINKS = [
   { label: 'How it Works', href: '/#how-it-works' },
@@ -16,6 +18,12 @@ export function SiteFooter() {
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
             Free, right on your phones. No downloads, no sign-up walls.
           </p>
+          <div className="mt-5">
+            <ShareActions
+              url={SITE_URL}
+              text={SITE_TITLE}
+            />
+          </div>
         </div>
 
         <nav className="flex flex-col gap-3 sm:items-end" aria-label="Footer">

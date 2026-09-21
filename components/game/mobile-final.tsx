@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { ShareActions } from '@/components/share-actions'
+import { SITE_URL } from '@/lib/site'
 
 function ordinal(place: number) {
   return place === 1 ? '1st' : place === 2 ? '2nd' : place === 3 ? '3rd' : `${place}th`
@@ -113,6 +115,16 @@ export function MobileFinal({ code }: { code: string }) {
         >
           Home
         </Link>
+        <div className="mt-5 w-full text-left">
+          <ShareActions
+            url={`${SITE_URL}/results?code=${encodeURIComponent(code)}`}
+            text={
+              place
+                ? `I placed #${place} on GatherFlix.`
+                : 'Check out our GatherFlix trivia night results.'
+            }
+          />
+        </div>
       </div>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
