@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { AvatarBadge } from '@/components/join/avatar-badge'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
+import { ShareActions } from '@/components/share-actions'
+import { SITE_URL } from '@/lib/site'
 
 export type Standing = {
   name: string
@@ -136,6 +138,12 @@ export function TvPodium({
             >
               Choose New Quiz
             </Link>
+          </div>
+          <div className="mt-5">
+            <ShareActions
+              url={`${SITE_URL}/results?code=${encodeURIComponent(roomCode)}`}
+              text={`Final standings for ${quizTitle} on GatherFlix.`}
+            />
           </div>
         </div>
 
