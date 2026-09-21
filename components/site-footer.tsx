@@ -4,6 +4,7 @@ const FOOTER_LINKS = [
   { label: 'How it Works', href: '/#how-it-works' },
   { label: 'Trending Packs', href: '/library' },
   { label: 'Host a Room', href: '/host' },
+  { label: 'Contact Us', href: '/contact' },
 ]
 
 export function SiteFooter() {

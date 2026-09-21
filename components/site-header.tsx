@@ -9,6 +9,7 @@ import { UserMenu } from '@/components/auth/user-menu'
 const NAV_LINKS = [
   { label: 'How it Works', href: '/#how-it-works' },
   { label: 'Trending Packs', href: '/library' },
+  { label: 'Contact Us', href: '/contact' },
 ]
 
 export function SiteHeader() {
