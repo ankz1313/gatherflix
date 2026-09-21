@@ -46,7 +46,7 @@ export function Hero() {
             <p className="mb-3 font-display text-sm font-bold tracking-wide text-muted-foreground uppercase">
               Share GatherFlix
             </p>
-            <ShareActions url={SITE_URL} text={SITE_TITLE} />
+            <ShareActions url={SITE_URL} text={SITE_TITLE} instagramHint={false} />
           </div>
         </div>
 
