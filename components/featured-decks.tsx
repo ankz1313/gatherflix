@@ -14,7 +14,7 @@ export async function FeaturedDecks() {
   if (decks.length === 0) return null
 
   return (
-    <section id="featured-decks" className="container-page scroll-mt-24 py-16 lg:py-24">
+    <section id="featured-decks" className="container-page scroll-mt-24 py-10 lg:py-12">
       <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="font-display text-3xl font-extrabold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
@@ -33,7 +33,7 @@ export async function FeaturedDecks() {
         </a>
       </div>
 
-      <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4">
+      <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:mt-10 lg:grid-cols-4">
         {decks.map((deck) => (
           <li key={deck.id}>
             <a
