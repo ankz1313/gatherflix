@@ -1,4 +1,6 @@
 import { Clapperboard, Play, Plus } from 'lucide-react'
+import { ShareActions } from '@/components/share-actions'
+import { SITE_TITLE, SITE_URL } from '@/lib/site'
 
 export function Hero() {
   return (
@@ -38,6 +40,13 @@ export function Hero() {
               <Plus className="size-[1.15rem]" strokeWidth={2.5} aria-hidden="true" />
               Host / Create Room
             </a>
+          </div>
+
+          <div className="mt-6">
+            <p className="mb-3 font-display text-sm font-bold tracking-wide text-muted-foreground uppercase">
+              Share GatherFlix
+            </p>
+            <ShareActions url={SITE_URL} text={SITE_TITLE} />
           </div>
         </div>
 
