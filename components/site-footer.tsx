@@ -12,7 +12,7 @@ const FOOTER_LINKS = [
 export function SiteFooter() {
   return (
     <footer className="border-t border-border">
-      <div className="container-page flex flex-col gap-8 py-12 sm:flex-row sm:items-center sm:justify-between">
+      <div className="container-page flex flex-col gap-8 py-8 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <GatherflixLogo />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
