@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Link2 } from 'lucide-react'
+import { Check, Link2 } from 'lucide-react'
 
 type ShareActionsProps = {
   url: string
@@ -25,6 +25,23 @@ function XIcon({ className }: { className?: string }) {
   )
 }
 
+function fallbackCopy(value: string) {
+  const input = document.createElement('textarea')
+  input.value = value
+  input.setAttribute('readonly', '')
+  input.style.position = 'fixed'
+  input.style.top = '0'
+  input.style.left = '0'
+  input.style.opacity = '0'
+  document.body.appendChild(input)
+  input.focus()
+  input.select()
+  input.setSelectionRange(0, value.length)
+  const ok = document.execCommand('copy')
+  document.body.removeChild(input)
+  if (!ok) throw new Error('Copy failed')
+}
+
 export function ShareActions({ url, text, instagramHint = true }: ShareActionsProps) {
   const [copied, setCopied] = useState(false)
   const encodedUrl = encodeURIComponent(url)
@@ -34,11 +51,21 @@ export function ShareActions({ url, text, instagramHint = true }: ShareActionsPr
 
   async function copyLink() {
     try {
-      await navigator.clipboard.writeText(url)
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url)
+      } else {
+        fallbackCopy(url)
+      }
       setCopied(true)
       window.setTimeout(() => setCopied(false), 2200)
     } catch {
-      setCopied(false)
+      try {
+        fallbackCopy(url)
+        setCopied(true)
+        window.setTimeout(() => setCopied(false), 2200)
+      } catch {
+        setCopied(false)
+      }
     }
   }
 
@@ -55,7 +82,11 @@ export function ShareActions({ url, text, instagramHint = true }: ShareActionsPr
           aria-label={copied ? 'Link copied' : 'Copy link'}
           title={copied ? 'Copied' : 'Copy link'}
         >
-          <Link2 className="size-6" strokeWidth={2} aria-hidden="true" />
+          {copied ? (
+            <Check className="size-6 text-gold" strokeWidth={2.5} aria-hidden="true" />
+          ) : (
+            <Link2 className="size-6" strokeWidth={2} aria-hidden="true" />
+          )}
         </button>
         <a
           href={facebook}
@@ -78,7 +109,12 @@ export function ShareActions({ url, text, instagramHint = true }: ShareActionsPr
           <XIcon className="size-[1.15rem]" />
         </a>
       </div>
-      {instagramHint && (
+      {copied && (
+        <p className="text-xs font-medium text-gold" aria-live="polite">
+          Copied {url}
+        </p>
+      )}
+      {instagramHint && !copied && (
         <p className="text-xs text-muted-foreground">
           Instagram does not let websites post for you. Copy the link, then paste into a Story or
           post.
