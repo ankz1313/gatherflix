@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { trackLogin, trackSignup } from '@/lib/analytics'
 
 type Mode = 'signin' | 'signup' | 'forgot'
 
@@ -92,6 +93,7 @@ export function LoginForm() {
           setError('An account with this email already exists. Try signing in instead.')
           return
         }
+        trackSignup()
         if (data.session) {
           // Email confirmation disabled — session is live immediately.
           router.push(redirectTarget())
@@ -111,6 +113,7 @@ export function LoginForm() {
         setError(friendlyError(signInError.message))
         return
       }
+      trackLogin()
       router.push(redirectTarget())
       router.refresh()
     } catch {
