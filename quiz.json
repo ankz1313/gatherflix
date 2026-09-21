@@ -1,0 +1,208 @@
+{
+  "title": "Indian Cricket Legends & Iconic Moments Quiz",
+  "category": "Cricket",
+  "difficulty": "Easy to Hard",
+  "description": "Test your knowledge of the biggest moments, records, and legendary players in Indian Men's and Women's cricket.",
+  "questions": [
+    {
+      "text": "Who was the captain of the Indian Men's Cricket Team when they won their first-ever ICC Cricket World Cup in 1983?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/kapil_dev.png",
+      "options": [
+        "Kapil Dev",
+        "Sunil Gavaskar",
+        "Mohinder Amarnath"
+      ]
+    },
+    {
+      "text": "Which legendary Indian batter holds the record for the most total runs scored in Women's ODI history?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/mithali_raj.png",
+      "options": [
+        "Smriti Mandhana",
+        "Harmanpreet Kaur",
+        "Mithali Raj"
+      ]
+    },
+    {
+      "text": "Who hit six consecutive sixes in an over off Stuart Broad during the 2007 ICC World Twenty20?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/yuvraj_singh.png",
+      "options": [
+        "M.S. Dhoni",
+        "Yuvraj Singh",
+        "Virender Sehwag"
+      ]
+    },
+    {
+      "text": "Which Indian bowler is the all-time leading wicket-taker in Women's One Day International (ODI) cricket?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/jhulan_goswami.png",
+      "options": [
+        "Jhulan Goswami",
+        "Deepti Sharma",
+        "Neetu David"
+      ]
+    },
+    {
+      "text": "Under whose captaincy did India win the inaugural ICC T20 World Cup in 2007 and the ICC Cricket World Cup in 2011?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/ms_dhoni.png",
+      "options": [
+        "Rahul Dravid",
+        "Sourav Ganguly",
+        "M.S. Dhoni"
+      ]
+    },
+    {
+      "text": "In the 2017 ICC Women's World Cup semi-final against Australia, which Indian batter played an iconic knock of 171* off 115 balls?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/harmanpreet_kaur.png",
+      "options": [
+        "Jemimah Rodrigues",
+        "Harmanpreet Kaur",
+        "Smriti Mandhana"
+      ]
+    },
+    {
+      "text": "Who was the first Indian male player to hit a triple century (300 runs) in Test cricket?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/virender_sehwag.png",
+      "options": [
+        "Virender Sehwag",
+        "Sachin Tendulkar",
+        "Karun Nair"
+      ]
+    },
+    {
+      "text": "Who became the first cricketer in world history to score 100 international centuries across Test and ODI formats?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/sachin_tendulkar.png",
+      "options": [
+        "Virat Kohli",
+        "Sunil Gavaskar",
+        "Sachin Tendulkar"
+      ]
+    },
+    {
+      "text": "Which Indian female opener scored a double century (205*) against England in a Test match in 2002 at the age of 19?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/mithali_raj_2002.png",
+      "options": [
+        "Anjum Chopra",
+        "Mithali Raj",
+        "Shanta Rangaswamy"
+      ]
+    },
+    {
+      "text": "Against which country did Rohit Sharma score his famous high-score of 264 in ODI cricket in 2014?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/rohit_sharma.png",
+      "options": [
+        "Sri Lanka",
+        "Australia",
+        "West Indies"
+      ]
+    },
+    {
+      "text": "Against which nation did India score their legendary Kolkata Test win in 2001 after being forced to follow-on?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/vvs_laxman.png",
+      "options": [
+        "South Africa",
+        "England",
+        "Australia"
+      ]
+    },
+    {
+      "text": "Which fast bowler became the first Indian female bowler to take 200 ODI wickets?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/jhulan_goswami_action.png",
+      "options": [
+        "Shikha Pandey",
+        "Jhulan Goswami",
+        "Ekta Bisht"
+      ]
+    },
+    {
+      "text": "Which Indian bowler achieved a famous Test hat-trick against Pakistan in the very first over of the match in 2006?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/irfan_pathan.png",
+      "options": [
+        "Irfan Pathan",
+        "Harbhajan Singh",
+        "Jasprit Bumrah"
+      ]
+    },
+    {
+      "text": "Which Indian player became the fastest batter to score 50 ODI centuries, breaking Sachin Tendulkar's record during the 2023 World Cup?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/virat_kohli.png",
+      "options": [
+        "Rohit Sharma",
+        "Virat Kohli",
+        "Shubman Gill"
+      ]
+    },
+    {
+      "text": "Who holds the record for the highest individual score by an Indian woman in T20 Internationals (124 runs)?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/smriti_mandhana.png",
+      "options": [
+        "Harmanpreet Kaur",
+        "Shafali Verma",
+        "Smriti Mandhana"
+      ]
+    },
+    {
+      "text": "Who was the star Player of the Match in the 1983 World Cup Final for his all-round performance (26 runs & 3/12)?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/mohinder_amarnath.png",
+      "options": [
+        "Mohinder Amarnath",
+        "Madan Lal",
+        "Kapil Dev"
+      ]
+    },
+    {
+      "text": "Which Indian off-spinner took all 10 wickets in a single Test innings against Pakistan at Feroz Shah Kotla in 1999?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/anil_kumble.png",
+      "options": [
+        "Harbhajan Singh",
+        "Ravichandran Ashwin",
+        "Anil Kumble"
+      ]
+    },
+    {
+      "text": "Who became the youngest player\u2014male or female\u2014to play in the final of a World Cup in 2020 at the age of 16?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/shafali_verma.png",
+      "options": [
+        "Richa Ghosh",
+        "Shafali Verma",
+        "Pooja Vastrakar"
+      ]
+    },
+    {
+      "text": "In 1971, India won their first-ever Test series in both the West Indies and England under whose captaincy?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/ajit_wadekar.png",
+      "options": [
+        "Ajit Wadekar",
+        "Mansoor Ali Khan Pataudi",
+        "Bishan Singh Bedi"
+      ]
+    },
+    {
+      "text": "Who was named the Player of the Tournament in the 2011 ICC Men's Cricket World Cup for his match-winning all-round efforts?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/yuvraj_singh_wc11.png",
+      "options": [
+        "Sachin Tendulkar",
+        "Gautam Gambhir",
+        "Yuvraj Singh"
+      ]
+    }
+  ]
+}
