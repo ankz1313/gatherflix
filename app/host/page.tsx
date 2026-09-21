@@ -4,8 +4,10 @@ import { HostQuizGrid } from '@/components/host/host-quiz-grid'
 import { getPublishedQuizzes } from '@/lib/quiz-data'
 
 export const metadata: Metadata = {
-  title: 'Host a Room · Choose Your Battleground — GatherFlix',
-  description: 'Pick a curated Bollywood trivia deck to host your Trivia Night.',
+  title: 'Host a Trivia Night — GatherFlix',
+  description:
+    'Pick a published trivia pack, share a room code or QR, and host a live movie, sports, or TV quiz with friends.',
+  alternates: { canonical: '/host' },
 }
 
 export default async function HostChooseQuizPage() {

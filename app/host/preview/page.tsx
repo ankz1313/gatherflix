@@ -9,9 +9,32 @@ import {
   type QuizWithQuestions,
 } from '@/lib/quiz-data'
 
-export const metadata: Metadata = {
-  title: 'Host a Room · Quiz Preview — GatherFlix',
-  description: 'Preview your chosen Bollywood trivia deck before going live.',
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ quiz?: string; deck?: string }>
+}): Promise<Metadata> {
+  const { quiz: quizId, deck: slug } = await searchParams
+  const quiz = await resolveQuiz(quizId, slug)
+  if (!quiz) {
+    return {
+      title: 'Quiz preview · GatherFlix',
+      description: 'Preview a trivia pack before hosting a live GatherFlix night.',
+      robots: { index: false, follow: true },
+    }
+  }
+  const description =
+    quiz.description?.trim() ||
+    `Host ${quiz.title} as a live trivia night on GatherFlix. Friends join on their phones.`
+  return {
+    title: `${quiz.title} trivia pack · GatherFlix`,
+    description,
+    alternates: { canonical: `/host/preview?quiz=${encodeURIComponent(quiz.id)}` },
+    openGraph: {
+      title: `${quiz.title} · GatherFlix`,
+      description,
+    },
+  }
 }
 
 const FALLBACK_IMAGE = '/decks/deck-classic-90s-romance.png'
