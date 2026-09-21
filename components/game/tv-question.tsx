@@ -118,21 +118,21 @@ export function TvQuestion({
 
       <div className="container-page flex flex-1 flex-col justify-center gap-10 pb-10">
         {still ? (
-          <div className="relative overflow-hidden rounded-3xl border border-border">
-            <div className="relative aspect-[21/8]">
+          <div className="relative overflow-hidden rounded-3xl border border-border bg-[#12080f]">
+            <span className="absolute left-6 top-6 z-10 rounded-full bg-brand px-4 py-1.5 font-display text-xs font-bold uppercase tracking-wide text-brand-foreground">
+              {roundLabel}
+            </span>
+            <div className="flex items-center justify-center px-4 py-10 sm:py-12">
               <Image
                 src={still}
                 alt=""
-                fill
+                width={1920}
+                height={1080}
                 sizes="100vw"
-                className="object-cover"
+                className="h-auto max-h-[min(52vh,32rem)] w-auto max-w-full object-contain"
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
             </div>
-            <span className="absolute left-6 top-6 rounded-full bg-brand px-4 py-1.5 font-display text-xs font-bold uppercase tracking-wide text-brand-foreground">
-              {roundLabel}
-            </span>
           </div>
         ) : (
           <div className="flex justify-center">
