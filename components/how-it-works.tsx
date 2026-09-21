@@ -2,17 +2,17 @@ const STEPS = [
   {
     number: '01',
     title: 'Pick a Deck',
-    body: 'Select from hundreds of fan-made Bollywood decks covering retro classics, modern blockbusters, and iconic soundtracks.',
+    body: 'Choose from hundreds of fan-made trivia packs — movies, shows, sports, and more.',
   },
   {
     number: '02',
-    title: 'Invite the Gang',
-    body: 'Share your room code or QR code instantly. Friends join on mobile browsers as multiplayer avatar chips.',
+    title: 'Invite Your Crew',
+    body: 'Share your room code or QR — friends join instantly on their phones, no app needed.',
   },
   {
     number: '03',
-    title: 'Crown the King',
-    body: 'Play real-time trivia together. Fastest finger gains bonus gold points. Clamber up the cinematic podium!',
+    title: 'Play & Win',
+    body: 'Answer live, score points for speed, and climb the leaderboard together.',
   },
 ]
 
