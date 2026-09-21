@@ -10,6 +10,7 @@ import { createServerSupabase } from '@/lib/supabase/server'
 export const metadata: Metadata = {
   title: 'Host a Room · Go Live — GatherFlix',
   description: 'Your room is live. Share the code or QR and start the game.',
+  robots: { index: false, follow: false },
 }
 
 export default async function HostRoomPage({

@@ -7,6 +7,7 @@ import { SiteHeader } from '@/components/site-header'
 export const metadata: Metadata = {
   title: 'Contact Us · GatherFlix',
   description: 'Send GatherFlix feedback, bug reports, and ideas. We read every note.',
+  alternates: { canonical: '/contact' },
 }
 
 export default function ContactPage() {

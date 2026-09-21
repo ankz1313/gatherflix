@@ -5,7 +5,8 @@ import { LoginForm } from '@/components/login-form'
 
 export const metadata: Metadata = {
   title: 'Sign In · GatherFlix',
-  description: 'Sign in to host and join real-time Bollywood movie & shows trivia with friends.',
+  description: 'Sign in to host a GatherFlix trivia night and manage your quiz packs.',
+  robots: { index: false, follow: true },
 }
 
 export default function LoginPage() {
