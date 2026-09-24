@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { unstable_noStore as noStore } from 'next/cache'
 import { DECKS } from '@/lib/decks'
 import { getMostPlayedPublishedQuizzes } from '@/lib/quiz-data'
 
@@ -10,6 +11,7 @@ function coverFor(title: string, coverImageUrl: string | null): string {
 }
 
 export async function FeaturedDecks() {
+  noStore()
   const decks = await getMostPlayedPublishedQuizzes(4)
   if (decks.length === 0) return null
 
@@ -40,13 +42,14 @@ export async function FeaturedDecks() {
               href={`/host/preview?quiz=${deck.id}`}
               className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-[0_20px_50px_-32px_rgb(0_0_0/0.4)] transition-transform hover:-translate-y-1"
             >
-              <div className="relative aspect-[3/2] overflow-hidden">
+              <div className="flex min-h-[11rem] items-center justify-center bg-secondary px-4 py-5">
                 <Image
                   src={coverFor(deck.title, deck.coverImageUrl)}
                   alt={deck.title}
-                  fill
+                  width={1200}
+                  height={1600}
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                  className="h-auto max-h-44 w-auto max-w-full object-contain"
                 />
               </div>
 
