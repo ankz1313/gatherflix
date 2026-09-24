@@ -253,18 +253,18 @@ export function LibraryBrowse() {
             href={`/host/preview?quiz=${featured.id}`}
             className="group mt-5 block overflow-hidden rounded-3xl border border-border bg-card/60 transition-transform hover:-translate-y-1"
           >
-            <div className="flex min-h-[12rem] items-center justify-center bg-secondary px-4 py-6 sm:min-h-[16rem]">
+            <div className="bg-secondary p-1">
               <Image
                 src={coverFor(featured)}
                 alt={featured.title}
-                width={1200}
-                height={1600}
+                width={1600}
+                height={900}
                 sizes="100vw"
-                className="h-auto max-h-[min(20rem,50vh)] w-auto max-w-full object-contain"
+                className="mx-auto h-auto w-full max-h-[22rem] object-contain"
                 priority
               />
             </div>
-            <div className="flex items-center justify-between p-5">
+            <div className="flex items-center justify-between p-4">
               <div>
                 <div className="flex items-center gap-2 text-sm">
                   <QuestionIcon />
@@ -292,17 +292,17 @@ export function LibraryBrowse() {
                   href={`/host/preview?quiz=${quiz.id}`}
                   className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card/60 transition-transform hover:-translate-y-1"
                 >
-                  <div className="flex min-h-[11rem] items-center justify-center bg-secondary px-4 py-5">
+                  <div className="bg-secondary p-1">
                     <Image
                       src={coverFor(quiz)}
                       alt={quiz.title}
                       width={1200}
-                      height={1600}
+                      height={900}
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="h-auto max-h-44 w-auto max-w-full object-contain"
+                      className="h-auto w-full object-contain"
                     />
                   </div>
-                  <div className="flex flex-1 flex-col p-5">
+                  <div className="flex flex-1 flex-col p-4">
                     <div className="flex items-center justify-between text-sm">
                       <span className="inline-flex items-center gap-1.5">
                         <QuestionIcon />
