@@ -2,7 +2,7 @@ const STEPS = [
   {
     number: '01',
     title: 'Pick a Deck',
-    body: 'Choose from hundreds of fan-made trivia packs — movies, shows, sports, and more.',
+    body: 'Pick a Bollywood, cricket, or TV pack from the library — we add new quizzes as we grow.',
   },
   {
     number: '02',

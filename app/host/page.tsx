@@ -22,8 +22,7 @@ export default async function HostChooseQuizPage() {
           Choose Your Battleground
         </h1>
         <p className="mt-3 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-          Select a published quiz pack to host. Invite your friends, face-off real time, and award
-          the Bollywood crown.
+          Pick a published pack, share a code or QR, and host a live trivia night with your crew.
         </p>
 
         <HostQuizGrid quizzes={quizzes} />

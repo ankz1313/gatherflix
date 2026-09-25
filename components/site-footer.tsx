@@ -16,7 +16,7 @@ export function SiteFooter() {
         <div>
           <GatherflixLogo />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-            Free, right on your phones. No downloads, no sign-up walls.
+            Free to play on your phones. No app download. Hosts sign in to start a room.
           </p>
           <div className="mt-5">
             <ShareActions

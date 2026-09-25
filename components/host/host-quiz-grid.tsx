@@ -5,13 +5,13 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { difficultyClass } from '@/lib/decks'
 import type { QuizSummary } from '@/lib/quiz-data'
+import { displayQuizTags } from '@/lib/categories'
 
 const DIFFICULTIES = ['All', 'Easy', 'Medium', 'Hard'] as const
 const FALLBACK_IMAGE = '/decks/deck-classic-90s-romance.png'
 
 function quizTags(quiz: QuizSummary): string[] {
-  const all = [quiz.category, ...quiz.subtags].filter(Boolean) as string[]
-  return Array.from(new Set(all)).slice(0, 3)
+  return displayQuizTags(quiz)
 }
 
 function QuestionIcon() {

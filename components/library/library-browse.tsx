@@ -6,7 +6,7 @@ import Image from 'next/image'
 import useSWR from 'swr'
 import { DECKS, difficultyClass } from '@/lib/decks'
 import type { QuizSummary } from '@/lib/quiz-data'
-import { QUIZ_CATEGORIES, quizMatchesCategory, resolveQuizCategory, type QuizCategory } from '@/lib/categories'
+import { QUIZ_CATEGORIES, quizMatchesCategory, displayQuizTags, type QuizCategory } from '@/lib/categories'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { UserMenu } from '@/components/auth/user-menu'
 
@@ -50,11 +50,7 @@ function ClockIcon() {
 }
 
 function quizTags(quiz: QuizSummary): string[] {
-  const canonical = resolveQuizCategory(quiz).label
-  const extras = [quiz.category, ...quiz.subtags].filter(Boolean) as string[]
-  const skip = new Set([canonical.toLowerCase(), 'bollywood cinema'])
-  const rest = extras.filter((t) => !skip.has(t.toLowerCase()))
-  return Array.from(new Set([canonical, ...rest])).slice(0, 3)
+  return displayQuizTags(quiz)
 }
 
 function TagRow({ quiz }: { quiz: QuizSummary }) {
@@ -153,10 +149,10 @@ export function LibraryBrowse() {
                 My Rooms
               </Link>
               <Link
-                href="/results"
+                href="/host"
                 className="font-display text-sm font-bold text-muted-foreground hover:text-foreground"
               >
-                Leaderboard
+                Host a Night
               </Link>
             </nav>
           </div>

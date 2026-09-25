@@ -44,10 +44,18 @@ export default async function ResultsPage({
   if (!normalized) {
     return (
       <main className="container-page flex min-h-[100dvh] flex-col items-center justify-center gap-4 text-center">
-        <h1 className="font-display text-3xl font-extrabold">No live room</h1>
-        <Link href="/" className="font-display font-bold text-gold">
-          Back to Home
-        </Link>
+        <h1 className="font-display text-3xl font-extrabold">No room on this link</h1>
+        <p className="max-w-sm text-muted-foreground">
+          Leaderboards belong to a live trivia night. Join a game or host a pack to see standings.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <Link href="/join" className="font-display font-bold text-gold">
+            Join a Game
+          </Link>
+          <Link href="/host" className="font-display font-bold text-foreground">
+            Host a Night
+          </Link>
+        </div>
       </main>
     )
   }

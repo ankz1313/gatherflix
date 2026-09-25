@@ -3,7 +3,7 @@ export const SITE_URL = 'https://gatherflix.app'
 export const SITE_NAME = 'GatherFlix'
 
 export const SITE_TITLE =
-  'GatherFlix — Real-time Movie, Sports & Shows Trivia with Friends'
+  'GatherFlix — Live Bollywood, Cricket & TV Trivia with Friends'
 
 export const SITE_DESCRIPTION =
-  'Host a live Bollywood, Hollywood, TV, and sports trivia night. Friends join on their phones, race the timer, and fight for the top spot. Free — no app download.'
+  'Host a live Bollywood, cricket, and TV trivia night. Friends join on their phones. Free to play — hosts sign in to start a room.'
