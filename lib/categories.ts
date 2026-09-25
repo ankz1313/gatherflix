@@ -34,3 +34,7 @@ export function quizMatchesCategory(quiz: Categorized, selected: QuizCategory | 
   if (!selected) return true
   return resolveQuizCategory(quiz).value === selected.value
 }
+
+export function displayQuizTags(quiz: Categorized): string[] {
+  return [resolveQuizCategory(quiz).label]
+}

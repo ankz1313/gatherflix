@@ -7,7 +7,7 @@ import { setQuizStatus } from '@/app/create/actions'
 
 export const metadata: Metadata = {
   title: 'My Quizzes · GatherFlix',
-  description: 'Create, review, and manage your custom Bollywood movie-night quizzes.',
+  description: 'Create, review, and manage your custom trivia packs.',
 }
 
 function formatDate(iso: string): string {
@@ -47,8 +47,7 @@ export default async function CreatorDashboardPage() {
               My Cinematic Quizzes
             </h1>
             <p className="mt-3 max-w-xl text-muted-foreground text-pretty">
-              Create, review, and manage your custom Bollywood movie nights. Make your lobby wait
-              for the ultimate showdown.
+              Create, review, and publish trivia packs for movie, sports, and TV nights.
             </p>
           </div>
           <CreateButton />
@@ -64,8 +63,7 @@ export default async function CreatorDashboardPage() {
               You haven&apos;t created any quizzes yet
             </h2>
             <p className="mt-2 max-w-md text-muted-foreground text-pretty">
-              Put your Bollywood film knowledge to work! Build your first trivia pack to host with
-              friends or publish it publicly.
+              Build your first trivia pack to host with friends, or publish it for anyone to play.
             </p>
             <CreateButton className="mt-6" />
           </div>

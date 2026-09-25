@@ -3,9 +3,9 @@ import { SiteFooter } from '@/components/site-footer'
 import { LibraryBrowse } from '@/components/library/library-browse'
 
 export const metadata: Metadata = {
-  title: 'Explore Trivia Packs — Bollywood, Hollywood, TV & Sports · GatherFlix',
+  title: 'Explore Trivia Packs — Bollywood, Cricket & TV · GatherFlix',
   description:
-    'Browse published trivia decks for Bollywood cinema, Hollywood, TV series, and sports. Pick a pack and host a live trivia night.',
+    'Browse live trivia decks for Bollywood cinema, Indian cricket, and TV shows. Pick a pack and host a night with friends.',
   alternates: { canonical: '/library' },
 }
 

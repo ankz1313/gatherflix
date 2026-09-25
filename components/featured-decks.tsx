@@ -20,7 +20,7 @@ export async function FeaturedDecks() {
       <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="font-display text-3xl font-extrabold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
-            Featured Movie Decks
+            Featured Trivia Packs
           </h2>
           <p className="mt-3 text-base leading-relaxed text-muted-foreground sm:text-lg">
             The packs crews have hosted the most

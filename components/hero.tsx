@@ -16,12 +16,12 @@ export function Hero() {
           </span>
 
           <h1 className="mt-5 font-display text-4xl font-extrabold leading-[1.08] tracking-[-0.02em] text-balance sm:text-5xl lg:text-[3.25rem] xl:text-[3.5rem]">
-            Face off with friends in real-time <span className="text-gold">Movie, Sports and Shows Trivia!</span>
+            Face off with friends in real-time <span className="text-gold">Bollywood, Cricket & TV Trivia!</span>
           </h1>
 
           <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
             No boring quiz boards. Just fast rounds, legendary dialogs, iconic sporting moments, and friends
-            fighting for the top spot. Free, right on your phones.
+            fighting for the top spot. Players join free on their phones.
           </p>
 
           <div className="mt-6 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
