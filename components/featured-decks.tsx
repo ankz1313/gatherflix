@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { unstable_noStore as noStore } from 'next/cache'
-import { DECKS } from '@/lib/decks'
+import { DECKS, difficultyClass } from '@/lib/decks'
+import { resolveQuizCategory } from '@/lib/categories'
 import { getMostPlayedPublishedQuizzes } from '@/lib/quiz-data'
 
 const FALLBACK_IMAGE = '/decks/deck-classic-90s-romance.png'
@@ -36,7 +37,9 @@ export async function FeaturedDecks() {
       </div>
 
       <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:mt-10 lg:grid-cols-4">
-        {decks.map((deck) => (
+        {decks.map((deck) => {
+          const category = resolveQuizCategory(deck)
+          return (
           <li key={deck.id}>
             <a
               href={`/host/preview?quiz=${deck.id}`}
@@ -59,16 +62,24 @@ export async function FeaturedDecks() {
                   {deck.description ?? ''}
                 </p>
 
-                <div className="mt-5 flex items-center gap-3">
-                  <span className="rounded-full bg-brand-soft px-3 py-1 font-display text-xs font-bold text-brand">
+                <div className="mt-5 flex flex-wrap items-center gap-2">
+                  <span
+                    className={`rounded-md px-2.5 py-1 font-display text-[0.7rem] font-bold uppercase tracking-wide ${difficultyClass(
+                      deck.difficulty,
+                    )}`}
+                  >
                     {deck.difficulty}
+                  </span>
+                  <span className="rounded-md bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                    {category.emoji} {category.label}
                   </span>
                   <span className="text-xs text-muted-foreground">{deck.questionCount} questions</span>
                 </div>
               </div>
             </a>
           </li>
-        ))}
+          )
+        })}
       </ul>
     </section>
   )
