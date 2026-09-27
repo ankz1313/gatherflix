@@ -22,8 +22,14 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code')
   const token_hash = searchParams.get('token_hash')
   const typeParam = searchParams.get('type')
-  const next = searchParams.get('next') ?? '/'
-  const target = next.startsWith('/') ? next : '/'
+  const next =
+    searchParams.get('next') ??
+    (typeParam === 'recovery' ? '/auth/update-password' : '/')
+  const target = next.startsWith('/')
+    ? next
+    : typeParam === 'recovery'
+      ? '/auth/update-password'
+      : '/'
   const supabase = await createServerSupabase()
 
   if (token_hash && isOtpType(typeParam)) {

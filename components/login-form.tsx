@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { passwordResetRedirectTo, signupEmailRedirectTo } from '@/lib/auth-redirect'
 import { trackLogin, trackSignup } from '@/lib/analytics'
 
 type Mode = 'signin' | 'signup' | 'forgot'
@@ -33,16 +34,6 @@ export function LoginForm() {
     setPassword('')
   }
 
-  // Where to send the auth-callback links (email confirm / password reset).
-  // Routes through the v0 dev redirect proxy in preview, otherwise this origin.
-  function callbackUrl(next: string) {
-    const base =
-      process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
-      `${window.location.origin}/auth/callback`
-    const sep = base.includes('?') ? '&' : '?'
-    return `${base}${sep}next=${encodeURIComponent(next)}`
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
@@ -64,7 +55,7 @@ export function LoginForm() {
     try {
       if (isForgot) {
         const { error: resetError } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-          redirectTo: callbackUrl('/auth/update-password'),
+          redirectTo: passwordResetRedirectTo(),
         })
         if (resetError) {
           setError(friendlyError(resetError.message))
@@ -79,7 +70,7 @@ export function LoginForm() {
           email: cleanEmail,
           password,
           options: {
-            emailRedirectTo: callbackUrl('/create'),
+            emailRedirectTo: signupEmailRedirectTo(),
             data: name.trim() ? { full_name: name.trim() } : undefined,
           },
         })
