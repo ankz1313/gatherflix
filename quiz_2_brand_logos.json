@@ -1,0 +1,128 @@
+{
+  "title": "Indian & Global Brand Logos Quiz",
+  "category": "Logos & Corporate Identity",
+  "difficulty": "Easy to Hard",
+  "description": "Identify famous corporate identities across Indian tech, retail, automotive, and consumer goods.",
+  "questions": [
+    {
+      "category": "Digital Payments",
+      "text": "Which pioneering Indian digital payments company uses this blue identity?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/paytm_logo.png",
+      "options": [
+        "Paytm",
+        "PhonePe",
+        "Google Pay",
+        "BharatPe"
+      ]
+    },
+    {
+      "category": "E-Commerce",
+      "text": "Which popular Indian fashion e-commerce platform uses this stylized 'M' logo?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/myntra_logo.png",
+      "options": [
+        "Ajio",
+        "Nykaa",
+        "Myntra",
+        "Tata CLiQ"
+      ]
+    },
+    {
+      "category": "Handcrafted Fashion",
+      "text": "Which Indian chain store known for handmade garments and traditional crafts uses this logo?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/fabindia_logo.png",
+      "options": [
+        "Anokhi",
+        "FabIndia",
+        "Khatri",
+        "Khadi India"
+      ]
+    },
+    {
+      "category": "Automotive",
+      "text": "Which luxury automotive group is represented by these four interlocking rings?",
+      "correct": "D",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/audi_logo.png",
+      "options": [
+        "Mercedes-Benz",
+        "BMW",
+        "Volkswagen",
+        "Audi"
+      ]
+    },
+    {
+      "category": "Retail & Supermarket",
+      "text": "Which major Indian hypermarket chain founded by Radhakishan Damani is identified by this brand name?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/dmart_logo.png",
+      "options": [
+        "DMart",
+        "Big Bazaar",
+        "Reliance Fresh",
+        "More Retail"
+      ]
+    },
+    {
+      "category": "Jewelry Brands",
+      "text": "Which premier Indian jewelry brand under the Tata Group features this elegant emblem?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/tanishq_logo.png",
+      "options": [
+        "Kalyan Jewellers",
+        "Tanishq",
+        "Malabar Gold",
+        "Joyalukkas"
+      ]
+    },
+    {
+      "category": "Tea Brands",
+      "text": "Which iconic Gujarat-origin Indian tea brand features two fighting rams in its classic emblem?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/wagh_bakri_logo.png",
+      "options": [
+        "Tata Tea",
+        "Girnar",
+        "Wagh Bakri",
+        "Taj Mahal Tea"
+      ]
+    },
+    {
+      "category": "Masala & Foods",
+      "text": "Which prominent Indian spice brand uses this distinctive red triangular box logo?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/everest_logo.png",
+      "options": [
+        "Everest",
+        "Catch",
+        "Goldiee",
+        "MTR"
+      ]
+    },
+    {
+      "category": "Quick Commerce",
+      "text": "Which major Indian food delivery platform features this bright orange letter mascot logo?",
+      "correct": "D",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/swiggy_logo.png",
+      "options": [
+        "Zomato",
+        "Blinkit",
+        "Zepto",
+        "Swiggy"
+      ]
+    },
+    {
+      "category": "Automotive",
+      "text": "Which iconic Indian two-wheeler brand produced the legendary Chetak scooter?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/bajaj_logo.png",
+      "options": [
+        "TVS Motors",
+        "Bajaj Auto",
+        "Hero MotoCorp",
+        "LML"
+      ]
+    }
+  ]
+}

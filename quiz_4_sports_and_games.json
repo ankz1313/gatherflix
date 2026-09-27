@@ -1,0 +1,128 @@
+{
+  "title": "Indian Sports & Martial Arts Quiz",
+  "category": "Sports & Fitness",
+  "difficulty": "Easy to Hard",
+  "description": "Explore traditional games, modern sports, and ancient martial art forms of India.",
+  "questions": [
+    {
+      "category": "Cricket Champions",
+      "text": "Identify India's legendary 1983 World Cup-winning captain.",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/kapil_dev.png",
+      "options": [
+        "Kapil Dev",
+        "Sunil Gavaskar",
+        "Mohinder Amarnath",
+        "Ravi Shastri"
+      ]
+    },
+    {
+      "category": "Traditional Sports",
+      "text": "Which traditional Indian sport involves pole gymnastics requiring immense flexibility and strength?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/mallakhamba.png",
+      "options": [
+        "Kushti",
+        "Thang-Ta",
+        "Mallakhamba",
+        "Silambam"
+      ]
+    },
+    {
+      "category": "Ancient Martial Arts",
+      "text": "Identify this Kerala-origin martial art form considered one of the oldest surviving fighting systems.",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/kalaripayattu.png",
+      "options": [
+        "Gatka",
+        "Kalaripayattu",
+        "Musti-yuddha",
+        "Pari-khanda"
+      ]
+    },
+    {
+      "category": "Women's Cricket",
+      "text": "Identify the former captain who remains the highest run-scorer in women's international cricket.",
+      "correct": "D",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/mithali_raj.png",
+      "options": [
+        "Smriti Mandhana",
+        "Harmanpreet Kaur",
+        "Jhulan Goswami",
+        "Mithali Raj"
+      ]
+    },
+    {
+      "category": "Field Hockey",
+      "text": "Identify the legendary wizard of Indian hockey who won three Olympic gold medals (1928, 1932, 1936).",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/dhyan_chand.png",
+      "options": [
+        "Dhyan Chand",
+        "Balbir Singh Sr.",
+        "K. D. Singh",
+        "Dhanraj Pillay"
+      ]
+    },
+    {
+      "category": "Badminton Champions",
+      "text": "Identify this star badminton player who became the first Indian woman to win an Olympic silver medal.",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/pv_sindhu.png",
+      "options": [
+        "Saina Nehwal",
+        "P. V. Sindhu",
+        "Jwala Gutta",
+        "Ashwini Ponnappa"
+      ]
+    },
+    {
+      "category": "Traditional Tag Games",
+      "text": "Which popular Indian traditional tag game involves teams taking turns chasing and tagging opponents?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/kho_kho.png",
+      "options": [
+        "Kabaddi",
+        "Atya Patya",
+        "Kho-Kho",
+        "Gilli-Danda"
+      ]
+    },
+    {
+      "category": "Chess Prodigies",
+      "text": "Identify India's first Grandmaster who won five World Chess Championship titles.",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/viswanathan_anand.png",
+      "options": [
+        "Viswanathan Anand",
+        "Rameshbabu Praggnanandhaa",
+        "Pentala Harikrishna",
+        "Vidit Gujrathi"
+      ]
+    },
+    {
+      "category": "Traditional Wrestling",
+      "text": "What is the traditional mud wrestling style practiced widely across northern and central India?",
+      "correct": "D",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/kushti.png",
+      "options": [
+        "Inbuan",
+        "Malla-yuddha",
+        "Silambam",
+        "Kushti (Pehlwani)"
+      ]
+    },
+    {
+      "category": "Track & Field Legends",
+      "text": "Identify the legendary sprinter known as the 'Flying Sikh' who finished 4th at the 1960 Rome Olympics.",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/milkha_singh.png",
+      "options": [
+        "P. T. Usha",
+        "Milkha Singh",
+        "Gurbachan Singh Randhawa",
+        "Shivnath Singh"
+      ]
+    }
+  ]
+}

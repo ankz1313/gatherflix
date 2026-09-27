@@ -1,0 +1,128 @@
+{
+  "title": "Indian Icons, Brands & Culture",
+  "category": "Pop Culture, Brands & Sports",
+  "difficulty": "Easy to Hard",
+  "description": "Visual knowledge across Bollywood, Indian sports, FMCG brands, and corporate logos.",
+  "questions": [
+    {
+      "category": "Identify Celebrities",
+      "text": "Which iconic Indian actor is fondly referred to as the 'King of Bollywood' or 'SRK'?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/shah_rukh_khan.png",
+      "options": [
+        "Salman Khan",
+        "Shah Rukh Khan",
+        "Aamir Khan",
+        "Akshay Kumar"
+      ]
+    },
+    {
+      "category": "Car Logos",
+      "text": "Which major Indian automaker uses this 'Twin Peaks' logo identity on its modern SUV lineup?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/mahindra_logo.png",
+      "options": [
+        "Tata Motors",
+        "Maruti Suzuki",
+        "Mahindra & Mahindra",
+        "Ashok Leyland"
+      ]
+    },
+    {
+      "category": "Identify Sports",
+      "text": "Which famous traditional Indian contact sport is being played here?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/kabaddi.png",
+      "options": [
+        "Kabaddi",
+        "Kho-Kho",
+        "Wrestling (Kushti)",
+        "Atya Patya"
+      ]
+    },
+    {
+      "category": "FMCG Brands",
+      "text": "Which iconic Indian brand is represented by this classic mascot in a red polka-dot dress?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/amul_girl.png",
+      "options": [
+        "Britannia",
+        "Amul",
+        "Nandini",
+        "Mother Dairy"
+      ]
+    },
+    {
+      "category": "Masala Brands",
+      "text": "Which heritage Indian spice brand features the iconic portrait of Mahashay Dharampal Gulati in its logo?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/mdh_logo.png",
+      "options": [
+        "MDH",
+        "Everest",
+        "Catch",
+        "Badshah Masala"
+      ]
+    },
+    {
+      "category": "Tea Brands",
+      "text": "Which major Indian tea brand, known for its iconic 'Jaago Re' social awareness campaign, is shown here?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/tata_tea.png",
+      "options": [
+        "Wagh Bakri",
+        "Red Label",
+        "Tata Tea",
+        "Brooke Bond"
+      ]
+    },
+    {
+      "category": "Fashion Brands",
+      "text": "Which major Indian ethnic celebration wear brand uses this royal peacock identity?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/manyavar_logo.png",
+      "options": [
+        "FabIndia",
+        "Manyavar",
+        "Biba",
+        "Raymond"
+      ]
+    },
+    {
+      "category": "Odd Man Out",
+      "text": "Odd Man Out: Which of the following is NOT an indigenous traditional Indian sport?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/mallakhamba.png",
+      "options": [
+        "Mallakhamba",
+        "Badminton",
+        "Kalaripayattu",
+        "Vallam Kali"
+      ]
+    },
+    {
+      "category": "Odd Man Out",
+      "text": "Odd Man Out: Which of these options is a tea brand rather than a traditional spice/masala company?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/everest_logo.png",
+      "options": [
+        "MDH",
+        "Everest",
+        "Tata Tea",
+        "Ramdev Patanjali"
+      ]
+    },
+    {
+      "category": "Identify Celebrities",
+      "text": "Identify this star athlete who won India's first-ever track-and-field Olympic gold medal in javelin throw.",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/neeraj_chopra.png",
+      "options": [
+        "Neeraj Chopra",
+        "Milkha Singh",
+        "Abhinav Bindra",
+        "Bajrang Punia"
+      ]
+    }
+  ]
+}
