@@ -3,6 +3,7 @@ export const QUIZ_CATEGORIES = [
   { label: 'Hollywood', value: 'Hollywood', emoji: '\u{1F3A5}' },
   { label: 'TV Series', value: 'TV Series', emoji: '\u{1F4FA}' },
   { label: 'Sports', value: 'Sports', emoji: '\u{1F3C6}' },
+  { label: 'Brands', value: 'Brands', emoji: '\u{1F3F7}' },
 ] as const
 
 export type QuizCategory = (typeof QUIZ_CATEGORIES)[number]
@@ -21,7 +22,7 @@ function mentions(quiz: Categorized, cat: QuizCategory): boolean {
 }
 
 // Legacy packs were stored as Romance / Music / Action / etc. Those are Bollywood
-// unless they explicitly name Hollywood, TV Series, or Sports.
+// unless they explicitly name Hollywood, TV Series, Sports, or Brands.
 export function resolveQuizCategory(quiz: Categorized): QuizCategory {
   for (const cat of QUIZ_CATEGORIES) {
     if (cat.value === BOLLYWOOD.value) continue
