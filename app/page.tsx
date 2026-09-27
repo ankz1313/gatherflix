@@ -16,8 +16,8 @@ export default function LandingPage() {
       <SiteHeader />
       <main className="flex-1">
         <Hero />
-        <HowItWorks />
         <FeaturedDecks />
+        <HowItWorks />
       </main>
       <SiteFooter />
     </div>
