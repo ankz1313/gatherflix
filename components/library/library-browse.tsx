@@ -107,10 +107,10 @@ export function LibraryBrowse() {
   const [query, setQuery] = useState('')
   const [difficulty, setDifficulty] = useState<(typeof DIFFICULTIES)[number] | null>(null)
   const [category, setCategory] = useState<QuizCategory | null>(null)
-  const [visible, setVisible] = useState(6)
+  const [visible, setVisible] = useState(9)
 
   useEffect(() => {
-    setVisible(6)
+    setVisible(9)
   }, [category, difficulty, query])
 
   const filtered = useMemo(() => {
@@ -126,10 +126,6 @@ export function LibraryBrowse() {
       return matchesCategory && matchesQuery && (matchesDifficulty || !!q)
     })
   }, [quizzes, query, difficulty, category])
-
-  // API returns packs ordered by host count, so the first match is the featured hero.
-  const featured = filtered[0] ?? null
-  const results = featured ? filtered.slice(1) : filtered
 
   return (
     <>
@@ -209,6 +205,9 @@ export function LibraryBrowse() {
             <span className="mr-1 font-display text-xs font-bold uppercase tracking-wide text-muted-foreground">
               Difficulty:
             </span>
+            <Pill active={difficulty === null} onClick={() => setDifficulty(null)}>
+              All
+            </Pill>
             {DIFFICULTIES.map((d) => (
               <Pill
                 key={d}
@@ -220,10 +219,6 @@ export function LibraryBrowse() {
             ))}
           </div>
         </div>
-
-        <h1 className="mt-10 font-display text-3xl font-extrabold tracking-[-0.01em]">
-          Featured Quiz Packs
-        </h1>
 
         {/* Loading / error / empty states */}
         {isLoading && (
@@ -243,46 +238,10 @@ export function LibraryBrowse() {
           <p className="mt-6 text-muted-foreground">No published quiz packs yet.</p>
         )}
 
-        {/* Featured wide banner */}
-        {featured && (
-          <Link
-            href={`/host/preview?quiz=${featured.id}`}
-            className="group mt-5 block overflow-hidden rounded-3xl border border-border bg-card/60 transition-transform hover:-translate-y-1"
-          >
-            <div className="bg-secondary p-1">
-              <Image
-                src={coverFor(featured)}
-                alt={featured.title}
-                width={1600}
-                height={900}
-                sizes="100vw"
-                className="mx-auto h-auto w-full max-h-[22rem] object-contain"
-                priority
-              />
-            </div>
-            <div className="flex items-center justify-between p-4">
-              <div>
-                <div className="flex items-center gap-2 text-sm">
-                  <QuestionIcon />
-                  <span className="text-muted-foreground">{featured.questionCount} Qs</span>
-                </div>
-                <h2 className="mt-2 font-display text-2xl font-bold">{featured.title}</h2>
-                <div className="mt-3">
-                  <TagRow quiz={featured} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 self-start text-sm">
-                <ClockIcon />
-                <span className="text-muted-foreground">{featured.minutes} min</span>
-              </div>
-            </div>
-          </Link>
-        )}
-
-        {/* Grid of remaining packs */}
-        {results.length > 0 && (
+        {/* Grid of filtered packs */}
+        {filtered.length > 0 && (
           <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {results.slice(0, visible).map((quiz) => (
+            {filtered.slice(0, visible).map((quiz) => (
               <li key={quiz.id}>
                 <Link
                   href={`/host/preview?quiz=${quiz.id}`}
@@ -323,10 +282,10 @@ export function LibraryBrowse() {
         )}
 
         <div className="mt-10 flex justify-center">
-          {visible < results.length && (
+          {visible < filtered.length && (
             <button
               type="button"
-              onClick={() => setVisible((v) => v + 6)}
+              onClick={() => setVisible((v) => v + 9)}
               className="rounded-full border border-border bg-card px-8 py-3.5 font-display text-sm font-bold transition-colors hover:bg-accent"
             >
               Load More Quiz Packs
