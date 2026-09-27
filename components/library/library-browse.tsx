@@ -247,14 +247,13 @@ export function LibraryBrowse() {
                   href={`/host/preview?quiz=${quiz.id}`}
                   className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card/60 transition-transform hover:-translate-y-1"
                 >
-                  <div className="bg-secondary p-1">
+                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-secondary">
                     <Image
                       src={coverFor(quiz)}
                       alt={quiz.title}
-                      width={1200}
-                      height={900}
+                      fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="h-auto w-full object-contain"
+                      className="object-cover"
                     />
                   </div>
                   <div className="flex flex-1 flex-col p-4">
