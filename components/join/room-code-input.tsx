@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  useEffect,
   useRef,
   useState,
   type ChangeEvent,
@@ -10,6 +11,11 @@ import {
 
 const LENGTH = 6
 
+function charsFrom(initialCode: string): string[] {
+  const chars = initialCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, LENGTH)
+  return Array.from({ length: LENGTH }, (_, i) => chars[i] ?? '')
+}
+
 export function RoomCodeInput({
   onComplete,
   initialCode = '',
@@ -17,11 +23,12 @@ export function RoomCodeInput({
   onComplete?: (code: string) => void
   initialCode?: string
 }) {
-  const [values, setValues] = useState<string[]>(() => {
-    const chars = initialCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, LENGTH)
-    return Array.from({ length: LENGTH }, (_, i) => chars[i] ?? '')
-  })
+  const [values, setValues] = useState<string[]>(() => charsFrom(initialCode))
   const inputs = useRef<Array<HTMLInputElement | null>>([])
+
+  useEffect(() => {
+    setValues(charsFrom(initialCode))
+  }, [initialCode])
 
   function focusBox(i: number) {
     inputs.current[i]?.focus()
