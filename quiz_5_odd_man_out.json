@@ -1,0 +1,128 @@
+{
+  "title": "Odd Man Out Visual Challenge",
+  "category": "Logic & Categorization",
+  "difficulty": "Hard",
+  "description": "Find the odd entity that does not fit the category set across brands, geography, and sports.",
+  "questions": [
+    {
+      "category": "Indian Spice Brands",
+      "text": "Odd Man Out: Which brand is primarily a tea manufacturer rather than a traditional spice maker?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/everest_logo.png",
+      "options": [
+        "MDH",
+        "Catch",
+        "Tata Tea",
+        "Everest"
+      ]
+    },
+    {
+      "category": "Traditional Indian Sports",
+      "text": "Odd Man Out: Which sport was created in 19th century Britain rather than originating in ancient India?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/mallakhamba.png",
+      "options": [
+        "Badminton",
+        "Kabaddi",
+        "Mallakhamba",
+        "Kho-Kho"
+      ]
+    },
+    {
+      "category": "Indian Automobile Makers",
+      "text": "Odd Man Out: Which car manufacturer is headquartered in South Korea rather than India?",
+      "correct": "D",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/mahindra_logo.png",
+      "options": [
+        "Tata Motors",
+        "Mahindra",
+        "Maruti Suzuki",
+        "Hyundai"
+      ]
+    },
+    {
+      "category": "Indian Dairy Mascots",
+      "text": "Odd Man Out: Which entity represents a packaged beverage brand rather than a state dairy cooperative?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/amul_girl.png",
+      "options": [
+        "Amul",
+        "Frooti",
+        "Nandini",
+        "Mother Dairy"
+      ]
+    },
+    {
+      "category": "Traditional Martial Arts",
+      "text": "Odd Man Out: Which of these disciplines is a form of bare-knuckle mud wrestling rather than a weapon-based martial art?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/kalaripayattu.png",
+      "options": [
+        "Kalaripayattu",
+        "Thang-Ta",
+        "Kushti",
+        "Silambam"
+      ]
+    },
+    {
+      "category": "Indian Tech Unicorns",
+      "text": "Odd Man Out: Which platform is primarily an OTT streaming service rather than a fintech/payments app?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/paytm_logo.png",
+      "options": [
+        "Disney+ Hotstar",
+        "Paytm",
+        "PhonePe",
+        "BharatPe"
+      ]
+    },
+    {
+      "category": "Fashion & Lifestyle",
+      "text": "Odd Man Out: Which of these entities is a fast-food QSR chain rather than an Indian apparel/fashion brand?",
+      "correct": "D",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/manyavar_logo.png",
+      "options": [
+        "Manyavar",
+        "FabIndia",
+        "Biba",
+        "Dominos"
+      ]
+    },
+    {
+      "category": "Cricket Legends",
+      "text": "Odd Man Out: Which legendary cricketer was primarily a specialist leg-spin bowler rather than an opening batsman?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/shah_rukh_khan.png",
+      "options": [
+        "Sunil Gavaskar",
+        "Anil Kumble",
+        "Virender Sehwag",
+        "Sachin Tendulkar"
+      ]
+    },
+    {
+      "category": "Indian Landmarks",
+      "text": "Odd Man Out: Which historic monument is located in Hyderabad rather than Delhi?",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/charminar.png",
+      "options": [
+        "Red Fort",
+        "India Gate",
+        "Charminar",
+        "Qutub Minar"
+      ]
+    },
+    {
+      "category": "Indian Snacks & Beverages",
+      "text": "Odd Man Out: Which item is a traditional savory street food rather than a hot beverage?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/tata_tea.png",
+      "options": [
+        "Samosa",
+        "Masala Chai",
+        "Filter Coffee",
+        "Kahwa"
+      ]
+    }
+  ]
+}

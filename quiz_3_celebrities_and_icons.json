@@ -1,0 +1,128 @@
+{
+  "title": "Indian Legends & Celebrities Quiz",
+  "category": "Celebrities & Personalities",
+  "difficulty": "Easy to Hard",
+  "description": "Identify influential figures from Indian cinema, music, science, literature, and public life.",
+  "questions": [
+    {
+      "category": "Cinema Legends",
+      "text": "Which legendary actor is universally known as the 'Shahenshah' or 'Big B' of Hindi cinema?",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/amitabh_bachchan.png",
+      "options": [
+        "Amitabh Bachchan",
+        "Dharmendra",
+        "Vinod Khanna",
+        "Rishi Kapoor"
+      ]
+    },
+    {
+      "category": "Music Legends",
+      "text": "Identify this legendary playback singer revered as the 'Nightingale of India'.",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/lata_mangeshkar.png",
+      "options": [
+        "Asha Bhosle",
+        "K S Chithra",
+        "Lata Mangeshkar",
+        "Alka Yagnik"
+      ]
+    },
+    {
+      "category": "Science & Statesmen",
+      "text": "Which beloved aerospace scientist and former President of India was known as the 'Missile Man'?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/apj_abdul_kalam.png",
+      "options": [
+        "Homi Bhabha",
+        "A. P. J. Abdul Kalam",
+        "Vikram Sarabhai",
+        "C. V. Raman"
+      ]
+    },
+    {
+      "category": "Music Composers",
+      "text": "Identify this Oscar-winning Indian composer known as the 'Mozart of Madras'.",
+      "correct": "D",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/ar_rahman.png",
+      "options": [
+        "Ilaiyaraaja",
+        "R. D. Burman",
+        "M. M. Keeravani",
+        "A. R. Rahman"
+      ]
+    },
+    {
+      "category": "Literary Icons",
+      "text": "Identify the Nobel laureate polymath who composed India's national anthem 'Jana Gana Mana'.",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/rabindranath_tagore.png",
+      "options": [
+        "Rabindranath Tagore",
+        "Bankim Chandra Chatterjee",
+        "Sarojini Naidu",
+        "Premchand"
+      ]
+    },
+    {
+      "category": "Cinema Pioneers",
+      "text": "Who among these icons is celebrated as the 'Father of Indian Cinema'?",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/dadasaheb_phalke.png",
+      "options": [
+        "Satyajit Ray",
+        "Dadasaheb Phalke",
+        "Guru Dutt",
+        "Raj Kapoor"
+      ]
+    },
+    {
+      "category": "Classical Music",
+      "text": "Identify this world-renowned Sitar maestro who popularized Indian classical music globally.",
+      "correct": "C",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/ravi_shankar.png",
+      "options": [
+        "Ustad Bismillah Khan",
+        "Pandit Shivkumar Sharma",
+        "Pandit Ravi Shankar",
+        "Ustad Zakir Hussain"
+      ]
+    },
+    {
+      "category": "Global Indian Business",
+      "text": "Identify this visionary industrialist who expanded the Tata Group into a global conglomerate.",
+      "correct": "A",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/ratan_tata.png",
+      "options": [
+        "Ratan Tata",
+        "J. R. D. Tata",
+        "Dhirubhai Ambani",
+        "G. D. Birla"
+      ]
+    },
+    {
+      "category": "Modern Cinema",
+      "text": "Which acclaimed actor gained global fame for his leading role in 'RRR' and 'Magadheera'?",
+      "correct": "D",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/ram_charan.png",
+      "options": [
+        "Allu Arjun",
+        "Prabhas",
+        "N. T. Rama Rao Jr.",
+        "Ram Charan"
+      ]
+    },
+    {
+      "category": "Olympic Legends",
+      "text": "Identify this pioneer female boxer who won six World Championship titles for India.",
+      "correct": "B",
+      "image": "/Users/piyushchandrakar/Documents/images quiz/mary_kom.png",
+      "options": [
+        "P. V. Sindhu",
+        "Mary Kom",
+        "Saina Nehwal",
+        "Dutee Chand"
+      ]
+    }
+  ]
+}
