@@ -8,6 +8,7 @@ import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AvatarBadge } from '@/components/join/avatar-badge'
 import { CURRENT_SESSION } from '@/lib/session'
+import { SITE_URL } from '@/lib/site'
 import { trackTriviaStarted } from '@/lib/analytics'
 
 type RoomCreatedProps = {
@@ -20,6 +21,14 @@ type JoinedPlayer = {
   nickname: string
   avatar: string | null
   score: number
+}
+
+function playerJoinUrl(code: string, origin: string): string {
+  const base =
+    !origin || origin.includes('localhost') || origin.includes('127.0.0.1')
+      ? origin || SITE_URL
+      : SITE_URL
+  return `${base}/join/${encodeURIComponent(code)}`
 }
 
 const roomCreates = new Map<string, Promise<string>>()
@@ -73,7 +82,8 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
     setOrigin(window.location.origin)
   }, [])
 
-  // Reuse the lobby room for this quiz in this browser tab, or create one.
+  // Reuse only a still-open lobby. After a game starts (or the host comes
+  // back for a new night), mint a fresh code so the QR is not stale.
   useEffect(() => {
     let cancelled = false
     async function createRoom() {
@@ -86,9 +96,20 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
         if (!cancelled) setError(true)
       }
     }
-    createRoom()
+    void createRoom()
+
+    function onReturn() {
+      void createRoom()
+    }
+    function onVisible() {
+      if (document.visibilityState === 'visible') onReturn()
+    }
+    window.addEventListener('pageshow', onReturn)
+    document.addEventListener('visibilitychange', onVisible)
     return () => {
       cancelled = true
+      window.removeEventListener('pageshow', onReturn)
+      document.removeEventListener('visibilitychange', onVisible)
     }
   }, [quizId])
 
@@ -118,11 +139,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
     }
   }, [code])
 
-  const joinUrl = code
-    ? origin
-      ? `${origin}/join?code=${code}`
-      : `/join?code=${code}`
-    : ''
+  const joinUrl = code ? playerJoinUrl(code, origin) : ''
   const joinPageDisplay = origin
     ? `${origin.replace(/^https?:\/\//, '')}/join`
     : 'gatherflix-6j.vercel.app/join'
@@ -163,6 +180,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error ?? 'Could not start the game.')
       }
+      sessionStorage.removeItem(`gf_host_room_${quizId}`)
       trackTriviaStarted(quizId, quizTitle)
       router.push(`/play?code=${encodeURIComponent(code)}&q=0`)
     } catch (err) {
