@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { ChevronDown, LayoutGrid, LogOut } from 'lucide-react'
+import { signOutAction } from '@/app/auth/actions'
+import { clearBrowserAuthCookies } from '@/lib/supabase/auth-cookies'
 import { createClient } from '@/lib/supabase/client'
 
 type UserMenuProps = {
@@ -23,7 +24,6 @@ function nameFromUser(user: {
 }
 
 export function UserMenu({ className }: UserMenuProps) {
-  const router = useRouter()
   const [name, setName] = useState<string | null>(null)
   const [ready, setReady] = useState(false)
   const [open, setOpen] = useState(false)
@@ -66,11 +66,17 @@ export function UserMenu({ className }: UserMenuProps) {
 
   async function handleSignOut() {
     setBusy(true)
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    setOpen(false)
-    router.push('/')
-    router.refresh()
+    clearBrowserAuthCookies()
+    try {
+      await signOutAction()
+    } catch (error) {
+      const digest =
+        typeof error === 'object' && error && 'digest' in error
+          ? String((error as { digest?: string }).digest)
+          : ''
+      if (digest.startsWith('NEXT_REDIRECT')) throw error
+      window.location.assign('/')
+    }
   }
 
   // Avoid a flash of the wrong state before auth resolves.
