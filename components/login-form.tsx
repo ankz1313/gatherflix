@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState } from 'react'
+import { signInWithPasswordAction } from '@/app/auth/actions'
+import { friendlyAuthError } from '@/lib/auth-errors'
 import { passwordResetRedirectTo, signupEmailRedirectTo } from '@/lib/auth-redirect'
+import { clearBrowserAuthCookies } from '@/lib/supabase/auth-cookies'
+import { createClient } from '@/lib/supabase/client'
 import { trackLogin, trackSignup } from '@/lib/analytics'
 
 type Mode = 'signin' | 'signup' | 'forgot'
@@ -15,7 +17,6 @@ const inputClass =
   'h-14 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-5 text-[1.05rem] text-foreground placeholder:text-muted-foreground/70 outline-none transition-colors focus:border-gold/60 focus:bg-white/[0.06]'
 
 export function LoginForm() {
-  const router = useRouter()
   const [mode, setMode] = useState<Mode>('signin')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -26,6 +27,15 @@ export function LoginForm() {
 
   const isSignup = mode === 'signup'
   const isForgot = mode === 'forgot'
+
+  useEffect(() => {
+    const supabase = createClient()
+    void supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        window.location.replace(redirectTarget())
+      }
+    })
+  }, [])
 
   function switchMode(next: Mode) {
     setMode(next)
@@ -58,7 +68,7 @@ export function LoginForm() {
           redirectTo: passwordResetRedirectTo(),
         })
         if (resetError) {
-          setError(friendlyError(resetError.message))
+          setError(friendlyAuthError(resetError.message))
           return
         }
         setNotice('Check your email for a link to reset your password.')
@@ -75,7 +85,7 @@ export function LoginForm() {
           },
         })
         if (signUpError) {
-          setError(friendlyError(signUpError.message))
+          setError(friendlyAuthError(signUpError.message))
           return
         }
         // Supabase obfuscates existing emails by returning a user with no
@@ -86,28 +96,30 @@ export function LoginForm() {
         }
         trackSignup()
         if (data.session) {
-          // Email confirmation disabled — session is live immediately.
-          router.push(redirectTarget())
-          router.refresh()
+          window.location.assign(redirectTarget())
           return
         }
         setNotice('Account created! Check your email to confirm your address, then sign in.')
         return
       }
 
-      // Sign in
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      clearBrowserAuthCookies()
+      const result = await signInWithPasswordAction({
         email: cleanEmail,
         password,
+        next: redirectTarget(),
       })
-      if (signInError) {
-        setError(friendlyError(signInError.message))
+      if (result?.error) {
+        setError(result.error)
         return
       }
       trackLogin()
-      router.push(redirectTarget())
-      router.refresh()
-    } catch {
+    } catch (error) {
+      const digest =
+        typeof error === 'object' && error && 'digest' in error
+          ? String((error as { digest?: string }).digest)
+          : ''
+      if (digest.startsWith('NEXT_REDIRECT')) throw error
       setError('Something went wrong. Please try again.')
     } finally {
       setSubmitting(false)
@@ -252,22 +264,4 @@ export function LoginForm() {
 function redirectTarget() {
   const fromParam = new URLSearchParams(window.location.search).get('redirectedFrom')
   return fromParam && fromParam.startsWith('/') ? fromParam : '/create'
-}
-
-// Map raw Supabase auth errors to clear, non-enumerating messages while still
-// surfacing what the user must act on (unconfirmed email, weak password, rate limits).
-function friendlyError(message: string): string {
-  const m = message.toLowerCase()
-  if (m.includes('invalid login credentials')) return 'Invalid email or password.'
-  if (m.includes('email not confirmed'))
-    return 'Please confirm your email address before signing in. Check your inbox.'
-  if (m.includes('already registered') || m.includes('already been registered'))
-    return 'An account with this email already exists. Try signing in instead.'
-  if (m.includes('password') && (m.includes('at least') || m.includes('weak') || m.includes('short')))
-    return `Password must be at least ${MIN_PASSWORD} characters.`
-  if (m.includes('rate limit') || m.includes('too many'))
-    return 'Too many attempts. Please wait a moment and try again.'
-  if (m.includes('unable to validate email') || m.includes('invalid email'))
-    return 'Please enter a valid email address.'
-  return message
 }

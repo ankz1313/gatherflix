@@ -1,19 +1,25 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { signOutAction } from '@/app/auth/actions'
+import { clearBrowserAuthCookies } from '@/lib/supabase/auth-cookies'
 
 export function LogoutButton({ className }: { className?: string }) {
-  const router = useRouter()
   const [busy, setBusy] = useState(false)
 
   async function handleLogout() {
     setBusy(true)
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
+    clearBrowserAuthCookies()
+    try {
+      await signOutAction()
+    } catch (error) {
+      const digest =
+        typeof error === 'object' && error && 'digest' in error
+          ? String((error as { digest?: string }).digest)
+          : ''
+      if (digest.startsWith('NEXT_REDIRECT')) throw error
+      window.location.assign('/')
+    }
   }
 
   return (
