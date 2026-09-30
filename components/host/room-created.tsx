@@ -8,6 +8,7 @@ import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AvatarBadge } from '@/components/join/avatar-badge'
 import { CURRENT_SESSION } from '@/lib/session'
+import { MIN_PLAYERS_TO_START } from '@/lib/room-rules'
 import { SITE_URL } from '@/lib/site'
 import { trackTriviaStarted } from '@/lib/analytics'
 
@@ -143,7 +144,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
   const joinPageDisplay = origin
     ? `${origin.replace(/^https?:\/\//, '')}/join`
     : 'gatherflix-6j.vercel.app/join'
-  const canStart = !!code && !starting
+  const canStart = !!code && !starting && joined.length >= MIN_PLAYERS_TO_START
 
   async function copyJoinLink() {
     if (!joinUrl) return
@@ -185,7 +186,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
       router.push(`/play?code=${encodeURIComponent(code)}&q=0`)
     } catch (err) {
       console.error('[v0] failed to start game:', err)
-      setStartError('Could not start the game. Please try again.')
+      setStartError(err instanceof Error ? err.message : 'Could not start the game. Please try again.')
       setCountdown(null)
       setStarting(false)
     }
@@ -359,7 +360,9 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
             </p>
           )}
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Join on your phone with the code, then start. Host holds controller.
+            {joined.length < MIN_PLAYERS_TO_START
+              ? 'Wait for at least one player to join, then start. Host holds controller.'
+              : 'Join on your phone with the code, then start. Host holds controller.'}
           </p>
         </section>
       </div>

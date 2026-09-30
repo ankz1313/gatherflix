@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
-import { isCoreRoomStatus } from '@/lib/room-phase'
-import { loadRoomByCode, saveRoomProgress } from '@/lib/room-store'
+import { isCoreRoomStatus, parseRoomStatus } from '@/lib/room-phase'
+import { MIN_PLAYERS_TO_START } from '@/lib/room-rules'
+import {
+  countHumanPlayers,
+  loadRoomByCode,
+  saveRoomProgress,
+} from '@/lib/room-store'
 import { createServiceClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
@@ -91,6 +96,21 @@ export async function PATCH(
       { room: { id: room.id, code: room.code, status: room.status, quizId: room.quiz_id } },
       { headers: NO_STORE },
     )
+  }
+
+  const existingRoom = await loadRoomByCode(normalized)
+  if (!existingRoom) {
+    return NextResponse.json({ error: 'Room not found.' }, { status: 404, headers: NO_STORE })
+  }
+
+  if (body.status === 'playing' && parseRoomStatus(existingRoom.status).kind === 'lobby') {
+    const humans = await countHumanPlayers(existingRoom.id)
+    if (humans < MIN_PLAYERS_TO_START) {
+      return NextResponse.json(
+        { error: 'Wait for at least one player to join before starting.' },
+        { status: 400, headers: NO_STORE },
+      )
+    }
   }
 
   const questionIndex = typeof body.questionIndex === 'number' ? body.questionIndex : 0
