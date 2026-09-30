@@ -35,6 +35,17 @@ export function withoutRoomCursor<T extends { nickname?: string | null; player_t
   return players.filter((player) => !isHiddenRoomPlayer(player))
 }
 
+export async function countHumanPlayers(roomId: string): Promise<number> {
+  const supabase = createServiceClient()
+  const { data, error } = await supabase
+    .from('players')
+    .select('nickname, player_token')
+    .eq('room_id', roomId)
+
+  if (error || !data) return 0
+  return withoutRoomCursor(data).length
+}
+
 function cursorToken(roomId: string) {
   return `gf.cursor.${roomId}`
 }
