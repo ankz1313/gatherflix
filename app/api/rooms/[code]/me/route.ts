@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
-import { rankPlayers } from '@/lib/score'
+import { standingFor } from '@/lib/score'
 import { withoutRoomCursor } from '@/lib/room-store'
 
 export const dynamic = 'force-dynamic'
@@ -43,11 +43,10 @@ export async function GET(
     return NextResponse.json({ error: 'Failed to load score.' }, { status: 500, headers: NO_STORE })
   }
 
-  const ranked = rankPlayers(
-    withoutRoomCursor(roster ?? []).map((p) => ({ ...p, score: p.score ?? 0 })),
-  )
-  const me = ranked.find((p) => p.player_token === token)
-  if (!me) {
+  const humans = withoutRoomCursor(roster ?? []).map((p) => ({ ...p, score: p.score ?? 0 }))
+  const me = humans.find((p) => p.player_token === token)
+  const standing = standingFor(humans, (p) => p.player_token === token)
+  if (!me || !standing) {
     return NextResponse.json({ error: 'Player not found in this room.' }, { status: 404, headers: NO_STORE })
   }
 
@@ -56,9 +55,10 @@ export async function GET(
       status: room.status,
       nickname: me.nickname,
       avatar: me.avatar,
-      score: me.score,
-      rank: me.rank,
-      playerCount: ranked.length,
+      score: standing.score,
+      rank: standing.rank,
+      behindNext: standing.behindNext,
+      playerCount: humans.length,
     },
     { headers: NO_STORE },
   )

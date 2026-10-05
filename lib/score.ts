@@ -34,3 +34,19 @@ export function rankPlayers<T extends { score: number }>(players: T[]): (T & { r
   const sorted = [...players].sort((a, b) => b.score - a.score)
   return sorted.map((p, i) => ({ ...p, rank: i + 1 }))
 }
+
+export function standingFor<T extends { score: number }>(
+  players: T[],
+  isMe: (player: T) => boolean,
+): { rank: number; score: number; behindNext: number } | null {
+  const ranked = rankPlayers(players)
+  const myIndex = ranked.findIndex(isMe)
+  if (myIndex < 0) return null
+  const me = ranked[myIndex]
+  const ahead = myIndex > 0 ? ranked[myIndex - 1] : null
+  return {
+    rank: me.rank,
+    score: me.score,
+    behindNext: ahead ? Math.max(0, ahead.score - me.score) : 0,
+  }
+}

@@ -5,9 +5,16 @@ import { useRouter } from 'next/navigation'
 import { lastAnswerStorageKey, type QuestionResult } from '@/lib/score'
 import { parseRoomStatus } from '@/lib/room-phase'
 
+type LiveStanding = {
+  rank: number
+  totalScore: number
+  behindNext: number
+}
+
 export function MobileResult({ code, questionIndex }: { code: string; questionIndex: number }) {
   const router = useRouter()
   const [result, setResult] = useState<QuestionResult | null>(null)
+  const [standing, setStanding] = useState<LiveStanding | null>(null)
 
   useEffect(() => {
     if (!code) return
@@ -28,6 +35,28 @@ export function MobileResult({ code, questionIndex }: { code: string; questionIn
 
     async function followHost() {
       try {
+        const token = sessionStorage.getItem(`gf_player_token_${code}`)
+        if (token) {
+          const meRes = await fetch(
+            `/api/rooms/${encodeURIComponent(code)}/me?token=${encodeURIComponent(token)}`,
+            { cache: 'no-store' },
+          )
+          if (meRes.ok) {
+            const me = (await meRes.json()) as {
+              rank?: number
+              score?: number
+              behindNext?: number
+            }
+            if (!cancelled && typeof me.rank === 'number' && typeof me.score === 'number') {
+              setStanding({
+                rank: me.rank,
+                totalScore: me.score,
+                behindNext: typeof me.behindNext === 'number' ? me.behindNext : 0,
+              })
+            }
+          }
+        }
+
         const res = await fetch(`/api/rooms/${encodeURIComponent(code)}/players`, {
           cache: 'no-store',
         })
@@ -63,6 +92,9 @@ export function MobileResult({ code, questionIndex }: { code: string; questionIn
 
   const correct = result?.correct ?? false
   const accent = correct ? 'var(--success)' : 'var(--brand)'
+  const rank = standing?.rank ?? result?.rank
+  const totalScore = standing?.totalScore ?? result?.totalScore
+  const behindNext = standing?.behindNext ?? result?.behindNext
 
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center px-6">
@@ -128,7 +160,7 @@ export function MobileResult({ code, questionIndex }: { code: string; questionIn
               Current Rank
             </p>
             <p className="mt-1 font-display text-2xl font-black">
-              {result ? `#${result.rank}` : '—'}
+              {rank != null ? `#${rank}` : '—'}
             </p>
           </div>
           <div>
@@ -136,7 +168,7 @@ export function MobileResult({ code, questionIndex }: { code: string; questionIn
               Total Score
             </p>
             <p className="mt-1 font-display text-2xl font-black">
-              {result ? result.totalScore.toLocaleString() : '—'}
+              {totalScore != null ? totalScore.toLocaleString() : '—'}
             </p>
           </div>
           <div>
@@ -144,7 +176,7 @@ export function MobileResult({ code, questionIndex }: { code: string; questionIn
               Behind Next
             </p>
             <p className="mt-1 font-display text-2xl font-black text-brand">
-              {result ? result.behindNext : '—'}
+              {behindNext != null ? behindNext : '—'}
             </p>
           </div>
         </div>

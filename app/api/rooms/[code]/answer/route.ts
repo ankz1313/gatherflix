@@ -3,7 +3,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
 import { loadRoomByCode, recordPlayerAnswer, withoutRoomCursor } from '@/lib/room-store'
 import { findChoiceByLabel } from '@/lib/choice-label'
-import { awardPoints, rankPlayers, speedMultiplier } from '@/lib/score'
+import { awardPoints, standingFor, speedMultiplier } from '@/lib/score'
 
 export const dynamic = 'force-dynamic'
 
@@ -87,13 +87,8 @@ export async function POST(
     .eq('room_id', room.id)
     .order('score', { ascending: false })
 
-  const ranked = rankPlayers(
-    withoutRoomCursor(roster ?? []).map((p) => ({ ...p, score: p.score ?? 0 })),
-  )
-  const me = ranked.find((p) => p.id === player.id)
-  const myIndex = ranked.findIndex((p) => p.id === player.id)
-  const nextPlayer = myIndex > 0 ? ranked[myIndex - 1] : null
-  const behindNext = nextPlayer ? me!.score - nextPlayer.score : 0
+  const humans = withoutRoomCursor(roster ?? []).map((p) => ({ ...p, score: p.score ?? 0 }))
+  const standing = standingFor(humans, (p) => p.id === player.id)
 
   return NextResponse.json(
     {
@@ -102,8 +97,8 @@ export async function POST(
       base: correct ? question.points : 0,
       multiplier: correct ? `${factor.toFixed(2)}x` : '0x',
       totalScore,
-      rank: me?.rank ?? ranked.length,
-      behindNext,
+      rank: standing?.rank ?? humans.length,
+      behindNext: standing?.behindNext ?? 0,
       chosenLetter: letter || '—',
       chosenText: choice?.text ?? 'No answer',
     },
