@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { signInWithPasswordAction } from '@/app/auth/actions'
 import { friendlyAuthError } from '@/lib/auth-errors'
-import { passwordResetRedirectTo, signupEmailRedirectTo } from '@/lib/auth-redirect'
+import { POST_LOGIN_PATH, passwordResetRedirectTo, signupEmailRedirectTo } from '@/lib/auth-redirect'
 import { clearBrowserAuthCookies } from '@/lib/supabase/auth-cookies'
 import { createClient } from '@/lib/supabase/client'
 import { trackLogin, trackSignup } from '@/lib/analytics'
@@ -263,5 +263,5 @@ export function LoginForm() {
 
 function redirectTarget() {
   const fromParam = new URLSearchParams(window.location.search).get('redirectedFrom')
-  return fromParam && fromParam.startsWith('/') ? fromParam : '/create'
+  return fromParam && fromParam.startsWith('/') ? fromParam : POST_LOGIN_PATH
 }
