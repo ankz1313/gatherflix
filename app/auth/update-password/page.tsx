@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { EmailOtpType } from '@supabase/supabase-js'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
+import { POST_LOGIN_PATH } from '@/lib/auth-redirect'
 import { createClient } from '@/lib/supabase/client'
 
 const MIN_PASSWORD = 6
@@ -114,7 +115,7 @@ export default function UpdatePasswordPage() {
         )
         return
       }
-      router.push('/create')
+      router.push(POST_LOGIN_PATH)
       router.refresh()
     } catch {
       setError('Something went wrong. Please try again.')

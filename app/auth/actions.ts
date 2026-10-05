@@ -2,11 +2,12 @@
 
 import { redirect } from 'next/navigation'
 import { friendlyAuthError } from '@/lib/auth-errors'
+import { POST_LOGIN_PATH } from '@/lib/auth-redirect'
 import { clearServerAuthCookies } from '@/lib/supabase/auth-cookies.server'
 import { createServerSupabase } from '@/lib/supabase/server'
 
 function safeNext(value: string | null): string {
-  return value && value.startsWith('/') ? value : '/create'
+  return value && value.startsWith('/') ? value : POST_LOGIN_PATH
 }
 
 export async function signInWithPasswordAction(input: {

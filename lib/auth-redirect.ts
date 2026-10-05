@@ -1,5 +1,7 @@
 import { SITE_URL } from '@/lib/site'
 
+export const POST_LOGIN_PATH = '/'
+
 // Password reset must land on a single allowlisted path. Extra query params
 // (e.g. /auth/callback?next=...) are often rejected by Supabase Redirect URLs.
 export function passwordResetRedirectTo(): string {
@@ -13,9 +15,9 @@ export function signupEmailRedirectTo(): string {
       : undefined
   if (proxy) {
     const sep = proxy.includes('?') ? '&' : '?'
-    return `${proxy}${sep}next=${encodeURIComponent('/create')}`
+    return `${proxy}${sep}next=${encodeURIComponent(POST_LOGIN_PATH)}`
   }
-  return `${publicAppOrigin()}/auth/callback?next=${encodeURIComponent('/create')}`
+  return `${publicAppOrigin()}/auth/callback?next=${encodeURIComponent(POST_LOGIN_PATH)}`
 }
 
 function publicAppOrigin(): string {
