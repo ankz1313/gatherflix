@@ -24,7 +24,7 @@ export async function FeaturedDecks() {
             Featured Trivia Packs
           </h2>
           <p className="mt-3 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            The packs crews have hosted the most
+            A fresh mix of packs each visit
           </p>
         </div>
 
