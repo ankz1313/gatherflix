@@ -292,8 +292,15 @@ async function getQuizPlayCounts(): Promise<Map<string, number>> {
   return counts
 }
 
-// Homepage featured row: published quizzes ranked by how many rooms were hosted.
+// Homepage featured row: a fresh shuffle of published quizzes each request.
 export async function getMostPlayedPublishedQuizzes(limit = 4): Promise<QuizSummary[]> {
   const quizzes = await getPublishedQuizzes()
-  return quizzes.slice(0, limit)
+  const shuffled = [...quizzes]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const current = shuffled[i]
+    shuffled[i] = shuffled[j]!
+    shuffled[j] = current!
+  }
+  return shuffled.slice(0, limit)
 }
