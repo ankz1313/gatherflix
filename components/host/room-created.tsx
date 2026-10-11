@@ -7,6 +7,7 @@ import { Check, Clapperboard, Copy, Play } from 'lucide-react'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AvatarBadge } from '@/components/join/avatar-badge'
+import { paceStorageKey, type HostPace } from '@/lib/host-pace'
 import { MIN_PLAYERS_TO_START } from '@/lib/room-rules'
 import { SITE_URL } from '@/lib/site'
 import { trackTriviaStarted } from '@/lib/analytics'
@@ -77,6 +78,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
   const [countdown, setCountdown] = useState<number | 'go' | null>(null)
   const [startError, setStartError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [pace, setPace] = useState<HostPace>('auto')
 
   useEffect(() => {
     setOrigin(window.location.origin)
@@ -181,8 +183,10 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
         throw new Error(data.error ?? 'Could not start the game.')
       }
       sessionStorage.removeItem(`gf_host_room_${quizId}`)
+      sessionStorage.setItem(paceStorageKey(code), pace)
       trackTriviaStarted(quizId, quizTitle)
-      router.push(`/play?code=${encodeURIComponent(code)}&q=0`)
+      const paceQuery = pace === 'manual' ? '&pace=manual' : ''
+      router.push(`/play?code=${encodeURIComponent(code)}&q=0${paceQuery}`)
     } catch (err) {
       console.error('[v0] failed to start game:', err)
       setStartError(err instanceof Error ? err.message : 'Could not start the game. Please try again.')
@@ -343,6 +347,37 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
               ))}
             </ul>
           )}
+
+          <div className="mt-6 rounded-2xl border border-border bg-background/50 p-4">
+            <p className="font-display text-sm font-bold">Question pace</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Auto moves on the timer. Manual waits until you reveal and tap next.
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setPace('auto')}
+                className={`rounded-xl border px-3 py-2.5 font-display text-sm font-bold ${
+                  pace === 'auto'
+                    ? 'border-gold bg-gold-soft text-gold'
+                    : 'border-border text-muted-foreground'
+                }`}
+              >
+                Auto
+              </button>
+              <button
+                type="button"
+                onClick={() => setPace('manual')}
+                className={`rounded-xl border px-3 py-2.5 font-display text-sm font-bold ${
+                  pace === 'manual'
+                    ? 'border-gold bg-gold-soft text-gold'
+                    : 'border-border text-muted-foreground'
+                }`}
+              >
+                Manual
+              </button>
+            </div>
+          </div>
 
           <button
             type="button"

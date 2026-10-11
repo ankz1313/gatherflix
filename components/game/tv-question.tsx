@@ -6,6 +6,7 @@ import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { AdaptiveStill } from '@/components/game/adaptive-still'
 import { AnswerShape } from '@/components/game/answer-shape'
 import { ANSWER_STYLES } from '@/lib/game'
+import { parseHostPace, paceStorageKey, withHostPace, type HostPace } from '@/lib/host-pace'
 
 type TvQuestionProps = {
   code: string
@@ -21,6 +22,7 @@ type TvQuestionProps = {
   playerCount: number
   revealHref: string
   choices: { label: string; text: string }[]
+  pace?: HostPace
 }
 
 export function TvQuestion({
@@ -37,8 +39,10 @@ export function TvQuestion({
   playerCount,
   revealHref,
   choices,
+  pace: paceProp = 'auto',
 }: TvQuestionProps) {
   const router = useRouter()
+  const [pace, setPace] = useState<HostPace>(paceProp)
   const [remaining, setRemaining] = useState(timerSeconds)
   const [lockedIn, setLockedIn] = useState(0)
   const [livePlayers, setLivePlayers] = useState(playerCount)
@@ -48,6 +52,16 @@ export function TvQuestion({
   useEffect(() => {
     setRemaining(timerSeconds)
   }, [timerSeconds])
+
+  useEffect(() => {
+    if (!code) return
+    if (paceProp === 'manual') {
+      sessionStorage.setItem(paceStorageKey(code), 'manual')
+      setPace('manual')
+      return
+    }
+    setPace(parseHostPace(sessionStorage.getItem(paceStorageKey(code))))
+  }, [code, paceProp])
 
   useEffect(() => {
     void fetch(`/api/rooms/${encodeURIComponent(code)}`, {
@@ -60,7 +74,7 @@ export function TvQuestion({
   async function goToReveal() {
     if (leaving.current) return
     leaving.current = true
-    router.push(revealHref)
+    router.push(withHostPace(revealHref, pace))
   }
 
   useEffect(() => {
@@ -79,7 +93,7 @@ export function TvQuestion({
         const answered = typeof data.answeredCount === 'number' ? data.answeredCount : 0
         setLivePlayers(humans)
         setLockedIn(answered)
-        if (humans > 0 && answered >= humans) {
+        if (pace !== 'manual' && humans > 0 && answered >= humans) {
           void goToReveal()
         }
       } catch {
@@ -93,18 +107,19 @@ export function TvQuestion({
       cancelled = true
       clearInterval(t)
     }
-  }, [code, playerCount, revealHref])
+  }, [code, playerCount, revealHref, pace])
 
   useEffect(() => {
     if (remaining > 0) {
       const t = setTimeout(() => setRemaining((r) => r - 1), 1000)
       return () => clearTimeout(t)
     }
+    if (pace === 'manual') return
     const t = setTimeout(() => {
       void goToReveal()
     }, 800)
     return () => clearTimeout(t)
-  }, [remaining])
+  }, [remaining, pace])
 
   const pct = timerSeconds > 0 ? (remaining / timerSeconds) * 100 : 0
   const roundLabel = `Question ${String(questionNumber).padStart(2, '0')} of ${totalQuestions}`
@@ -215,8 +230,12 @@ export function TvQuestion({
           </div>
 
           <div className="text-center">
-            <p className="font-display text-2xl font-black text-brand">HURRY UP!</p>
-            <p className="mt-1 text-sm text-muted-foreground">Decaying multiplier</p>
+            <p className="font-display text-2xl font-black text-brand">
+              {pace === 'manual' ? 'HOST PACE' : 'HURRY UP!'}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {pace === 'manual' ? 'Tap the timer to reveal' : 'Decaying multiplier'}
+            </p>
           </div>
         </div>
       </div>
