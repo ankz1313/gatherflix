@@ -80,6 +80,10 @@ export default async function PlayPage({
       category={quiz.category}
       points={question.points}
       imageUrl={question.imageUrl}
+      upcomingImageUrls={quiz.questions
+        .slice(questionIndex + 1, questionIndex + 3)
+        .map((item) => item.imageUrl)
+        .filter((url): url is string => Boolean(url?.trim()))}
       questionNumber={questionIndex + 1}
       totalQuestions={quiz.questions.length}
       timerSeconds={question.timerSeconds || 20}
