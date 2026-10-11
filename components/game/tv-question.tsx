@@ -110,11 +110,11 @@ export function TvQuestion({
   }, [code, playerCount, revealHref, pace])
 
   useEffect(() => {
+    if (pace === 'manual') return
     if (remaining > 0) {
       const t = setTimeout(() => setRemaining((r) => r - 1), 1000)
       return () => clearTimeout(t)
     }
-    if (pace === 'manual') return
     const t = setTimeout(() => {
       void goToReveal()
     }, 800)
@@ -195,49 +195,72 @@ export function TvQuestion({
           })}
         </div>
 
-        <div className="grid grid-cols-3 items-center">
-          <div className="text-center">
-            <p className="font-display text-3xl font-black text-gold">{livePlayers}</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {lockedIn}/{livePlayers} locked in
+        {pace === 'manual' ? (
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
+            <p className="text-center text-sm text-muted-foreground sm:text-left">
+              <span className="font-display text-2xl font-black text-gold">{livePlayers}</span>
+              <span className="mt-1 block">
+                {lockedIn}/{livePlayers} locked in
+              </span>
             </p>
-          </div>
-
-          <div className="flex justify-center">
             <button
               type="button"
               onClick={() => void goToReveal()}
-              className="relative grid size-24 place-items-center"
-              aria-label="Reveal answer"
+              className="inline-flex w-full max-w-md items-center justify-center gap-2 rounded-2xl bg-gold px-8 py-4 font-display text-base font-bold uppercase tracking-wide text-gold-foreground transition-transform hover:scale-[1.01] sm:w-auto"
             >
-              <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
-                <circle cx="50" cy="50" r="44" fill="none" stroke="var(--border)" strokeWidth="6" />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="44"
-                  fill="none"
-                  stroke="var(--brand)"
-                  strokeWidth="6"
+              Reveal answer
+              <svg viewBox="0 0 24 24" fill="none" className="size-5" aria-hidden="true">
+                <path
+                  d="m9 6 6 6-6 6"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
                   strokeLinecap="round"
-                  strokeDasharray={2 * Math.PI * 44}
-                  strokeDashoffset={((100 - pct) / 100) * 2 * Math.PI * 44}
-                  style={{ transition: 'stroke-dashoffset 1s linear' }}
+                  strokeLinejoin="round"
                 />
               </svg>
-              <span className="font-display text-3xl font-black">{remaining}</span>
             </button>
           </div>
+        ) : (
+          <div className="grid grid-cols-3 items-center">
+            <div className="text-center">
+              <p className="font-display text-3xl font-black text-gold">{livePlayers}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {lockedIn}/{livePlayers} locked in
+              </p>
+            </div>
 
-          <div className="text-center">
-            <p className="font-display text-2xl font-black text-brand">
-              {pace === 'manual' ? 'HOST PACE' : 'HURRY UP!'}
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {pace === 'manual' ? 'Tap the timer to reveal' : 'Decaying multiplier'}
-            </p>
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => void goToReveal()}
+                className="relative grid size-24 place-items-center"
+                aria-label="Reveal answer"
+              >
+                <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
+                  <circle cx="50" cy="50" r="44" fill="none" stroke="var(--border)" strokeWidth="6" />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="44"
+                    fill="none"
+                    stroke="var(--brand)"
+                    strokeWidth="6"
+                    strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 44}
+                    strokeDashoffset={((100 - pct) / 100) * 2 * Math.PI * 44}
+                    style={{ transition: 'stroke-dashoffset 1s linear' }}
+                  />
+                </svg>
+                <span className="font-display text-3xl font-black">{remaining}</span>
+              </button>
+            </div>
+
+            <div className="text-center">
+              <p className="font-display text-2xl font-black text-brand">HURRY UP!</p>
+              <p className="mt-1 text-sm text-muted-foreground">Decaying multiplier</p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </main>
   )
