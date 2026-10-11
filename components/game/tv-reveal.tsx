@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { AvatarBadge } from '@/components/join/avatar-badge'
+import { parseHostPace, paceStorageKey, withHostPace, type HostPace } from '@/lib/host-pace'
 
 type RevealChoice = { label: string; text: string; correct: boolean }
 type Leader = { name: string; avatar: string | null; score: number }
@@ -16,6 +17,7 @@ export function TvReveal({
   nextStatus,
   nextQuestionIndex,
   nextHref,
+  pace: paceProp = 'auto',
 }: {
   code: string
   choices: RevealChoice[]
@@ -24,12 +26,24 @@ export function TvReveal({
   nextStatus: 'playing' | 'finished'
   nextQuestionIndex: number
   nextHref: string
+  pace?: HostPace
 }) {
   const router = useRouter()
   const [leaders, setLeaders] = useState(initialLeaders)
   const [finishing, setFinishing] = useState(false)
   const leaving = useRef(false)
+  const [pace, setPace] = useState<HostPace>(paceProp)
   const correct = choices.find((choice) => choice.correct)
+
+  useEffect(() => {
+    if (!code) return
+    if (paceProp === 'manual') {
+      sessionStorage.setItem(paceStorageKey(code), 'manual')
+      setPace('manual')
+      return
+    }
+    setPace(parseHostPace(sessionStorage.getItem(paceStorageKey(code))))
+  }, [code, paceProp])
 
   async function goNext() {
     if (leaving.current) return
@@ -51,15 +65,16 @@ export function TvReveal({
       setFinishing(false)
       return
     }
-    router.push(nextHref)
+    router.push(withHostPace(nextHref, pace))
   }
 
   useEffect(() => {
+    if (pace === 'manual') return
     const t = setTimeout(() => {
       void goNext()
     }, 6000)
     return () => clearTimeout(t)
-  }, [code, nextHref, nextStatus, nextQuestionIndex])
+  }, [code, nextHref, nextStatus, nextQuestionIndex, pace])
 
   useEffect(() => {
     setLeaders(initialLeaders)

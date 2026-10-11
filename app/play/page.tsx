@@ -6,6 +6,7 @@ import { getQuizWithQuestions } from '@/lib/quiz-data'
 import { parseRoomStatus } from '@/lib/room-phase'
 import { loadRoomByCode, withoutRoomCursor } from '@/lib/room-store'
 import { createServiceClient } from '@/lib/supabase/server'
+import { parseHostPace, withHostPace } from '@/lib/host-pace'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,9 +18,10 @@ export const metadata: Metadata = {
 export default async function PlayPage({
   searchParams,
 }: {
-  searchParams: Promise<{ code?: string; q?: string }>
+  searchParams: Promise<{ code?: string; q?: string; pace?: string }>
 }) {
-  const { code, q } = await searchParams
+  const { code, q, pace: paceParam } = await searchParams
+  const pace = parseHostPace(paceParam)
   const normalized = code?.trim()
   const qParam = Number.parseInt(q ?? '', 10)
 
@@ -88,7 +90,11 @@ export default async function PlayPage({
       totalQuestions={quiz.questions.length}
       timerSeconds={question.timerSeconds || 20}
       playerCount={withoutRoomCursor(players ?? []).length}
-      revealHref={`/play/reveal?code=${encodeURIComponent(normalized)}&q=${questionIndex}`}
+      revealHref={withHostPace(
+        `/play/reveal?code=${encodeURIComponent(normalized)}&q=${questionIndex}`,
+        pace,
+      )}
+      pace={pace}
       choices={question.choices.map((c) => ({ label: c.label, text: c.text }))}
     />
   )

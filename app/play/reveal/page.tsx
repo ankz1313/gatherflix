@@ -7,6 +7,7 @@ import { parseRoomStatus } from '@/lib/room-phase'
 import { loadRoomByCode, withoutRoomCursor } from '@/lib/room-store'
 import { createServiceClient } from '@/lib/supabase/server'
 import { rankPlayers } from '@/lib/score'
+import { parseHostPace, withHostPace } from '@/lib/host-pace'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,9 +19,10 @@ export const metadata: Metadata = {
 export default async function RevealPage({
   searchParams,
 }: {
-  searchParams: Promise<{ code?: string; q?: string }>
+  searchParams: Promise<{ code?: string; q?: string; pace?: string }>
 }) {
-  const { code, q } = await searchParams
+  const { code, q, pace: paceParam } = await searchParams
+  const pace = parseHostPace(paceParam)
   const normalized = code?.trim()
 
   if (!normalized) {
@@ -71,9 +73,12 @@ export default async function RevealPage({
   const total = quiz?.questions.length ?? 1
   const isLast = questionIndex >= total - 1
   const nextQuestionIndex = questionIndex + 1
-  const nextHref = isLast
-    ? `/results?code=${encodeURIComponent(normalized)}`
-    : `/play?code=${encodeURIComponent(normalized)}&q=${nextQuestionIndex}`
+  const nextHref = withHostPace(
+    isLast
+      ? `/results?code=${encodeURIComponent(normalized)}`
+      : `/play?code=${encodeURIComponent(normalized)}&q=${nextQuestionIndex}`,
+    pace,
+  )
 
   return (
     <TvReveal
@@ -84,6 +89,7 @@ export default async function RevealPage({
       nextStatus={isLast ? 'finished' : 'playing'}
       nextQuestionIndex={isLast ? questionIndex : nextQuestionIndex}
       nextHref={nextHref}
+      pace={pace}
     />
   )
 }
