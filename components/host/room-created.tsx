@@ -171,7 +171,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
           startPromise = fetch(`/api/rooms/${encodeURIComponent(code)}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'playing', questionIndex: 0 }),
+            body: JSON.stringify({ status: 'playing', questionIndex: 0, pace }),
           })
         }
         await tick

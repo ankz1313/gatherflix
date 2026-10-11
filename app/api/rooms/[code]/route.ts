@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { parseHostPace } from '@/lib/host-pace'
 import { isCoreRoomStatus, parseRoomStatus } from '@/lib/room-phase'
 import { MIN_PLAYERS_TO_START } from '@/lib/room-rules'
 import {
@@ -70,7 +71,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Missing room code.' }, { status: 400, headers: NO_STORE })
   }
 
-  let body: { status?: string; questionIndex?: number }
+  let body: { status?: string; questionIndex?: number; pace?: string; revealed?: boolean }
   try {
     body = await request.json()
   } catch {
@@ -114,7 +115,10 @@ export async function PATCH(
   }
 
   const questionIndex = typeof body.questionIndex === 'number' ? body.questionIndex : 0
-  const room = await saveRoomProgress(normalized, body.status, questionIndex)
+  const room = await saveRoomProgress(normalized, body.status, questionIndex, {
+    revealed: body.revealed === true,
+    pace: body.pace ? parseHostPace(body.pace) : undefined,
+  })
   if (!room) {
     return NextResponse.json({ error: 'Failed to update room.' }, { status: 500, headers: NO_STORE })
   }

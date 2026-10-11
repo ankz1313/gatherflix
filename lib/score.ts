@@ -14,6 +14,8 @@ export function lastAnswerStorageKey(code: string) {
   return `gf_last_answer_${code}`
 }
 
+export const LATE_CORRECT_POINTS = 100
+
 export function speedMultiplier(timeRemaining: number, timerSeconds: number): number {
   const limit = Math.max(1, timerSeconds)
   const remaining = Math.max(0, Math.min(limit, timeRemaining))
@@ -27,6 +29,7 @@ export function awardPoints(
   correct: boolean,
 ): number {
   if (!correct) return 0
+  if (timeRemaining <= 0) return LATE_CORRECT_POINTS
   return Math.max(1, Math.round(basePoints * speedMultiplier(timeRemaining, timerSeconds)))
 }
 
