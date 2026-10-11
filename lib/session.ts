@@ -17,7 +17,7 @@ export const CURRENT_SESSION = {
   quizTitle: 'Sholay Masala Trivia Night',
   deckSlug: 'classic-90s-romances',
   hostName: 'Rahul Khanna',
-  roomName: 'Bollywood Waiting Room',
+  roomName: 'Quiz waiting room',
   minPlayers: 1,
 }
 

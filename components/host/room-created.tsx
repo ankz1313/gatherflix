@@ -7,7 +7,6 @@ import { Check, Clapperboard, Copy, Play } from 'lucide-react'
 import { GatherflixLogo } from '@/components/gatherflix-logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AvatarBadge } from '@/components/join/avatar-badge'
-import { CURRENT_SESSION } from '@/lib/session'
 import { MIN_PLAYERS_TO_START } from '@/lib/room-rules'
 import { SITE_URL } from '@/lib/site'
 import { trackTriviaStarted } from '@/lib/analytics'
@@ -311,7 +310,7 @@ export function RoomCreated({ quizId, quizTitle }: RoomCreatedProps) {
           <div className="flex items-center justify-between gap-4">
             <h2 className="flex items-center gap-2.5 font-display text-2xl font-extrabold">
               <span className="size-2.5 rounded-full bg-[var(--success)]" aria-hidden="true" />
-              {CURRENT_SESSION.roomName}
+              Quiz waiting room
             </h2>
             <span className="shrink-0 font-display text-sm font-bold text-gold">
               {joined.length} Players Joined
