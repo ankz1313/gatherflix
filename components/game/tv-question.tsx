@@ -43,19 +43,11 @@ export function TvQuestion({
   const [lockedIn, setLockedIn] = useState(0)
   const [livePlayers, setLivePlayers] = useState(playerCount)
   const still = imageUrl?.trim() || null
-  const [stillReady, setStillReady] = useState(!still)
   const leaving = useRef(false)
 
   useEffect(() => {
     setRemaining(timerSeconds)
-    setStillReady(!imageUrl?.trim())
-  }, [timerSeconds, imageUrl])
-
-  useEffect(() => {
-    if (stillReady || !still) return
-    const t = setTimeout(() => setStillReady(true), 2000)
-    return () => clearTimeout(t)
-  }, [still, stillReady])
+  }, [timerSeconds])
 
   useEffect(() => {
     void fetch(`/api/rooms/${encodeURIComponent(code)}`, {
@@ -104,7 +96,6 @@ export function TvQuestion({
   }, [code, playerCount, revealHref])
 
   useEffect(() => {
-    if (!stillReady) return
     if (remaining > 0) {
       const t = setTimeout(() => setRemaining((r) => r - 1), 1000)
       return () => clearTimeout(t)
@@ -113,7 +104,7 @@ export function TvQuestion({
       void goToReveal()
     }, 800)
     return () => clearTimeout(t)
-  }, [remaining, stillReady])
+  }, [remaining])
 
   const pct = timerSeconds > 0 ? (remaining / timerSeconds) * 100 : 0
   const roundLabel = `Question ${String(questionNumber).padStart(2, '0')} of ${totalQuestions}`
@@ -133,15 +124,11 @@ export function TvQuestion({
             <span className="absolute left-6 top-6 z-10 rounded-full bg-brand px-4 py-1.5 font-display text-xs font-bold uppercase tracking-wide text-brand-foreground">
               {roundLabel}
             </span>
-            <div className="relative flex min-h-[12rem] items-center justify-center px-4 py-10 sm:min-h-[16rem] sm:py-12">
-              {!stillReady && (
-                <p className="absolute text-sm text-muted-foreground">Loading still…</p>
-              )}
+            <div className="flex items-center justify-center px-4 py-10 sm:py-12">
               <AdaptiveStill
                 src={still}
                 priority
                 upcomingSrcs={upcomingImageUrls}
-                onReady={() => setStillReady(true)}
                 className="h-auto max-h-[min(52vh,32rem)] w-auto max-w-full object-contain"
               />
             </div>

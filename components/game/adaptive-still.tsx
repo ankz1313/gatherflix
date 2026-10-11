@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import Image from 'next/image'
 import { IMAGE_NETWORK_PROFILE, useImageNetworkTier } from '@/lib/network-image'
 
@@ -10,7 +9,6 @@ type AdaptiveStillProps = {
   className?: string
   priority?: boolean
   upcomingSrcs?: string[]
-  onReady?: () => void
 }
 
 export function AdaptiveStill({
@@ -19,11 +17,10 @@ export function AdaptiveStill({
   className,
   priority = false,
   upcomingSrcs = [],
-  onReady,
 }: AdaptiveStillProps) {
   const tier = useImageNetworkTier()
   const profile = IMAGE_NETWORK_PROFILE[tier]
-  const [loaded, setLoaded] = useState(false)
+  const optimize = tier !== 'fast'
   const prefetch = upcomingSrcs.filter((url) => url.trim() && url !== src).slice(0, 2)
 
   return (
@@ -36,12 +33,8 @@ export function AdaptiveStill({
         sizes={profile.sizes}
         quality={profile.quality}
         priority={priority}
-        onLoad={() => {
-          setLoaded(true)
-          onReady?.()
-        }}
-        onError={() => onReady?.()}
-        className={`${className ?? ''} ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}
+        unoptimized={!optimize}
+        className={className}
       />
       {prefetch.map((url) => (
         <Image
@@ -52,6 +45,7 @@ export function AdaptiveStill({
           height={Math.round(profile.width * 0.5625)}
           sizes={profile.sizes}
           quality={profile.quality}
+          unoptimized={!optimize}
           className="hidden"
         />
       ))}
