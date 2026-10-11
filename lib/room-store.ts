@@ -1,4 +1,5 @@
 import { createServiceClient } from '@/lib/supabase/server'
+import { parseHostPace, type HostPace } from '@/lib/host-pace'
 import { parseRoomStatus, questionIndexFromPhase } from '@/lib/room-phase'
 
 export type RoomRow = {
@@ -7,9 +8,12 @@ export type RoomRow = {
   status: string
   quiz_id: string
   questionIndex: number
+  revealed: boolean
+  pace: HostPace
 }
 
 export const ROOM_CURSOR_NICKNAME = 'gf-round'
+export const ROOM_PACE_NICKNAME = 'gf-pace'
 
 export function isHiddenRoomPlayer(row: {
   nickname?: string | null
@@ -17,7 +21,9 @@ export function isHiddenRoomPlayer(row: {
 }) {
   return (
     row.nickname === ROOM_CURSOR_NICKNAME ||
+    row.nickname === ROOM_PACE_NICKNAME ||
     (row.player_token?.startsWith('gf.cursor.') ?? false) ||
+    (row.player_token?.startsWith('gf.pace.') ?? false) ||
     (row.player_token?.startsWith('gf.answer.') ?? false)
   )
 }
@@ -51,8 +57,59 @@ function cursorToken(roomId: string) {
 }
 
 function parseCursorAvatar(avatar: string | null | undefined) {
-  const match = /^q:(\d+)$/.exec(avatar ?? '')
+  const match = /^q:(\d+)/.exec(avatar ?? '')
   return match ? Number(match[1]) : null
+}
+
+function isCursorRevealed(avatar: string | null | undefined) {
+  return /:r$/.test(avatar ?? '')
+}
+
+function paceToken(roomId: string) {
+  return `gf.pace.${roomId}`
+}
+
+async function readRoomPace(roomId: string): Promise<HostPace> {
+  const supabase = createServiceClient()
+  const { data, error } = await supabase
+    .from('players')
+    .select('avatar')
+    .eq('room_id', roomId)
+    .eq('player_token', paceToken(roomId))
+    .maybeSingle()
+  if (error || !data) return 'auto'
+  return parseHostPace(data.avatar)
+}
+
+async function saveRoomPace(roomId: string, pace: HostPace) {
+  const supabase = createServiceClient()
+  const token = paceToken(roomId)
+  const { data: existing } = await supabase
+    .from('players')
+    .select('id')
+    .eq('room_id', roomId)
+    .eq('player_token', token)
+    .maybeSingle()
+
+  if (existing) {
+    await supabase.from('players').update({ avatar: pace, score: 0 }).eq('id', existing.id)
+    return
+  }
+
+  const inserted = await supabase.from('players').insert({
+    room_id: roomId,
+    nickname: ROOM_PACE_NICKNAME,
+    avatar: pace,
+    player_token: token,
+    score: 0,
+  })
+  if (inserted.error) {
+    await supabase
+      .from('players')
+      .update({ avatar: pace, score: 0 })
+      .eq('room_id', roomId)
+      .eq('player_token', token)
+  }
 }
 
 async function readRoomCursor(roomId: string): Promise<number | null> {
@@ -68,10 +125,10 @@ async function readRoomCursor(roomId: string): Promise<number | null> {
   return parseCursorAvatar(data.avatar)
 }
 
-async function saveRoomCursor(roomId: string, questionIndex: number) {
+async function saveRoomCursor(roomId: string, questionIndex: number, revealed = false) {
   const supabase = createServiceClient()
   const token = cursorToken(roomId)
-  const avatar = `q:${questionIndex}`
+  const avatar = revealed ? `q:${questionIndex}:r` : `q:${questionIndex}`
   const { data: existing } = await supabase
     .from('players')
     .select('id')
@@ -171,6 +228,12 @@ export async function loadRoomByCode(code: string): Promise<RoomRow | null> {
       ? full.data.question_index
       : null
   const fromStatus = questionIndexFromPhase(parseRoomStatus(data.status))
+  const cursor = await supabase
+    .from('players')
+    .select('avatar')
+    .eq('room_id', data.id)
+    .eq('player_token', cursorToken(data.id))
+    .maybeSingle()
 
   return {
     id: data.id,
@@ -178,6 +241,8 @@ export async function loadRoomByCode(code: string): Promise<RoomRow | null> {
     status: data.status,
     quiz_id: data.quiz_id,
     questionIndex: fromCursor ?? fromColumn ?? fromStatus,
+    revealed: isCursorRevealed(cursor.data?.avatar),
+    pace: await readRoomPace(data.id),
   }
 }
 
@@ -185,6 +250,7 @@ export async function saveRoomProgress(
   code: string,
   status: 'playing' | 'finished',
   questionIndex: number,
+  options?: { revealed?: boolean; pace?: HostPace },
 ) {
   const supabase = createServiceClient()
 
@@ -206,7 +272,14 @@ export async function saveRoomProgress(
     .update({ question_index: questionIndex })
     .eq('code', code)
 
-  const cursorOk = await saveRoomCursor(saved.data.id, questionIndex)
+  const cursorOk = await saveRoomCursor(
+    saved.data.id,
+    questionIndex,
+    options?.revealed === true,
+  )
+  if (options?.pace) {
+    await saveRoomPace(saved.data.id, options.pace)
+  }
   if (withColumn.error && !cursorOk) {
     console.error('[v0] saveRoomProgress could not persist question index')
     return null

@@ -45,6 +45,8 @@ export async function GET(
       status: room.status,
       questionIndex: room.questionIndex,
       phase: phase.kind,
+      pace: room.pace,
+      revealed: room.revealed,
       answeredCount,
       playerCount: humans.length,
       players: humans.map((p) => ({

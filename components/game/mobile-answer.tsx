@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { AnswerShape } from '@/components/game/answer-shape'
 import { ANSWER_STYLES } from '@/lib/game'
 import { lastAnswerStorageKey, type QuestionResult } from '@/lib/score'
+import { parseHostPace, type HostPace } from '@/lib/host-pace'
 import { parseRoomStatus } from '@/lib/room-phase'
 
 type Choice = { label: string; text: string }
@@ -31,8 +32,14 @@ export function MobileAnswer({
   const router = useRouter()
   const [remaining, setRemaining] = useState(timerSeconds)
   const [locked, setLocked] = useState<string | null>(null)
+  const [pace, setPace] = useState<HostPace>('auto')
+  const [revealed, setRevealed] = useState(false)
   const submitting = useRef(false)
   const lockedRef = useRef(false)
+  const paceRef = useRef<HostPace>('auto')
+  const revealedRef = useRef(false)
+  paceRef.current = pace
+  revealedRef.current = revealed
 
   useEffect(() => {
     if (!code) return
@@ -47,6 +54,7 @@ export function MobileAnswer({
       const t = setTimeout(() => setRemaining((r) => r - 1), 1000)
       return () => clearTimeout(t)
     }
+    if (paceRef.current === 'manual' && !revealedRef.current) return
     if (!lockedRef.current) {
       void submit('')
     }
@@ -64,6 +72,8 @@ export function MobileAnswer({
         if (!res.ok) return
         const data = await res.json()
         if (cancelled) return
+        setPace(parseHostPace(data.pace))
+        setRevealed(Boolean(data.revealed))
         const idx =
           typeof data.questionIndex === 'number'
             ? data.questionIndex
@@ -85,12 +95,17 @@ export function MobileAnswer({
     }
 
     followHost()
-    const t = setInterval(followHost, 2000)
+    const t = setInterval(followHost, remaining <= 0 && pace === 'manual' ? 800 : 2000)
     return () => {
       cancelled = true
       clearInterval(t)
     }
-  }, [code, questionIndex, router])
+  }, [code, questionIndex, router, remaining, pace])
+
+  useEffect(() => {
+    if (!revealed || lockedRef.current) return
+    void submit('')
+  }, [revealed])
 
   async function submit(letter: string) {
     if (submitting.current) return
@@ -155,7 +170,9 @@ export function MobileAnswer({
 
       <div className="mt-4 flex items-center justify-between text-xs font-semibold uppercase tracking-wider">
         <span className="text-muted-foreground">Time Remaining</span>
-        <span className="text-brand">{remaining}s</span>
+        <span className="text-brand">
+          {remaining > 0 ? `${remaining}s` : pace === 'manual' ? 'Late · 100 pts if correct' : '0s'}
+        </span>
       </div>
       <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
         <div

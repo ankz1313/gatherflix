@@ -67,13 +67,27 @@ export function TvQuestion({
     void fetch(`/api/rooms/${encodeURIComponent(code)}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'playing', questionIndex }),
+      body: JSON.stringify({ status: 'playing', questionIndex, pace, revealed: false }),
     })
-  }, [code, questionIndex])
+  }, [code, questionIndex, pace])
 
   async function goToReveal() {
     if (leaving.current) return
     leaving.current = true
+    try {
+      await fetch(`/api/rooms/${encodeURIComponent(code)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'playing',
+          questionIndex,
+          pace,
+          revealed: true,
+        }),
+      })
+    } catch {
+      // Still open the reveal screen so the host is not stuck.
+    }
     router.push(withHostPace(revealHref, pace))
   }
 

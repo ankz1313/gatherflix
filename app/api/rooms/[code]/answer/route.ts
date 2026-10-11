@@ -3,7 +3,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { getQuizWithQuestions } from '@/lib/quiz-data'
 import { loadRoomByCode, recordPlayerAnswer, withoutRoomCursor } from '@/lib/room-store'
 import { findChoiceByLabel } from '@/lib/choice-label'
-import { awardPoints, standingFor, speedMultiplier } from '@/lib/score'
+import { awardPoints, standingFor, speedMultiplier, LATE_CORRECT_POINTS } from '@/lib/score'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,7 +66,8 @@ export async function POST(
   const correct = Boolean(choice?.correct)
   const timerSeconds = question.timerSeconds || 20
   const awarded = awardPoints(question.points, timeRemaining, timerSeconds, correct)
-  const factor = speedMultiplier(timeRemaining, timerSeconds)
+  const late = correct && timeRemaining <= 0
+  const factor = late ? LATE_CORRECT_POINTS / Math.max(1, question.points) : speedMultiplier(timeRemaining, timerSeconds)
   const totalScore = (player.score ?? 0) + awarded
 
   const { error: updateError } = await supabase
@@ -95,7 +96,7 @@ export async function POST(
       correct,
       awarded,
       base: correct ? question.points : 0,
-      multiplier: correct ? `${factor.toFixed(2)}x` : '0x',
+      multiplier: !correct ? '0x' : late ? 'late' : `${factor.toFixed(2)}x`,
       totalScore,
       rank: standing?.rank ?? humans.length,
       behindNext: standing?.behindNext ?? 0,
