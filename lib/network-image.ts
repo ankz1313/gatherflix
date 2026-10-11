@@ -21,18 +21,18 @@ function readConnection(): Connection | null {
 }
 
 export function imageNetworkTierFromConnection(connection: Connection | null): ImageNetworkTier {
-  if (!connection) return 'mid'
+  // Host TVs are usually on Wi-Fi. If the browser does not expose a connection
+  // (Safari), assume fast so we do not hide the still behind a loading label.
+  if (!connection) return 'fast'
   if (connection.saveData) return 'slow'
   const type = connection.effectiveType
   if (type === 'slow-2g' || type === '2g') return 'slow'
-  if (typeof connection.downlink === 'number') {
-    if (connection.downlink > 0 && connection.downlink < 0.8) return 'slow'
-    if (connection.downlink < 2.5) return 'mid'
-    return 'fast'
+  if (type === '4g') return 'fast'
+  if (typeof connection.downlink === 'number' && connection.downlink > 0 && connection.downlink < 0.8) {
+    return 'slow'
   }
   if (type === '3g') return 'mid'
-  if (type === '4g') return 'fast'
-  return 'mid'
+  return 'fast'
 }
 
 export const IMAGE_NETWORK_PROFILE: Record<
@@ -68,7 +68,7 @@ function getSnapshot(): ImageNetworkTier {
 }
 
 function getServerSnapshot(): ImageNetworkTier {
-  return 'mid'
+  return 'fast'
 }
 
 export function useImageNetworkTier(): ImageNetworkTier {
